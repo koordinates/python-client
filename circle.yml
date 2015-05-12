@@ -1,0 +1,5 @@
+general:
+    build_dir: api
+machine:
+    python:
+        version: 2.7.9, 3.4.2 
