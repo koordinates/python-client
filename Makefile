@@ -25,7 +25,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	flake8 koordinates_api_client 
+	flake8 koordinates 
 
 #test:
 #	python setup.py test
