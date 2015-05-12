@@ -1,5 +1,5 @@
 general:
-    build_dir: api
+    build_dir: koordinates
 machine:
     python:
-        version: 2.7.9, 3.4.2 
+        version: 2.7.9
