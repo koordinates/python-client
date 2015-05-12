@@ -15,6 +15,6 @@ setup(
     url='https://github.com/koordinates/python-client',
     download_url = 'https://github.com/koordinates/python-client/tarball/0.1', 
     keywords='koordinates api',
-    license = 'Apache License 2.0',
+    license = 'BSD',
     classifiers=[],
 )
