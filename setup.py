@@ -6,10 +6,10 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='koordinates-api-client',
-    packages=['koordinates_api_client',],
+    name='koordinates',
+    packages=['koordinates',],
     version='0.1.0',
-    description='koordinates-api-client exists only to test uploading to pypi',
+    description='koordinates is a Python client library for a number of Koordinates web APIs',
     author='Richard Shea',
     author_email='rshea@thecubagroup.com',
     url='https://github.com/koordinates/python-client',
