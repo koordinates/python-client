@@ -7,7 +7,7 @@ help:
 	@echo "test - run tests quickly with the default Python"
 #	@echo "test-all - run tests on every Python version with tox"
 #	@echo "coverage - check code coverage quickly with the default Python"
-#	@echo "docs - generate Sphinx HTML documentation, including API docs"
+	@echo "docs - generate Sphinx HTML documentation, including API docs"
 #	@echo "release - package and upload a release"
 #	@echo "sdist - package"
 
@@ -39,14 +39,18 @@ test:
 #	coverage html
 #	open htmlcov/index.html
 #
-#docs:
+docs:
+	$(MAKE) -C docs clean
+	$(MAKE) -C docs html
+
+#docs-hide:
 #	rm -f docs/tagweed.rst
 #	rm -f docs/modules.rst
 #	sphinx-apidoc -o docs/ tagweed
 #	$(MAKE) -C docs clean
 #	$(MAKE) -C docs html
 #	open docs/_build/html/index.html
-#
+
 #release: clean
 #	python setup.py sdist upload
 #	python setup.py bdist_wheel upload
