@@ -17,4 +17,5 @@ setup(
     keywords='koordinates api',
     license = 'BSD',
     classifiers=[],
+    test_suite='tests',
 )

@@ -4,7 +4,7 @@ help:
 #	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "lint - check style with flake8"
-#	@echo "test - run tests quickly with the default Python"
+	@echo "test - run tests quickly with the default Python"
 #	@echo "test-all - run tests on every Python version with tox"
 #	@echo "coverage - check code coverage quickly with the default Python"
 #	@echo "docs - generate Sphinx HTML documentation, including API docs"
@@ -27,9 +27,9 @@ clean-pyc:
 lint:
 	flake8 koordinates 
 
-#test:
-#	python setup.py test
-#
+test:
+	python setup.py test
+
 #test-all:
 #	tox
 #
