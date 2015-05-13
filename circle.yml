@@ -3,6 +3,7 @@
 machine:
     python:
         version: 2.7.9
+        version: 3.4.2
 test:
     override:
         - python setup.py test
