@@ -1,5 +1,5 @@
-general:
-    build_dir: koordinates
+#general:
+#    build_dir: koordinates
 machine:
     python:
         version: 2.7.9
