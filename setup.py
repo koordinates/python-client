@@ -6,6 +6,10 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import re
+import os
+from codecs import open
+
 version = ''
 with open('koordinates/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -19,9 +23,9 @@ with open('HISTORY.rst', 'r', 'utf-8') as f:
 setup(
     name='koordinates',
     packages=['koordinates',],
-    version=version
+    version=version,
     description='koordinates is a Python client library for a number of Koordinates web APIs',
-    long_description=readme + '\n\n' + history
+    long_description=readme + '\n\n' + history, 
     author='Richard Shea',
     author_email='rshea@thecubagroup.com',
     url='https://github.com/koordinates/python-client',
