@@ -1,4 +1,6 @@
-#Koordinates Python API Client
+==============================
+Koordinates Python API Client
+==============================
 
 The objectives of the services are to develop a Python client library for a number of Koordinates web
 APIs.

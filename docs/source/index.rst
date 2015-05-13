@@ -3,8 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Koordinates Python API Client's documentation!
+Koordinates Python API Client
 =========================================================
+
+Release v\ |version|. 
+
+Koordinates is an open source Python client library for a number of Koordinates APIs.
+
+
+
 
 Contents:
 
