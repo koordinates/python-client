@@ -12,8 +12,10 @@ Tests for `koordinates` module.
 
 import unittest
 #from requests.exceptions import HTTPError
-
+import sys
+sys.path.append('/home/rshea/dev/koordinates-python-client/python-client')
 #from koordinates import koordinates
+import koordinates
 
 class TestKoordinates(unittest.TestCase):
 
@@ -21,6 +23,13 @@ class TestKoordinates(unittest.TestCase):
         pass
 
 
+    def test_sample(self):
+        '''
+        A fake test to test koordinates.sample
+        '''
+        #self.assertEqual(koordinates.sample(5,2) 10)
+        self.assertEqual(10, 10)
+        
     def test_upper(self):
         '''
         This, obviously, is not a real test but
