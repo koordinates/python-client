@@ -15,9 +15,17 @@ Koordinates is an open source Python client library for a number of Koordinates 
 
 Contents:
 
-.. toctree::
-   :maxdepth: 2
 
+ API Documentation
+ -----------------
+
+ If you are looking for information on a specific function, class or method,
+ this part of the documentation is for you.
+
+ .. toctree::
+    :maxdepth: 2
+
+    api
 
 
 Indices and tables
