@@ -16,5 +16,4 @@ dependencies:
 
 test:
     override:
-        parallel: true
         - make test
