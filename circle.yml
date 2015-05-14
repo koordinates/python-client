@@ -1,8 +1,19 @@
 #general:
 #    build_dir: koordinates
+#machine:
+#    python:
+#        version: 2.7.9
+#test:
+#    override:
+#        - python setup.py test
 machine:
     python:
-        version: 2.7.9
+        version: 3.4.2
+
+dependencies:
+    pre:
+        - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pyenv global 2.7.9 ; fi
+
 test:
     override:
-        - python setup.py test
+        - make test
