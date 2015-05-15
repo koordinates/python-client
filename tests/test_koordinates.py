@@ -10,12 +10,13 @@ Tests for `koordinates` module.
 #from __future__ import unicode_literals
 #from __future__ import absolute_import
 
+import sys
+import os
 import unittest
 import responses
 import requests
 
-import sys
-sys.path.append('/home/rshea/dev/koordinates-python-client/python-client')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import koordinates
 
 
