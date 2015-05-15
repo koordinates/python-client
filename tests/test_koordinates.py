@@ -13,11 +13,9 @@ Tests for `koordinates` module.
 import unittest
 import responses
 import requests
-#import httpretty
 
 import sys
 sys.path.append('/home/rshea/dev/koordinates-python-client/python-client')
-#from koordinates import koordinates
 import koordinates
 
 
@@ -25,19 +23,6 @@ class TestKoordinates(unittest.TestCase):
 
     def setUp(self):
         pass
-
-#   @httpretty.activate
-#   def test_one(foo):
-#       httpretty.enable()  # enable HTTPretty so that it will monkey patch the socket module
-#       httpretty.register_uri(httpretty.GET, "http://yipit.com/",
-#                              body="Find the best daily deals")
-
-#       response = requests.get('http://yipit.com')
-
-#       assert response.text == "Find the best daily deals"
-
-#       httpretty.disable()  # disable afterwards, so that you will have no problems in code that uses that socket module
-#       httpretty.reset()    # reset HTTPretty state (clean up registered urls and request history)
 
     @responses.activate
     def test_use_of_responses(self):
@@ -60,5 +45,4 @@ class TestKoordinates(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    #unittest.main(module="test_koordinates")
     unittest.main()
