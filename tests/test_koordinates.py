@@ -13,6 +13,8 @@ Tests for `koordinates` module.
 import sys
 import os
 import unittest
+import uuid
+
 import responses
 import requests
 
@@ -34,6 +36,8 @@ class TestKoordinates(unittest.TestCase):
 
     def setUp(self):
         self.koordconn = koordinates.api.Connection('rshea@thecubagroup.com', TestKoordinates.pwd)
+        invalid_password = str(uuid.uuid1())
+        self.bad_koordconn = koordinates.api.Connection('rshea@thecubagroup.com', invalid_password)
 
     def test_layers_url_template(self):
         L = koordinates.api.Layer(self.koordconn, 999)
@@ -68,8 +72,22 @@ class TestKoordinates(unittest.TestCase):
         assert responses.calls[0].response.text == the_response
 
     @responses.activate
-    def test_get_layer_by_id_no_auth(self):
+    def test_get_layerset(self):
         pass
+
+    @responses.activate
+    def test_get_layer_by_id_bad_auth(self, id=1474):
+        the_response = '''{"detail": "Authentication credentials were not provided."}'''
+        L = koordinates.api.Layer(self.bad_koordconn, id)
+
+        responses.add(responses.GET, L.url('GET', 'single', id),  
+                      body=the_response, status=401,
+                      content_type='application/json')
+
+        L.get(id)
+        
+        assert L.raw_response.status_code == 401 
+
     @responses.activate
     def test_get_layer_by_id(self, id=1474):
 
@@ -78,12 +96,13 @@ class TestKoordinates(unittest.TestCase):
         L = koordinates.api.Layer(self.koordconn, 999)
 
         responses.add(responses.GET, L.url('GET', 'single', id),  
-                      body=the_response, status=200,
+                      body=the_response, status="200",
                       content_type='application/json')
 
         L.get(id)
         
         assert L.name == "Wellington City Building Footprints" 
+        assert L.raw_response.status_code == "200" 
 
     @responses.activate
     def test_use_of_responses(self):

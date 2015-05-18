@@ -51,6 +51,7 @@ class Layer(object):
         self._url_templates = {}
         self._url_templates['GET'] = {}
         self._url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
+        self.raw_response = None
 
     def __get_auth(self):
         """Creates an Authorisation object
@@ -64,6 +65,10 @@ class Layer(object):
     def url(self, verb, urltype, id):
         return self.url_templates(verb, urltype).format(layer_id=id)
 
+    '''
+    def getset(self):
+        """Fetches a set of layers
+    '''
     def get(self, id):
         """Fetches a layer determined by the value of `id`.
 
@@ -71,13 +76,20 @@ class Layer(object):
         """
 
         target_url = self.url('GET', 'single', id)
-        req_resp = requests.get(target_url, auth=self.__get_auth())
-        layer_dict = req_resp.json()
+        self.raw_response = requests.get(target_url, auth=self.__get_auth())
 
-        self.name = layer_dict['name']
-        self._type = layer_dict['type']
-        self._type = layer_dict['type']
-        self._first_published_at = layer_dict['first_published_at']
+        if self.raw_response.status_code == "200": 
+            layer_dict = self.raw_response.json()
+            self.name = layer_dict['name']
+            self._type = layer_dict['type']
+            self._type = layer_dict['type']
+            self._first_published_at = layer_dict['first_published_at']
+        else:
+            self.name = None 
+            self._type = None 
+            self._type = None 
+            self._first_published_at = None
+            
 
     def list(self, filters):
         pass
