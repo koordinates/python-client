@@ -13,3 +13,5 @@ Available Methods
 
 .. autofunction:: sample
 
+Classes
+~~~~~~~~~~~~~~~~~~~
