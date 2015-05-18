@@ -45,20 +45,6 @@ class TestKoordinates(unittest.TestCase):
         assert L.url_templates('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
 
     @responses.activate
-    def test_basic_auth(self):
-        responses.add(responses.GET, 'http://twitter.com/api/1/foobar',
-                      body='{"error": "not found"}', status=404,
-                      content_type='application/json')
-
-        resp = requests.get('http://twitter.com/api/1/foobar')
-
-        assert resp.json() == {"error": "not found"}
-
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'http://twitter.com/api/1/foobar'
-        assert responses.calls[0].response.text == '{"error": "not found"}'
-
-    @responses.activate
     def test_basic_auth_1(self):
         the_url = '''http://httpbin.org/basic-auth/user/passwd'''
         the_response = '''
@@ -77,11 +63,8 @@ class TestKoordinates(unittest.TestCase):
 
         resp = requests.get(the_url)
 
-        #assert resp.json() == the_response 
-
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == the_url 
-        #assert responses.calls[0].response.text == '{"user": "user"}'
         assert responses.calls[0].response.text == the_response
 
     @responses.activate
@@ -116,12 +99,6 @@ class TestKoordinates(unittest.TestCase):
         assert responses.calls[0].request.url == 'http://twitter.com/api/1/foobar'
         assert responses.calls[0].response.text == '{"error": "not found"}'
  
-    def test_stub(self):
-        assert len("x") == 1 
-
-    def test_sample(self):
-        assert koordinates.sample(2, 5) == 10 
-
     def tearDown(self):
         pass
 
