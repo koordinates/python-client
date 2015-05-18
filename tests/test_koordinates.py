@@ -20,7 +20,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import koordinates
 
 def getpass():
-    return "foo"
+    '''
+    Prompt user for Password until there is a Connection object
+    '''
+    import getpass
+    return(getpass.getpass('Please enter your Koordinates password: '))
+
 
 class TestKoordinates(unittest.TestCase):
 
