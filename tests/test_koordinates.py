@@ -6,6 +6,10 @@ test_koordinates
 ----------------------------------
 
 Tests for `koordinates` module.
+
+:copyright: (c) 2015 by Koordinates .
+:license: BSD, see LICENSE for more details.
+"
 """
 #from __future__ import unicode_literals
 #from __future__ import absolute_import
@@ -20,6 +24,10 @@ import requests
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import koordinates
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+from canned_responses_for_tests import layers_multiple_good_simulated_response
+#from canned_responses_for_tests import layers_single_good_simulated_response
 
 def getpass():
     '''
@@ -72,8 +80,32 @@ class TestKoordinates(unittest.TestCase):
         assert responses.calls[0].response.text == the_response
 
     @responses.activate
+    def test_get_layerset_bad_auth(self):
+        the_response = '''{"detail": "Authentication credentials were not provided."}'''
+        L = koordinates.api.Layer(self.bad_koordconn)
+
+        responses.add(responses.GET, L.url('GET', 'multi', id),  
+                      body=the_response, status=401,
+                      content_type='application/json')
+
+        L.list(id)
+        
+        assert L.raw_response.status_code == 401 
+
+    @responses.activate
     def test_get_layerset(self):
-        pass
+        the_response = layers_multiple_good_simulated_response
+
+        L = koordinates.api.Layer(self.koordconn, 999)
+
+        responses.add(responses.GET, L.url('GET', 'multi', None),  
+                      body=the_response, status="200",
+                      content_type='application/json')
+
+        L.list()
+
+        assert len(L.list_oflayer_dicts) == 100
+        
 
     @responses.activate
     def test_get_layer_by_id_bad_auth(self, id=1474):

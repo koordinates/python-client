@@ -51,6 +51,7 @@ class Layer(object):
         self._url_templates = {}
         self._url_templates['GET'] = {}
         self._url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
+        self._url_templates['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
         self.raw_response = None
 
     def __get_auth(self):
@@ -62,13 +63,24 @@ class Layer(object):
     def url_templates(self, verb, urltype):
         return self._url_templates[verb][urltype]
 
-    def url(self, verb, urltype, id):
-        return self.url_templates(verb, urltype).format(layer_id=id)
+    def url(self, verb, urltype, id=None):
+        if id:
+            return self.url_templates(verb, urltype).format(layer_id=id)
+        else:
+            return self.url_templates(verb, urltype)
 
-    '''
-    def getset(self):
+
+    def list(self, filters=None):
         """Fetches a set of layers
-    '''
+        """
+        target_url = self.url('GET', 'multi', None)
+        self.raw_response = requests.get(target_url, auth=self.__get_auth())
+
+        if self.raw_response.status_code == "200": 
+            self.list_oflayer_dicts = self.raw_response.json()
+        else:
+            self.list_oflayer_dicts = self.raw_response.json()
+
     def get(self, id):
         """Fetches a layer determined by the value of `id`.
 
@@ -91,8 +103,6 @@ class Layer(object):
             self._first_published_at = None
             
 
-    def list(self, filters):
-        pass
 
 def sample(foo, bar):
     """Is a Sample for testing purposes.

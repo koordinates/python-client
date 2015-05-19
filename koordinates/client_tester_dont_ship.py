@@ -26,7 +26,6 @@ def target_url(id=1474):
 
 username = 'rshea@thecubagroup.com'
 url = target_url(id=1474)
-the_auth=get_auth(username, 'mercatorproj1000')
 the_auth=get_auth(username, getpass())
 my_config = {'verbose': sys.stderr}
 import requests
@@ -48,7 +47,9 @@ logging.getLogger().setLevel(logging.DEBUG)
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
+#
 req_resp = requests.get(url, auth=the_auth)
+#
 print("")
 print (type(req_resp.status_code))
 print("")
