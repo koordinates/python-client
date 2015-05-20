@@ -25,6 +25,14 @@ class Connection(object):
         else:
             self.pwd = os.environ['KPWD']
         self.host = host
+        self.layer = Layer(self)
+
+    def get_auth(self):
+        """Creates an Authorisation object
+        """
+        return requests.auth.HTTPBasicAuth(self.username,
+                                           self.pwd)
+
 
 
 class Layer(object):
@@ -35,13 +43,13 @@ class Layer(object):
     of objects that you add on top of the map to designate a common
     association.
     '''
-    def __init__(self, conn, id=None,
+    def __init__(self, parent, id=None,
                  layer_name=None,
                  layer_type=None,
                  first_published_at=None,
                  published_at=None):
 
-        self.koordconn = conn
+        self.parent = parent
         self._id = id
         self.name = layer_name
         self._type = layer_type
@@ -53,12 +61,6 @@ class Layer(object):
         self._url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
         self._url_templates['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
         self.raw_response = None
-
-    def __get_auth(self):
-        """Creates an Authorisation object
-        """
-        return requests.auth.HTTPBasicAuth(self.koordconn.username,
-                                           self.koordconn.pwd)
 
     def url_templates(self, verb, urltype):
         return self._url_templates[verb][urltype]
@@ -74,7 +76,7 @@ class Layer(object):
         """Fetches a set of layers
         """
         target_url = self.url('GET', 'multi', None)
-        self.raw_response = requests.get(target_url, auth=self.__get_auth())
+        self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
 
         if self.raw_response.status_code == "200": 
             self.list_oflayer_dicts = self.raw_response.json()
@@ -88,7 +90,7 @@ class Layer(object):
         """
 
         target_url = self.url('GET', 'single', id)
-        self.raw_response = requests.get(target_url, auth=self.__get_auth())
+        self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
 
         if self.raw_response.status_code == "200": 
             layer_dict = self.raw_response.json()

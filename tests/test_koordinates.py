@@ -51,70 +51,64 @@ class TestKoordinates(unittest.TestCase):
         self.bad_koordconn = koordinates.api.Connection('rshea@thecubagroup.com', invalid_password)
 
     def test_layers_url_template(self):
-        L = koordinates.api.Layer(self.koordconn, 999)
-        assert L.url('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/999/'''
+        self.koordconn.layer(999)
+
+        assert self.koordconn.layer.url('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/999/'''
 
 
     def test_layers_url_template(self):
-        L = koordinates.api.Layer(self.koordconn, 999)
-        assert L.url_templates('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
+        assert self.koordconn.layer.url_templates('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
 
     @responses.activate
     def test_get_layerset_bad_auth(self):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
-        L = koordinates.api.Layer(self.bad_koordconn)
 
-        responses.add(responses.GET, L.url('GET', 'multi', id),  
+        responses.add(responses.GET, self.bad_koordconn.layer.url('GET', 'multi', id),  
                       body=the_response, status=401,
                       content_type='application/json')
 
-        L.list(id)
+        self.bad_koordconn.layer.list(id)
         
-        assert L.raw_response.status_code == 401 
+        assert self.bad_koordconn.layer.raw_response.status_code == 401 
 
     @responses.activate
     def test_get_layerset(self):
         the_response = layers_multiple_good_simulated_response
 
-        L = koordinates.api.Layer(self.koordconn, 999)
-
-        responses.add(responses.GET, L.url('GET', 'multi', None),  
+        responses.add(responses.GET, self.koordconn.layer.url('GET', 'multi', None),  
                       body=the_response, status="200",
                       content_type='application/json')
 
-        L.list()
+        self.koordconn.layer.list()
 
-        assert len(L.list_oflayer_dicts) == 100
+        assert len(self.koordconn.layer.list_oflayer_dicts) == 100
         
 
     @responses.activate
     def test_get_layer_by_id_bad_auth(self, id=1474):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
-        L = koordinates.api.Layer(self.bad_koordconn, id)
 
-        responses.add(responses.GET, L.url('GET', 'single', id),  
+        responses.add(responses.GET, self.bad_koordconn.layer.url('GET', 'single', id),  
                       body=the_response, status=401,
                       content_type='application/json')
 
-        L.get(id)
+        self.bad_koordconn.layer.get(id)
         
-        assert L.raw_response.status_code == 401 
+        assert self.bad_koordconn.layer.raw_response.status_code == 401 
 
     @responses.activate
     def test_get_layer_by_id(self, id=1474):
 
         the_response = layers_single_good_simulated_response
 
-        L = koordinates.api.Layer(self.koordconn, 999)
-
-        responses.add(responses.GET, L.url('GET', 'single', id),  
+        responses.add(responses.GET, self.koordconn.layer.url('GET', 'single', id),  
                       body=the_response, status="200",
                       content_type='application/json')
 
-        L.get(id)
+        self.koordconn.layer.get(id)
         
-        assert L.name == "Wellington City Building Footprints" 
-        assert L.raw_response.status_code == "200" 
+        assert self.koordconn.layer.name == "Wellington City Building Footprints" 
+        assert self.koordconn.layer.raw_response.status_code == "200" 
 
     @responses.activate
     def test_use_of_responses(self):
