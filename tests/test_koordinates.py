@@ -34,7 +34,10 @@ def getpass():
     Prompt user for Password until there is a Connection object
     '''
     import getpass
-    return(getpass.getpass('Please enter your Koordinates password: '))
+    if ('CIRCLECI' in os.environ) and ('KPWD' in os.environ):
+        return os.environ['KPWD']
+    else:
+        return(getpass.getpass('Please enter your Koordinates password: '))
 
 
 class TestKoordinates(unittest.TestCase):
