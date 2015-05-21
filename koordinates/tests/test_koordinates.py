@@ -21,24 +21,8 @@ import uuid
 
 import responses
 import requests
-'''
-#import pdb;pdb.set_trace()
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'koordinates'))
-'''
-'''
-import koordinates
-from koordinates import koord_exceptions
-'''
-#import pdb;pdb.set_trace()
-#sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import koordinates.api
 import koordinates.koordexceptions
-'''
-from koordinates.koord_exceptions.KoordinatesInvalidURL import KoordinatesInvalidURL
-from koordinates.koord_exceptions.KoordinatesNotAuthorised import KoordinatesNotAuthorised
-from koordinates.koord_exceptions.KoordinatesUnexpectedServerResponse import KoordinatesUnexpectedServerResponse
-'''
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from canned_responses_for_tests import layers_multiple_good_simulated_response
@@ -61,8 +45,6 @@ class TestKoordinates(unittest.TestCase):
 
 
     def setUp(self):
-        #import pdb;pdb.set_trace()
-        #self.koordconn = koordinates.Connection('rshea@thecubagroup.com', TestKoordinates.pwd)
         self.koordconn = koordinates.api.Connection('rshea@thecubagroup.com', TestKoordinates.pwd)
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = koordinates.api.Connection('rshea@thecubagroup.com', invalid_password)
@@ -84,7 +66,6 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=401,
                       content_type='application/json')
 
-        #with self.assertRaises(koordinates.koordexceptions.KoordinatesNotAuthorised):
         try:
             self.bad_koordconn.layer.list(id)
         except :
@@ -113,7 +94,6 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=401,
                       content_type='application/json')
 
-        #with self.assertRaises(koordinates.koordexceptions.KoordinatesNotAuthorised):
         try :
             self.bad_koordconn.layer.get(id)
         except:
