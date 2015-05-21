@@ -13,5 +13,7 @@ __author__ = 'Richard Shea'
 __license__ = 'BSD'
 __copyright__ = 'Copyright 2015 Koordinates'
 
-
-from .api import sample
+'''
+from . import api
+from . import koord_exceptions 
+'''

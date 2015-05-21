@@ -11,7 +11,18 @@ This module implements the Koordinates API.
 
 import os
 import requests
+import json
 
+#import koordinates.koord_exceptions as koord_exceptions
+#from koord_exceptions import * 
+import sys, os
+sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
+import koordexceptions
+'''
+from koordexceptions import KoordinatesInvalidURL
+from koordexceptions import KoordinatesNotAuthorised
+from koordexceptions import KoordinatesUnexpectedServerResponse
+'''
 
 class Connection(object):
     """
@@ -78,31 +89,65 @@ class Layer(object):
         target_url = self.url('GET', 'multi', None)
         self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == "200": 
+        #import pdb; pdb.set_trace()
+        if self.raw_response.status_code in [200, '200']: 
             self.list_oflayer_dicts = self.raw_response.json()
+        elif self.raw_response.status_code in [404, '404']: 
+            self.list_oflayer_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code in ['401', 401]: 
+            self.list_oflayer_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesNotAuthorised
         else:
+            print(self.raw_response.status_code)
             self.list_oflayer_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def get(self, id):
         """Fetches a layer determined by the value of `id`.
 
         :param id: ID for the new :class:`Layer` object.
         """
+        #import pdb; pdb.set_trace()
+        from collections import namedtuple
+
+        class StubClass(object):
+            pass
 
         target_url = self.url('GET', 'single', id)
         self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == "200": 
+        #import pdb;pdb.set_trace()
+        if self.raw_response.status_code == '200': 
+            #Probably don't need this line for much longer
             layer_dict = self.raw_response.json()
+            stub = StubClass()
+            #layer_namedtuple = json.loads(self.raw_response.json(), object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            for k in layer_namedtuple.__dict__.keys():
+                setattr(self, k, getattr(layer_namedtuple, k, ""))
+
+            '''
+            print("^" * 40)
+            print obj._fields
+            print("^" * 40)
+            for k, v in layer_dict.items():
+                print ('''"''' + k + '''"''' +  " is of type " + str(type(v)))
+            print("^" * 40)
+            '''
+            '''
             self.name = layer_dict['name']
             self._type = layer_dict['type']
             self._type = layer_dict['type']
             self._first_published_at = layer_dict['first_published_at']
+            '''
+        elif self.raw_response.status_code == '404': 
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code == '401': 
+            raise koordexceptions.KoordinatesNotAuthorised
         else:
-            self.name = None 
-            self._type = None 
-            self._type = None 
-            self._first_published_at = None
+            print("A : " + self.raw_response.status_code)
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
             
 
 
