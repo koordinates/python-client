@@ -13,16 +13,10 @@ import os
 import requests
 import json
 
-#import koordinates.koord_exceptions as koord_exceptions
-#from koord_exceptions import * 
-import sys, os
+import sys
 sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
 import koordexceptions
-'''
-from koordexceptions import KoordinatesInvalidURL
-from koordexceptions import KoordinatesNotAuthorised
-from koordexceptions import KoordinatesUnexpectedServerResponse
-'''
+
 
 class Connection(object):
     """
@@ -43,7 +37,6 @@ class Connection(object):
         """
         return requests.auth.HTTPBasicAuth(self.username,
                                            self.pwd)
-
 
 
 class Layer(object):
@@ -82,24 +75,21 @@ class Layer(object):
         else:
             return self.url_templates(verb, urltype)
 
-
     def list(self, filters=None):
         """Fetches a set of layers
         """
         target_url = self.url('GET', 'multi', None)
         self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
 
-        #import pdb; pdb.set_trace()
-        if self.raw_response.status_code in [200, '200']: 
+        if self.raw_response.status_code in [200, '200']:
             self.list_oflayer_dicts = self.raw_response.json()
-        elif self.raw_response.status_code in [404, '404']: 
+        elif self.raw_response.status_code in [404, '404']:
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code in ['401', 401]: 
+        elif self.raw_response.status_code in ['401', 401]:
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
         else:
-            print(self.raw_response.status_code)
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
@@ -108,47 +98,25 @@ class Layer(object):
 
         :param id: ID for the new :class:`Layer` object.
         """
-        #import pdb; pdb.set_trace()
         from collections import namedtuple
 
         class StubClass(object):
             pass
 
         target_url = self.url('GET', 'single', id)
-        self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
 
-        #import pdb;pdb.set_trace()
-        if self.raw_response.status_code == '200': 
-            #Probably don't need this line for much longer
-            layer_dict = self.raw_response.json()
-            stub = StubClass()
-            #layer_namedtuple = json.loads(self.raw_response.json(), object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+        if self.raw_response.status_code == '200':
             layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for k in layer_namedtuple.__dict__.keys():
                 setattr(self, k, getattr(layer_namedtuple, k, ""))
-
-            '''
-            print("^" * 40)
-            print obj._fields
-            print("^" * 40)
-            for k, v in layer_dict.items():
-                print ('''"''' + k + '''"''' +  " is of type " + str(type(v)))
-            print("^" * 40)
-            '''
-            '''
-            self.name = layer_dict['name']
-            self._type = layer_dict['type']
-            self._type = layer_dict['type']
-            self._first_published_at = layer_dict['first_published_at']
-            '''
-        elif self.raw_response.status_code == '404': 
+        elif self.raw_response.status_code == '404':
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == '401': 
+        elif self.raw_response.status_code == '401':
             raise koordexceptions.KoordinatesNotAuthorised
         else:
-            print("A : " + self.raw_response.status_code)
             raise koordexceptions.KoordinatesUnexpectedServerResponse
-            
 
 
 def sample(foo, bar):
