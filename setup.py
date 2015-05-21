@@ -35,3 +35,4 @@ setup(
     classifiers=[],
     test_suite='koordinates.tests',
 )
+
