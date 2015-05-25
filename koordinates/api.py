@@ -139,6 +139,16 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         super(self.__class__, self).__init__()
 
     def execute_get_list(self):
+        import copy
+        self.__execute_get_list_no_generator()
+        for response in self.list_oflayer_dicts:
+            this_layer = Layer(self.parent)
+            for key, value in response.items():
+                setattr(this_layer, key, value)
+            yield this_layer
+
+
+    def __execute_get_list_no_generator(self):
 
         target_url = self.url
         self.url = ""
@@ -159,7 +169,6 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
-        print("Finished in get_list")
 
     def get_list(self):
         """Fetches a set of layers

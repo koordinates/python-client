@@ -38,6 +38,7 @@ import koordexceptions
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from canned_responses_for_tests import layers_multiple_good_simulated_response
 from canned_responses_for_tests import layers_single_good_simulated_response
+from canned_responses_for_tests import lst_expected_id
 
 
 def getpass():
@@ -83,7 +84,8 @@ class TestKoordinates(unittest.TestCase):
                       content_type='application/json')
 
         try:
-            self.bad_koordconn.layer.get_list().execute_get_list()
+            for layer in self.bad_koordconn.layer.get_list().execute_get_list():
+                pass
         except koordexceptions.KoordinatesNotAuthorised:
             pass
 
@@ -100,10 +102,26 @@ class TestKoordinates(unittest.TestCase):
                       content_type='application/json')
 
         with self.assertRaises(koordexceptions.KoordinatesNotAuthorised):
-            self.bad_koordconn.layer.get_list().execute_get_list()
+            for layer in self.bad_koordconn.layer.get_list().execute_get_list():
+                pass
+
+#   @responses.activate
+#   def test_get_layerset_returns_correct_data(self):
+#       the_response = layers_multiple_good_simulated_response
+
+#       responses.add(responses.GET,
+#                     self.koordconn.layer.get_url('LAYER', 'GET', 'multi', None),
+#                     body=the_response, status="200",
+#                     content_type='application/json')
+
+#       idx = 0
+#       for layer in self.koordconn.layer.get_list().execute_get_list():
+#           self.assertEqual(layer.id, lst_expected_id[idx])
+#           idx += 1
+
 
     @responses.activate
-    def test_get_layerset(self):
+    def test_get_layerset_returns_all_rows(self):
         the_response = layers_multiple_good_simulated_response
 
         responses.add(responses.GET,
@@ -111,9 +129,13 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status="200",
                       content_type='application/json')
 
-        self.koordconn.layer.get_list().execute_get_list()
+        cnt_of_layers_returned = 0
 
-        self.assertEqual(len(self.koordconn.layer.list_oflayer_dicts), 100)
+        for layer in self.koordconn.layer.get_list().execute_get_list():
+            cnt_of_layers_returned += 1 
+
+        #self.assertEqual(len(self.koordconn.layer.list_oflayer_dicts), 100)
+        self.assertEqual(cnt_of_layers_returned, 100)
 
     @responses.activate
     def test_get_layerset_filter_and_sort(self):

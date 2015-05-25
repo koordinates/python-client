@@ -30,8 +30,11 @@ def target_url(id=1474):
 
 def main4(username):
     conn = api.Connection(username, getpass())
-    conn.layer.get_list().filter('Sea').order_by('name').execute_get_list()
-    conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
+    #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
+    # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
+    for x in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
+        print(x.id, " ", x.name, " ", id(x))
+    # conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
 
 def main3():
     #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
