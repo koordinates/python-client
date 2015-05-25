@@ -4,6 +4,7 @@ import os
 
 import api
 import koordexceptions
+import chainclasstest
 
 def getpass():
     '''
@@ -27,10 +28,46 @@ def target_url(id=1474):
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
     return url_templates['GET']['single'].format(layer_id=id) 
 
-def main2(username, url):
+def main4(username):
     conn = api.Connection(username, getpass())
-    import pdb; pdb.set_trace()
-    conn.layer.get(9999)
+    conn.layer.get_list().filter('Sea').order_by('name').execute_get_list()
+    conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
+
+def main3():
+    #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
+    #print(cctold.order_by().filter_by())
+    #print(cctold.filter_by().order_by())
+    print()
+    cct = chainclasstest.ChainClassTest([1,20,3,40], 
+                                        -999,
+                                        '''https://koordinates.com/services/api/v1/layers/''')
+    print("0" * 50)
+    print(cct.url)
+    print("1" * 50)
+    cct.outputparsedurl()
+    print("2" * 50)
+    #cct.filter_by(name__contains='Wellington')
+    print("3" * 50)
+    #cct.filter_by(name__contains='Wellington').order_by()
+    print("4" * 50)
+    #cct.order_by().filter_by(name__contains='Wellington')
+    cct.get_list().filter_by(name__contains='Wellington').order_by()
+    print("5" * 50)
+    cct.outputparsedurl()
+    print("6" * 50)
+    print(cct.url)
+    print("7" * 50)
+    '''
+    print(cct)
+    print(cct.order_by())
+    print(cct.filter_by())
+    '''
+    '''
+    print(cct.order_by().filter_by())
+    '''
+#def main2(username, url):
+#    conn = api.Connection(username, getpass())
+#    conn.layer.get(9999)
 def main1(username, url):
     the_auth=get_auth(username, getpass())
     my_config = {'verbose': sys.stderr}
@@ -83,7 +120,9 @@ def main():
     url = target_url(id=1474)
     if False:
         main1(username, url)
-    main2(username, url)
+    #main2(username, url)
+    #main3()
+    main4(username)
 
 if __name__ == "__main__":
     main()

@@ -12,6 +12,16 @@ This module implements the Koordinates API.
 import os
 import requests
 import json
+try:
+        # from urllib.parse import urlparse
+        from urllib.parse import urlencode
+        from urllib.parse import urlsplit
+        from urllib.parse import parse_qs
+except ImportError:
+        # from urlparse import urlparse
+        from urllib import urlencode
+        from urlparse import urlsplit
+        from urlparse import parse_qs
 
 import sys
 sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
@@ -54,11 +64,14 @@ class Layer(object):
                  published_at=None):
 
         self.parent = parent
+        self.url = None
         self._id = id
         self.name = layer_name
         self._type = layer_type
         self._first_published_at = first_published_at
         self.cg_published_at = published_at
+        self.ordering_applied = False
+        self.filtering_applied = False
 
         self._url_templates = {}
         self._url_templates['GET'] = {}
@@ -66,20 +79,26 @@ class Layer(object):
         self._url_templates['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
         self.raw_response = None
 
+        self.attribute_sort_candidates = ['name']
+        self.attribute_filter_candidates = ['name']
+
     def url_templates(self, verb, urltype):
         return self._url_templates[verb][urltype]
 
-    def url(self, verb, urltype, id=None):
+    def get_url(self, verb, urltype, id=None):
         if id:
             return self.url_templates(verb, urltype).format(layer_id=id)
         else:
             return self.url_templates(verb, urltype)
 
-    def list(self, filters=None):
-        """Fetches a set of layers
-        """
-        target_url = self.url('GET', 'multi', None)
-        self.raw_response = requests.get(target_url, auth=self.parent.get_auth())
+    def execute_get_list(self):
+
+        target_url = self.url
+        self.url = ""
+        self.ordering_applied = False
+        self.filtering_applied = False
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
 
         if self.raw_response.status_code in [200, '200']:
             self.list_oflayer_dicts = self.raw_response.json()
@@ -93,6 +112,15 @@ class Layer(object):
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
+        print("Finished in get_list")
+
+    def get_list(self):
+        """Fetches a set of layers
+        """
+        target_url = self.get_url('GET', 'multi', None)
+        self.url = target_url
+        return self
+
     def get(self, id):
         """Fetches a layer determined by the value of `id`.
 
@@ -103,7 +131,7 @@ class Layer(object):
         class StubClass(object):
             pass
 
-        target_url = self.url('GET', 'single', id)
+        target_url = self.get_url('GET', 'single', id)
         self.raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
@@ -117,6 +145,43 @@ class Layer(object):
             raise koordexceptions.KoordinatesNotAuthorised
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
+
+    def filter(self, value):
+        if self.filtering_applied:
+            raise koordexceptions.KoordinatesOnlyOneFilterAllowed
+
+        # Eventually this check will be a good deal more sophisticated
+        # so it's here in its current form to some degree as a placeholder
+        if value.isspace():
+            raise koordexceptions.KoordinatesFilterMustNotBeSpaces()
+
+        self.add_query_component("q", value)
+        self.filtering_applied = True
+        return self
+
+    def order_by(self, sort_key):
+        if self.ordering_applied:
+            raise koordexceptions.KoordinatesOnlyOneOrderingAllowed
+        if sort_key not in self.attribute_sort_candidates:
+            raise koordexceptions.KoordinatesNotAValidBasisForOrdering(sort_key)
+
+        self.add_query_component("sort", sort_key)
+        self.ordering_applied = True
+        return self
+
+    def add_query_component(self, argname, argvalue):
+
+        # parse original string url
+        url_data = urlsplit(self.url)
+
+        # parse original query-string
+        qs_data = parse_qs(url_data.query)
+
+        # manipulate the query-string
+        qs_data[argname] = [argvalue]
+
+        # get the url with modified query-string
+        self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
 
 def sample(foo, bar):

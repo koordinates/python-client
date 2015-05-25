@@ -20,12 +20,25 @@ import uuid
 
 import responses
 import requests
-import koordinates.api
-import koordinates.koordexceptions
+try:
+        from urllib.parse import urlparse
+        # from urllib.parse import urlencode
+        # from urllib.parse import urlsplit
+        # from urllib.parse import parse_qs
+except ImportError:
+        from urlparse import urlparse
+        # from urllib import urlencode
+        # from urlparse import urlsplit
+        # from urlparse import parse_qs
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import api
+import koordexceptions
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from canned_responses_for_tests import layers_multiple_good_simulated_response
 from canned_responses_for_tests import layers_single_good_simulated_response
+
 
 def getpass():
     '''
@@ -42,51 +55,93 @@ class TestKoordinates(unittest.TestCase):
 
     pwd = getpass()
 
+    def contains_substring(self, strtosearch, strtosearchfor):
+        return strtosearch.lower().find(strtosearchfor) > -1
+
     def setUp(self):
-        self.koordconn = koordinates.api.Connection('rshea@thecubagroup.com', 
-                                                    TestKoordinates.pwd)
+        self.koordconn = api.Connection('rshea@thecubagroup.com',
+                                        TestKoordinates.pwd)
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = koordinates.api.Connection('rshea@thecubagroup.com', 
-                                                        invalid_password)
+        self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
+                                            invalid_password)
 
     def test_layers_url(self):
-        assert self.koordconn.layer.url('GET', 'single', 999) == '''https://koordinates.com/services/api/v1/layers/999/'''
+        self.assertTrue(self.koordconn.layer.get_url('GET', 'single', 999),
+                        '''https://koordinates.com/services/api/v1/layers/999/''')
 
     def test_layers_url_template(self):
-        assert self.koordconn.layer.url_templates('GET', 'single') == '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
+        self.assertTrue(self.koordconn.layer.url_templates('GET', 'single'),
+                        '''https://koordinates.com/services/api/v1/layers/{layer_id}/''')
 
     @responses.activate
-    def test_get_layerset_bad_auth(self):
+    def test_get_layerset_bad_auth_check_status(self):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
-        responses.add(responses.GET, self.bad_koordconn.layer.url('GET', 'multi', id),
+        responses.add(responses.GET,
+                      self.bad_koordconn.layer.get_url('GET', 'multi', id),
                       body=the_response, status=401,
                       content_type='application/json')
 
         try:
-            self.bad_koordconn.layer.list(id)
-        except:
+            self.bad_koordconn.layer.get_list().execute_get_list()
+        except koordexceptions.KoordinatesNotAuthorised:
             pass
 
-        assert self.bad_koordconn.layer.raw_response.status_code == 401
+        self.assertTrue(self.bad_koordconn.layer.raw_response.status_code,
+                        401)
+
+    @responses.activate
+    def test_get_layerset_bad_auth_check_exception(self):
+        the_response = '''{"detail": "Authentication credentials were not provided."}'''
+
+        responses.add(responses.GET,
+                      self.bad_koordconn.layer.get_url('GET', 'multi', id),
+                      body=the_response, status=401,
+                      content_type='application/json')
+
+        with self.assertRaises(koordexceptions.KoordinatesNotAuthorised):
+            self.bad_koordconn.layer.get_list().execute_get_list()
 
     @responses.activate
     def test_get_layerset(self):
         the_response = layers_multiple_good_simulated_response
 
-        responses.add(responses.GET, self.koordconn.layer.url('GET', 'multi', None),
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('GET', 'multi', None),
                       body=the_response, status="200",
                       content_type='application/json')
 
-        self.koordconn.layer.list()
+        self.koordconn.layer.get_list().execute_get_list()
 
-        assert len(self.koordconn.layer.list_oflayer_dicts) == 100
+        self.assertEqual(len(self.koordconn.layer.list_oflayer_dicts), 100)
+
+    @responses.activate
+    def test_get_layerset_filter_and_sort(self):
+
+        filter_value = str(uuid.uuid1())
+        order_by_key = 'name'
+        self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
+
+        parsedurl = urlparse(self.koordconn.layer.url)
+
+        self.assertTrue(self.contains_substring(parsedurl.query, filter_value))
+        self.assertTrue(self.contains_substring(parsedurl.query, order_by_key))
+
+    @responses.activate
+    def test_get_layerset_bad_filter_and_sort(self):
+
+        filter_value = str(uuid.uuid1())
+        order_by_key = str(uuid.uuid1())
+
+        with self.assertRaises(koordexceptions.KoordinatesNotAValidBasisForOrdering):
+            self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
 
     @responses.activate
     def test_get_layer_by_id_bad_auth(self, id=1474):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
-        responses.add(responses.GET, self.bad_koordconn.layer.url('GET', 'single', id),
+        responses.add(responses.GET,
+                      self.bad_koordconn.layer.get_url('GET', 'single', id),
                       body=the_response, status=401,
                       content_type='application/json')
 
@@ -95,21 +150,25 @@ class TestKoordinates(unittest.TestCase):
         except:
             pass
 
-        assert self.bad_koordconn.layer.raw_response.status_code == 401
+        self.assertEqual(self.bad_koordconn.layer.raw_response.status_code,
+                         401)
 
     @responses.activate
     def test_get_layer_by_id(self, id=1474):
 
         the_response = layers_single_good_simulated_response
 
-        responses.add(responses.GET, self.koordconn.layer.url('GET', 'single', id),
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('GET', 'single', id),
                       body=the_response, status="200",
                       content_type='application/json')
 
         self.koordconn.layer.get(id)
 
-        assert self.koordconn.layer.name == "Wellington City Building Footprints"
-        assert self.koordconn.layer.raw_response.status_code == "200"
+        self.assertEqual(self.koordconn.layer.name,
+                         "Wellington City Building Footprints")
+        self.assertEqual(self.koordconn.layer.raw_response.status_code,
+                         "200")
 
     @responses.activate
     def test_use_of_responses(self):
@@ -121,32 +180,11 @@ class TestKoordinates(unittest.TestCase):
 
         assert resp.json() == {"error": "not found"}
 
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == 'http://twitter.com/api/1/foobar'
-        assert responses.calls[0].response.text == '{"error": "not found"}'
-
-    @responses.activate
-    def test_basic_auth_1(self):
-        the_url = '''http://httpbin.org/basic-auth/user/passwd'''
-        the_response = '''
-            {
-              "authenticated": true,
-              "user": "user"
-            }
-        '''
-        import json
-        the_response = json.dumps({'authenticated': True, 'user': 'user'})
-        the_response.replace('\'', '"')
-
-        responses.add(responses.GET, the_url,
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        resp = requests.get(the_url)
-
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == the_url
-        assert responses.calls[0].response.text == the_response
+        self.assertEqual(len(responses.calls),  1)
+        self.assertEqual(responses.calls[0].request.url,
+                         'http://twitter.com/api/1/foobar')
+        self.assertEqual(responses.calls[0].response.text,
+                         '{"error": "not found"}')
 
     def tearDown(self):
         pass
