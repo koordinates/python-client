@@ -49,7 +49,47 @@ class Connection(object):
                                            self.pwd)
 
 
-class Layer(object):
+class KoordinatesObjectMixin(object):
+
+    def filter(self, value):
+        if self.filtering_applied:
+            raise koordexceptions.KoordinatesOnlyOneFilterAllowed
+
+        # Eventually this check will be a good deal more sophisticated
+        # so it's here in its current form to some degree as a placeholder
+        if value.isspace():
+            raise koordexceptions.KoordinatesFilterMustNotBeSpaces()
+
+        self.add_query_component("q", value)
+        self.filtering_applied = True
+        return self
+
+    def order_by(self, sort_key):
+        if self.ordering_applied:
+            raise koordexceptions.KoordinatesOnlyOneOrderingAllowed
+        if sort_key not in self.attribute_sort_candidates:
+            raise koordexceptions.KoordinatesNotAValidBasisForOrdering(sort_key)
+
+        self.add_query_component("sort", sort_key)
+        self.ordering_applied = True
+        return self
+
+    def add_query_component(self, argname, argvalue):
+
+        # parse original string url
+        url_data = urlsplit(self.url)
+
+        # parse original query-string
+        qs_data = parse_qs(url_data.query)
+
+        # manipulate the query-string
+        qs_data[argname] = [argvalue]
+
+        # get the url with modified query-string
+        self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
+
+
+class Layer(KoordinatesObjectMixin):
     '''A Layer
 
     Layers are objects on the map that consist of one or more separate items,
@@ -145,43 +185,6 @@ class Layer(object):
             raise koordexceptions.KoordinatesNotAuthorised
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
-
-    def filter(self, value):
-        if self.filtering_applied:
-            raise koordexceptions.KoordinatesOnlyOneFilterAllowed
-
-        # Eventually this check will be a good deal more sophisticated
-        # so it's here in its current form to some degree as a placeholder
-        if value.isspace():
-            raise koordexceptions.KoordinatesFilterMustNotBeSpaces()
-
-        self.add_query_component("q", value)
-        self.filtering_applied = True
-        return self
-
-    def order_by(self, sort_key):
-        if self.ordering_applied:
-            raise koordexceptions.KoordinatesOnlyOneOrderingAllowed
-        if sort_key not in self.attribute_sort_candidates:
-            raise koordexceptions.KoordinatesNotAValidBasisForOrdering(sort_key)
-
-        self.add_query_component("sort", sort_key)
-        self.ordering_applied = True
-        return self
-
-    def add_query_component(self, argname, argvalue):
-
-        # parse original string url
-        url_data = urlsplit(self.url)
-
-        # parse original query-string
-        qs_data = parse_qs(url_data.query)
-
-        # manipulate the query-string
-        qs_data[argname] = [argvalue]
-
-        # get the url with modified query-string
-        self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
 
 def sample(foo, bar):
