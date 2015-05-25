@@ -66,6 +66,7 @@ class TestKoordinates(unittest.TestCase):
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
+
     def test_layers_url(self):
         self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'single', 999),
                         '''https://koordinates.com/services/api/v1/layers/999/''')
@@ -136,6 +137,24 @@ class TestKoordinates(unittest.TestCase):
 
         #self.assertEqual(len(self.koordconn.layer.list_oflayer_dicts), 100)
         self.assertEqual(cnt_of_layers_returned, 100)
+
+    @responses.activate
+    def test_get_layerset_with_non_default_host(self):
+
+        filter_value = str(uuid.uuid1())
+        test_domain = str(uuid.uuid1()).replace("-","")
+        order_by_key = 'name'
+        test_host_name = "{fakedomain}.com".format(fakedomain = test_domain)
+        self.koordconnalthost = api.Connection('rshea@thecubagroup.com',
+                                        TestKoordinates.pwd,
+                                        test_host_name)
+
+        self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
+
+        parsedurl = urlparse(self.koordconnalthost.layer.url)
+
+        self.assertTrue(self.contains_substring(parsedurl.hostname, test_host_name))
+        self.assertEqual(parsedurl.hostname, test_host_name)
 
     @responses.activate
     def test_get_layerset_filter_and_sort(self):

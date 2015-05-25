@@ -33,7 +33,7 @@ class Connection(object):
     This is a python library for accessing the koordinates api
     """
 
-    def __init__(self, username, pwd=None, host='https://koordinates.com/'):
+    def __init__(self, username, pwd=None, host='koordinates.com'):
         self.username = username
         if pwd:
             self.pwd = pwd
@@ -54,17 +54,19 @@ class KoordinatesURLMixin(object):
         self._url_templates = {}
         self._url_templates['LAYER'] = {}
         self._url_templates['LAYER'] ['GET'] = {}
-        self._url_templates['LAYER'] ['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
-        self._url_templates['LAYER'] ['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
+        self._url_templates['LAYER'] ['GET']['single'] = '''https://{hostname}/services/api/v1/layers/{layer_id}/'''
+        self._url_templates['LAYER'] ['GET']['multi'] = '''https://{hostname}/services/api/v1/layers/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
 
     def get_url(self, datatype, verb, urltype, id=None):
         if id:
-            return self.url_templates(datatype, verb, urltype).format(layer_id=id)
+            return self.url_templates(datatype, verb, urltype)\
+                    .format(hostname=self.parent.host, layer_id=id)
         else:
-            return self.url_templates(datatype, verb, urltype)
+            return self.url_templates(datatype, verb, urltype)\
+                    .format(hostname=self.parent.host)
 
 
 class KoordinatesObjectMixin(object):

@@ -29,7 +29,8 @@ def target_url(id=1474):
     return url_templates['GET']['single'].format(layer_id=id) 
 
 def main4(username):
-    conn = api.Connection(username, getpass())
+    #conn = api.Connection(username, getpass())
+    conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
     for x in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
