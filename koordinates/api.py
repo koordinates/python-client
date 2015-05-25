@@ -49,6 +49,23 @@ class Connection(object):
                                            self.pwd)
 
 
+class KoordinatesURLMixin(object):
+    def __init__(self):
+        self._url_templates = {}
+        self._url_templates['GET'] = {}
+        self._url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
+        self._url_templates['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
+
+    def url_templates(self, verb, urltype):
+        return self._url_templates[verb][urltype]
+
+    def get_url(self, verb, urltype, id=None):
+        if id:
+            return self.url_templates(verb, urltype).format(layer_id=id)
+        else:
+            return self.url_templates(verb, urltype)
+
+
 class KoordinatesObjectMixin(object):
 
     def filter(self, value):
@@ -89,7 +106,7 @@ class KoordinatesObjectMixin(object):
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
 
-class Layer(KoordinatesObjectMixin):
+class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer
 
     Layers are objects on the map that consist of one or more separate items,
@@ -113,23 +130,12 @@ class Layer(KoordinatesObjectMixin):
         self.ordering_applied = False
         self.filtering_applied = False
 
-        self._url_templates = {}
-        self._url_templates['GET'] = {}
-        self._url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
-        self._url_templates['GET']['multi'] = '''https://koordinates.com/services/api/v1/layers/'''
         self.raw_response = None
 
         self.attribute_sort_candidates = ['name']
         self.attribute_filter_candidates = ['name']
 
-    def url_templates(self, verb, urltype):
-        return self._url_templates[verb][urltype]
-
-    def get_url(self, verb, urltype, id=None):
-        if id:
-            return self.url_templates(verb, urltype).format(layer_id=id)
-        else:
-            return self.url_templates(verb, urltype)
+        super(self.__class__, self).__init__()
 
     def execute_get_list(self):
 
