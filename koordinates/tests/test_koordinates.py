@@ -66,11 +66,11 @@ class TestKoordinates(unittest.TestCase):
                                             invalid_password)
 
     def test_layers_url(self):
-        self.assertTrue(self.koordconn.layer.get_url('GET', 'single', 999),
+        self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'single', 999),
                         '''https://koordinates.com/services/api/v1/layers/999/''')
 
     def test_layers_url_template(self):
-        self.assertTrue(self.koordconn.layer.url_templates('GET', 'single'),
+        self.assertTrue(self.koordconn.layer.url_templates('LAYER', 'GET', 'single'),
                         '''https://koordinates.com/services/api/v1/layers/{layer_id}/''')
 
     @responses.activate
@@ -78,7 +78,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                      self.bad_koordconn.layer.get_url('GET', 'multi', id),
+                      self.bad_koordconn.layer.get_url('LAYER', 'GET', 'multi', id),
                       body=the_response, status=401,
                       content_type='application/json')
 
@@ -95,7 +95,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                      self.bad_koordconn.layer.get_url('GET', 'multi', id),
+                      self.bad_koordconn.layer.get_url('LAYER', 'GET', 'multi', id),
                       body=the_response, status=401,
                       content_type='application/json')
 
@@ -107,7 +107,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = layers_multiple_good_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.layer.get_url('GET', 'multi', None),
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'multi', None),
                       body=the_response, status="200",
                       content_type='application/json')
 
@@ -141,7 +141,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                      self.bad_koordconn.layer.get_url('GET', 'single', id),
+                      self.bad_koordconn.layer.get_url('LAYER', 'GET', 'single', id),
                       body=the_response, status=401,
                       content_type='application/json')
 
@@ -159,7 +159,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = layers_single_good_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.layer.get_url('GET', 'single', id),
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
                       body=the_response, status="200",
                       content_type='application/json')
 
