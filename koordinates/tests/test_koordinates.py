@@ -36,9 +36,10 @@ import api
 import koordexceptions
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-from canned_responses_for_tests import layers_multiple_good_simulated_response
-from canned_responses_for_tests import layers_single_good_simulated_response
-from canned_responses_for_tests import lst_expected_id
+from canned_responses_for_tests_1 import layers_multiple_good_simulated_response
+from canned_responses_for_tests_2 import layers_single_good_simulated_response
+from canned_responses_for_tests_3 import sets_single_good_simulated_response
+from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
 
 
 def getpass():
@@ -67,6 +68,17 @@ class TestKoordinates(unittest.TestCase):
                                             invalid_password)
 
 
+    def test_sets_url(self):
+        self.assertTrue(self.koordconn.layer.get_url('SET', 'GET', 'single', 999),
+                        '''https://koordinates.com/services/api/v1/sets/999/''')
+
+    def test_sets_url_template(self):
+        self.assertTrue(self.koordconn.layer.url_templates('SET', 'GET', 'single'),
+                        '''https://koordinates.com/services/api/v1/sets/{layer_id}/''')
+    def test_sets_multi_url(self):
+        self.assertTrue(self.koordconn.layer.get_url('SET', 'GET', 'multi'),
+                        '''https://koordinates.com/services/api/v1/sets/''')
+
     def test_layers_url(self):
         self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'single', 999),
                         '''https://koordinates.com/services/api/v1/layers/999/''')
@@ -74,6 +86,11 @@ class TestKoordinates(unittest.TestCase):
     def test_layers_url_template(self):
         self.assertTrue(self.koordconn.layer.url_templates('LAYER', 'GET', 'single'),
                         '''https://koordinates.com/services/api/v1/layers/{layer_id}/''')
+
+    def test_layers_multi_url(self):
+        self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
+                        '''https://koordinates.com/services/api/v1/layers/''')
+
 
     @responses.activate
     def test_get_layerset_bad_auth_check_status(self):
@@ -210,6 +227,43 @@ class TestKoordinates(unittest.TestCase):
                          "Wellington City Building Footprints")
         self.assertEqual(self.koordconn.layer.raw_response.status_code,
                          "200")
+
+    @responses.activate
+    def test_get_set_by_id(self, id=1474):
+
+        the_response = sets_single_good_simulated_response
+
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('SET', 'GET', 'single', id),
+                      body=the_response, status="200",
+                      content_type='application/json')
+
+        self.koordconn.kset.get(id)
+
+        self.assertEqual(self.koordconn.kset.title,
+                         "Ultra Fast Broadband Initiative Coverage")
+        self.assertEqual(self.koordconn.kset.group.name,
+                         "New Zealand Broadband Map")
+        self.assertEqual(self.koordconn.kset.url_html,
+                         "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
+        self.assertEqual(self.koordconn.kset.raw_response.status_code,
+                         "200")
+
+    @responses.activate
+    def test_get_kset_set_returns_all_rows(self):
+        the_response = sets_multiple_good_simulated_response
+
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('SET', 'GET', 'multi', None),
+                      body=the_response, status="200",
+                      content_type='application/json')
+
+        cnt_of_sets_returned = 0
+
+        for layer in self.koordconn.kset.get_list().execute_get_list():
+            cnt_of_sets_returned += 1 
+
+        self.assertEqual(cnt_of_sets_returned, 2)
 
     @responses.activate
     def test_use_of_responses(self):

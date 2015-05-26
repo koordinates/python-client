@@ -41,6 +41,7 @@ class Connection(object):
             self.pwd = os.environ['KPWD']
         self.host = host
         self.layer = Layer(self)
+        self.kset = KSet(self)
 
     def get_auth(self):
         """Creates an Authorisation object
@@ -56,6 +57,10 @@ class KoordinatesURLMixin(object):
         self._url_templates['LAYER'] ['GET'] = {}
         self._url_templates['LAYER'] ['GET']['single'] = '''https://{hostname}/services/api/v1/layers/{layer_id}/'''
         self._url_templates['LAYER'] ['GET']['multi'] = '''https://{hostname}/services/api/v1/layers/'''
+        self._url_templates['SET'] = {}
+        self._url_templates['SET'] ['GET'] = {}
+        self._url_templates['SET'] ['GET']['single'] = '''https://{hostname}/services/api/v1/sets/{layer_id}/'''
+        self._url_templates['SET'] ['GET']['multi'] = '''https://{hostname}/services/api/v1/sets/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -139,6 +144,53 @@ class KoordinatesObjectMixin(object):
         # get the url with modified query-string
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
+
+class KSet(KoordinatesObjectMixin, KoordinatesURLMixin):
+    '''A KSet  
+
+    TODO: Description of what a `KSet` is
+
+    '''
+    def __init__(self, parent, id=None):
+        self.parent = parent
+        self.url = None
+        self._id = id
+        self.list_of_response_dicts = []
+        self.attribute_sort_candidates = ['name']
+        self.attribute_filter_candidates = ['name']
+        super(self.__class__, self).__init__()
+
+    def get_list(self):
+        """Fetches a set of layers
+        """
+        target_url = self.get_url('SET', 'GET', 'multi', None)
+        self.url = target_url
+        return self
+
+    def get(self, id):
+        """Fetches a Set determined by the value of `id`.
+
+        :param id: ID for the new :class:`Set` object.
+        """
+        from collections import namedtuple
+
+        class StubClass(object):
+            pass
+
+        target_url = self.get_url('SET', 'GET', 'single', id)
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
+
+        if self.raw_response.status_code == '200':
+            layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            for k in layer_namedtuple.__dict__.keys():
+                setattr(self, k, getattr(layer_namedtuple, k, ""))
+        elif self.raw_response.status_code == '404':
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code == '401':
+            raise koordexceptions.KoordinatesNotAuthorised
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer

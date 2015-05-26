@@ -64,6 +64,9 @@ def main4(username):
         print(x.id, " ", x.name, " ", id(x))
     for x in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
         print(x.id, " ", x.name, " ", id(x))
+    print("SET-" * 12)
+    for x in conn.kset.get_list().execute_get_list():
+        print(x.id, " ", x.title )
     # conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
 
 def main3():
