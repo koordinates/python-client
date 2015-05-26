@@ -1,11 +1,37 @@
 import requests
 import sys
 import os
+import uuid
 
 import api
 import koordexceptions
 import chainclasstest
 
+class TestClass(object):
+    def __init__(self, v):
+        self.value = v
+    def makeme(self, v):
+        self.the_list.append(str(uuid.uuid1()))
+        return self.__class__(v)
+class TestClassSub(TestClass):
+    pass
+class TestClassSubSub(TestClassSub):
+    def __init__(self, v):
+        self.value = v
+        self.the_list = []
+
+
+def main5():
+    tc = TestClassSubSub("foo")
+    tc2 = tc.makeme("bar")
+    print("tc : {0}. value is {1}".format(id(tc), tc.value))
+    print("tc2 : {0}. value is {1}".format(id(tc2), tc2.value))
+    print("type of tc is : {0}".format(type(tc)))
+    print("type of tc2 is : {0}".format(type(tc2)))
+    if isinstance(tc, type(tc2)):
+        print("tc and tc2 are instances of the same thing")
+    if isinstance(tc2, type(tc)):
+        print("tc2 and tc are instances of the same thing")
 def getpass():
     '''
     Prompt user for Password until there is a Connection object
@@ -30,10 +56,13 @@ def target_url(id=1474):
 
 def main4(username):
     #conn = api.Connection(username, getpass())
-    conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
+    #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
+    conn = api.Connection(username, getpass())
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
     for x in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
+        print(x.id, " ", x.name, " ", id(x))
+    for x in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
         print(x.id, " ", x.name, " ", id(x))
     # conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
 
@@ -127,6 +156,7 @@ def main():
     #main2(username, url)
     #main3()
     main4(username)
+    main5()
 
 if __name__ == "__main__":
     main()

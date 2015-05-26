@@ -71,6 +71,37 @@ class KoordinatesURLMixin(object):
 
 class KoordinatesObjectMixin(object):
 
+    def execute_get_list(self):
+        import copy
+        self.__execute_get_list_no_generator()
+        for response in self.list_of_response_dicts:
+            this_layer = self.__class__(self.parent)
+            for key, value in response.items():
+                setattr(this_layer, key, value)
+            yield this_layer
+
+
+    def __execute_get_list_no_generator(self):
+
+        target_url = self.url
+        self.url = ""
+        self.ordering_applied = False
+        self.filtering_applied = False
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
+
+        if self.raw_response.status_code in [200, '200']:
+            self.list_of_response_dicts = self.raw_response.json()
+        elif self.raw_response.status_code in [404, '404']:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code in ['401', 401]:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesNotAuthorised
+        else:
+            self.list_oflayer_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
     def filter(self, value):
         if self.filtering_applied:
             raise koordexceptions.KoordinatesOnlyOneFilterAllowed
@@ -134,42 +165,12 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.filtering_applied = False
 
         self.raw_response = None
+        self.list_of_response_dicts = []
 
         self.attribute_sort_candidates = ['name']
         self.attribute_filter_candidates = ['name']
 
         super(self.__class__, self).__init__()
-
-    def execute_get_list(self):
-        import copy
-        self.__execute_get_list_no_generator()
-        for response in self.list_oflayer_dicts:
-            this_layer = Layer(self.parent)
-            for key, value in response.items():
-                setattr(this_layer, key, value)
-            yield this_layer
-
-
-    def __execute_get_list_no_generator(self):
-
-        target_url = self.url
-        self.url = ""
-        self.ordering_applied = False
-        self.filtering_applied = False
-        self.raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
-
-        if self.raw_response.status_code in [200, '200']:
-            self.list_oflayer_dicts = self.raw_response.json()
-        elif self.raw_response.status_code in [404, '404']:
-            self.list_oflayer_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code in ['401', 401]:
-            self.list_oflayer_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesNotAuthorised
-        else:
-            self.list_oflayer_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
 
 
     def get_list(self):
