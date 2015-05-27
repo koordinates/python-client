@@ -17,3 +17,13 @@ __copyright__ = 'Copyright 2015 Koordinates'
 from . import api
 from . import koord_exceptions 
 '''
+
+import logging
+try: 
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())

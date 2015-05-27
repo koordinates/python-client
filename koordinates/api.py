@@ -12,6 +12,7 @@ This module implements the Koordinates API.
 import os
 import requests
 import json
+from datetime import datetime
 try:
         # from urllib.parse import urlparse
         from urllib.parse import urlencode
@@ -25,6 +26,12 @@ except ImportError:
 
 import sys
 sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
+
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 import koordexceptions
 
 
@@ -33,7 +40,18 @@ class Connection(object):
     This is a python library for accessing the koordinates api
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com'):
+    def __init__(self, username, pwd=None, host='koordinates.com', activate_logging=True):
+        if activate_logging:
+            #d=datetime.now()
+            client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
+            #client_logfile_name = "koordinates-client-{}.log".format(d=datetime.now().strftime('%Y%m%dT%H%M%S'))
+
+            logging.basicConfig(filename=client_logfile_name,
+                                level=logging.DEBUG, 
+                                format='%(asctime)s %(levelname)s %(module)s %(message)s')
+
+        logger.debug('!!!! DONT FORGET LOGGING DEFAULTS TO TRUE. NEEDS CHANGING BEFORE 1.x.x  !!!!')
+        logger.debug('Initializing Connection object')
         self.username = username
         if pwd:
             self.pwd = pwd
@@ -152,6 +170,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
 
     '''
     def __init__(self, parent, id=None):
+        logger.info('Initializaing Set object')
         self.parent = parent
         self.url = None
         self._id = id

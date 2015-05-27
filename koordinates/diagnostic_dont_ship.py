@@ -3,6 +3,9 @@ import sys
 import os
 import uuid
 
+import requests
+import logging
+
 import api
 import koordexceptions
 import chainclasstest
@@ -104,11 +107,9 @@ def main3():
 #def main2(username, url):
 #    conn = api.Connection(username, getpass())
 #    conn.layer.get(9999)
-def main1(username, url):
+def main1(username, url, log):
     the_auth=get_auth(username, getpass())
     my_config = {'verbose': sys.stderr}
-    import requests
-    import logging
 
     #print(dir())
     #conn = api.Connection(username, getpass())
@@ -126,11 +127,12 @@ def main1(username, url):
     http_client.HTTPConnection.debuglevel = 1
 
     # You must initialize logging, otherwise you'll not see debug output.
-    logging.basicConfig() 
-    logging.getLogger().setLevel(logging.DEBUG)
-    requests_log = logging.getLogger("requests.packages.urllib3")
-    requests_log.setLevel(logging.DEBUG)
-    requests_log.propagate = True
+    if log:
+        logging.basicConfig() 
+        logging.getLogger().setLevel(logging.DEBUG)
+        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log.setLevel(logging.DEBUG)
+        requests_log.propagate = True
     #
     req_resp = requests.get(url, auth=the_auth)
     #
@@ -151,15 +153,29 @@ def main1(username, url):
     #
     
     print(dir())
+def logger_tester(log):
+    '''
+    To test the koordinates logger
+    '''
+    if log:
+        import logging
+        logger = logging.getLogger(__name__)
+        logging.basicConfig(filename='example.log',level=logging.DEBUG)
+        logging.debug('This message should go to the log file')
+        logging.info('So should this')
+        logging.warning('And this, too')
+
 def main():
+    do_some_logging=False
     username = 'rshea@thecubagroup.com'
     url = target_url(id=1474)
     if False:
-        main1(username, url)
+        main1(username, url, log=do_some_logging)
     #main2(username, url)
     #main3()
     main4(username)
     main5()
+    logger_tester(log=do_some_logging)
 
 if __name__ == "__main__":
     main()
