@@ -238,19 +238,19 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status="200",
                       content_type='application/json')
 
-        self.koordconn.kset.get(id)
+        self.koordconn.set.get(id)
 
-        self.assertEqual(self.koordconn.kset.title,
+        self.assertEqual(self.koordconn.set.title,
                          "Ultra Fast Broadband Initiative Coverage")
-        self.assertEqual(self.koordconn.kset.group.name,
+        self.assertEqual(self.koordconn.set.group.name,
                          "New Zealand Broadband Map")
-        self.assertEqual(self.koordconn.kset.url_html,
+        self.assertEqual(self.koordconn.set.url_html,
                          "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
-        self.assertEqual(self.koordconn.kset.raw_response.status_code,
+        self.assertEqual(self.koordconn.set.raw_response.status_code,
                          "200")
 
     @responses.activate
-    def test_get_kset_set_returns_all_rows(self):
+    def test_get_set_set_returns_all_rows(self):
         the_response = sets_multiple_good_simulated_response
 
         responses.add(responses.GET,
@@ -260,7 +260,7 @@ class TestKoordinates(unittest.TestCase):
 
         cnt_of_sets_returned = 0
 
-        for layer in self.koordconn.kset.get_list().execute_get_list():
+        for layer in self.koordconn.set.get_list().execute_get_list():
             cnt_of_sets_returned += 1 
 
         self.assertEqual(cnt_of_sets_returned, 2)

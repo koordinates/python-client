@@ -41,7 +41,7 @@ class Connection(object):
             self.pwd = os.environ['KPWD']
         self.host = host
         self.layer = Layer(self)
-        self.kset = KSet(self)
+        self.set = Set(self)
 
     def get_auth(self):
         """Creates an Authorisation object
@@ -145,10 +145,10 @@ class KoordinatesObjectMixin(object):
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
 
-class KSet(KoordinatesObjectMixin, KoordinatesURLMixin):
-    '''A KSet  
+class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
+    '''A Set  
 
-    TODO: Description of what a `KSet` is
+    TODO: Description of what a `Set` is
 
     '''
     def __init__(self, parent, id=None):
