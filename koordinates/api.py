@@ -98,10 +98,10 @@ class KoordinatesObjectMixin(object):
         import copy
         self.__execute_get_list_no_generator()
         for response in self.list_of_response_dicts:
-            this_layer = self.__class__(self.parent)
+            this_object = self.__class__(self.parent)
             for key, value in response.items():
-                setattr(this_layer, key, value)
-            yield this_layer
+                setattr(this_object, key, value)
+            yield this_object
 
 
     def __execute_get_list_no_generator(self):
