@@ -180,7 +180,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         super(self.__class__, self).__init__()
 
     def get_list(self):
-        """Fetches a set of layers
+        """Fetches a set of sets  
         """
         target_url = self.get_url('SET', 'GET', 'multi', None)
         self.url = target_url
@@ -201,9 +201,9 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
                                          auth=self.parent.get_auth())
 
         if self.raw_response.status_code == '200':
-            layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            for k in layer_namedtuple.__dict__.keys():
-                setattr(self, k, getattr(layer_namedtuple, k, ""))
+            set_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            for k in set_namedtuple.__dict__.keys():
+                setattr(self, k, getattr(set_namedtuple, k, ""))
         elif self.raw_response.status_code == '404':
             raise koordexceptions.KoordinatesInvalidURL
         elif self.raw_response.status_code == '401':
