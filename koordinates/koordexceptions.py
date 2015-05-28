@@ -11,6 +11,9 @@ class KoordinatesValueException(Exception):
         return repr(self.value)
 
 
+class KoordinatesInvalidAPIVersion(KoordinatesBaseException):
+    pass
+
 class KoordinatesInvalidURL(KoordinatesBaseException):
     pass
 

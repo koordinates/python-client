@@ -36,30 +36,35 @@ import dateutil.parser
 
 import koordexceptions
 
+SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 class Connection(object):
     """
     This is a python library for accessing the koordinates api
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com', activate_logging=True):
+    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=False):
         if activate_logging:
-            #d=datetime.now()
             client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
-            #client_logfile_name = "koordinates-client-{}.log".format(d=datetime.now().strftime('%Y%m%dT%H%M%S'))
-
             logging.basicConfig(filename=client_logfile_name,
                                 level=logging.DEBUG, 
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
-        logger.debug('!!!! DONT FORGET LOGGING DEFAULTS TO TRUE. NEEDS CHANGING BEFORE 1.x.x  !!!!')
         logger.debug('Initializing Connection object')
+
+        if api_version not in SUPPORTED_API_VERSIONS:
+            raise KoordinatesInvalidAPIVersion
+        else:
+            self.api_version = api_version
+
+        self.host = host
+
         self.username = username
         if pwd:
             self.pwd = pwd
         else:
             self.pwd = os.environ['KPWD']
-        self.host = host
+
         self.layer = Layer(self)
         self.set = Set(self)
 
@@ -75,12 +80,16 @@ class KoordinatesURLMixin(object):
         self._url_templates = {}
         self._url_templates['LAYER'] = {}
         self._url_templates['LAYER'] ['GET'] = {}
-        self._url_templates['LAYER'] ['GET']['single'] = '''https://{hostname}/services/api/v1/layers/{layer_id}/'''
-        self._url_templates['LAYER'] ['GET']['multi'] = '''https://{hostname}/services/api/v1/layers/'''
+        self._url_templates['LAYER'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
+        self._url_templates['LAYER'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
         self._url_templates['SET'] = {}
         self._url_templates['SET'] ['GET'] = {}
-        self._url_templates['SET'] ['GET']['single'] = '''https://{hostname}/services/api/v1/sets/{layer_id}/'''
-        self._url_templates['SET'] ['GET']['multi'] = '''https://{hostname}/services/api/v1/sets/'''
+        self._url_templates['SET'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{layer_id}/'''
+        self._url_templates['SET'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/sets/'''
+        self._url_templates['VERSION'] = {}
+        self._url_templates['VERSION'] ['GET'] = {}
+        self._url_templates['VERSION'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
+        self._url_templates['VERSION'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -88,10 +97,13 @@ class KoordinatesURLMixin(object):
     def get_url(self, datatype, verb, urltype, id=None):
         if id:
             return self.url_templates(datatype, verb, urltype)\
-                    .format(hostname=self.parent.host, layer_id=id)
+                    .format(hostname=self.parent.host, 
+                            api_version = self.parent.api_version,
+                            layer_id=id)
         else:
             return self.url_templates(datatype, verb, urltype)\
-                    .format(hostname=self.parent.host)
+                    .format(hostname=self.parent.host,
+                            api_version = self.parent.api_version)
 
 
 class KoordinatesObjectMixin(object):

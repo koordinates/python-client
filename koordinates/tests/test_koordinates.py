@@ -91,6 +91,16 @@ class TestKoordinates(unittest.TestCase):
         self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/layers/''')
 
+    def test_api_version_in_url(self):
+        test_domain = str(uuid.uuid1()).replace("-","")
+        test_host_name = "{fakedomain}.com".format(fakedomain = test_domain)
+        self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
+                                        TestKoordinates.pwd,
+                                        test_host_name,
+                                        api_version='UNITTESTINGONLY')
+        self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
+                        '''https://''' + test_host_name + '''/services/api/UNITTESTINGONLY/layers/''')
+
 
     @responses.activate
     def test_get_layerset_bad_auth_check_status(self):
