@@ -113,12 +113,12 @@ class KoordinatesObjectMixin(object):
         self.raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
-        if self.raw_response.status_code in [200, '200']:
+        if self.raw_response.status_code == 200:
             self.list_of_response_dicts = self.raw_response.json()
-        elif self.raw_response.status_code in [404, '404']:
+        elif self.raw_response.status_code == 404:
             self.list_of_response_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code in ['401', 401]:
+        elif self.raw_response.status_code == 401:
             self.list_of_response_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
         else:
@@ -200,13 +200,13 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == '200':
+        if self.raw_response.status_code == 200:
             set_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for k in set_namedtuple.__dict__.keys():
                 setattr(self, k, getattr(set_namedtuple, k, ""))
-        elif self.raw_response.status_code == '404':
+        elif self.raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == '401':
+        elif self.raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
@@ -265,13 +265,13 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == '200':
+        if self.raw_response.status_code == 200:
             layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for k in layer_namedtuple.__dict__.keys():
                 setattr(self, k, getattr(layer_namedtuple, k, ""))
-        elif self.raw_response.status_code == '404':
+        elif self.raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == '401':
+        elif self.raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse

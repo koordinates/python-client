@@ -144,7 +144,7 @@ class TestKoordinates(unittest.TestCase):
 
         responses.add(responses.GET,
                       self.koordconn.layer.get_url('LAYER', 'GET', 'multi', None),
-                      body=the_response, status="200",
+                      body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_layers_returned = 0
@@ -218,7 +218,7 @@ class TestKoordinates(unittest.TestCase):
 
         responses.add(responses.GET,
                       self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
-                      body=the_response, status="200",
+                      body=the_response, status=200,
                       content_type='application/json')
 
         self.koordconn.layer.get(id)
@@ -226,7 +226,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(self.koordconn.layer.name,
                          "Wellington City Building Footprints")
         self.assertEqual(self.koordconn.layer.raw_response.status_code,
-                         "200")
+                         200)
 
     @responses.activate
     def test_get_set_by_id(self, id=1474):
@@ -235,7 +235,7 @@ class TestKoordinates(unittest.TestCase):
 
         responses.add(responses.GET,
                       self.koordconn.layer.get_url('SET', 'GET', 'single', id),
-                      body=the_response, status="200",
+                      body=the_response, status=200,
                       content_type='application/json')
 
         self.koordconn.set.get(id)
@@ -247,7 +247,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(self.koordconn.set.url_html,
                          "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
         self.assertEqual(self.koordconn.set.raw_response.status_code,
-                         "200")
+                         200)
 
     @responses.activate
     def test_get_set_set_returns_all_rows(self):
@@ -255,7 +255,7 @@ class TestKoordinates(unittest.TestCase):
 
         responses.add(responses.GET,
                       self.koordconn.layer.get_url('SET', 'GET', 'multi', None),
-                      body=the_response, status="200",
+                      body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_sets_returned = 0

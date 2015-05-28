@@ -57,19 +57,47 @@ def target_url(id=1474):
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
     return url_templates['GET']['single'].format(layer_id=id) 
 
+def analyse_object_attributes(obj):
+    for attribute in [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]:
+        print(attribute, " " , str(type(attribute)))
+
 def main4(username):
     #conn = api.Connection(username, getpass())
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
     conn = api.Connection(username, getpass())
+    
+    conn.layer.get(1474)
+    print("[a] conn.layer analysis")
+    analyse_object_attributes(conn.layer)
+    print("[b0] conn.layer analysis")
+    print(conn.layer.group)
+    print("[b1] conn.layer analysis")
+    print(type(conn.layer.group))
+    print("[b2] conn.layer analysis")
+    print(type(conn.layer))
+    print("[c] conn.layer analysis")
+    print(conn.layer.id)
+    print("[d] conn.layer analysis")
+    print(conn.layer.name)
+    print("[e] conn.layer analysis")
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
-    for x in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
-        print(x.id, " ", x.name, " ", id(x))
-    for x in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
-        print(x.id, " ", x.name, " ", id(x))
+    for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
+        print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
+    bln_first_one = True
+    for the_layer in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
+        print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
+        if bln_first_one:
+            analyse_object_attributes(the_layer)
+            bln_first_one = False
+
     print("SET-" * 12)
-    for x in conn.set.get_list().execute_get_list():
-        print(x.id, " ", x.title )
+    bln_first_one = True
+    for the_set in conn.set.get_list().execute_get_list():
+        print(the_set.id, " ", the_set.title )
+        if bln_first_one:
+            #analyse_object_attributes(the_set)
+            bln_first_one = False
     # conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
 
 def main3():
@@ -166,7 +194,7 @@ def logger_tester(log):
         logging.warning('And this, too')
 
 def main():
-    do_some_logging=False
+    do_some_logging=True 
     username = 'rshea@thecubagroup.com'
     url = target_url(id=1474)
     if False:
