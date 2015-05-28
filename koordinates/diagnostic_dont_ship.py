@@ -80,6 +80,9 @@ def main4(username):
     print("[d] conn.layer analysis")
     print(conn.layer.name)
     print("[e] conn.layer analysis")
+    conn.layer.get(3994)
+    print(conn.layer.name)
+    print("[f] conn.layer analysis")
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
     for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():

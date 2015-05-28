@@ -94,6 +94,29 @@ class KoordinatesURLMixin(object):
 
 class KoordinatesObjectMixin(object):
 
+    def get(self, id, target_url):
+        """Fetches a sing object determined by the value of `id`.
+
+        :param id: ID for the new :class:`Set` object.
+        """
+        from collections import namedtuple
+
+        class StubClass(object):
+            pass
+
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
+
+        if self.raw_response.status_code == 200:
+            set_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            for k in set_namedtuple.__dict__.keys():
+                setattr(self, k, getattr(set_namedtuple, k, ""))
+        elif self.raw_response.status_code == 404:
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code == 401:
+            raise koordexceptions.KoordinatesNotAuthorised
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
     def execute_get_list(self):
         import copy
         self.__execute_get_list_no_generator()
@@ -162,7 +185,6 @@ class KoordinatesObjectMixin(object):
         # get the url with modified query-string
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
-
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Set  
 
@@ -191,25 +213,9 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         :param id: ID for the new :class:`Set` object.
         """
-        from collections import namedtuple
-
-        class StubClass(object):
-            pass
 
         target_url = self.get_url('SET', 'GET', 'single', id)
-        self.raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
-
-        if self.raw_response.status_code == 200:
-            set_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            for k in set_namedtuple.__dict__.keys():
-                setattr(self, k, getattr(set_namedtuple, k, ""))
-        elif self.raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
-        else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+        super(self.__class__, self).get(id, target_url)
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer
@@ -256,25 +262,9 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         :param id: ID for the new :class:`Layer` object.
         """
-        from collections import namedtuple
-
-        class StubClass(object):
-            pass
 
         target_url = self.get_url('LAYER', 'GET', 'single', id)
-        self.raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
-
-        if self.raw_response.status_code == 200:
-            layer_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            for k in layer_namedtuple.__dict__.keys():
-                setattr(self, k, getattr(layer_namedtuple, k, ""))
-        elif self.raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
-        else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+        super(self.__class__, self).get(id, target_url)
 
 
 def sample(foo, bar):
