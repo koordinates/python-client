@@ -12,6 +12,7 @@ This module implements the Koordinates API.
 import os
 import requests
 import json
+import uuid
 from datetime import datetime
 try:
         # from urllib.parse import urlparse
@@ -31,6 +32,7 @@ sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
 import logging
 logger = logging.getLogger(__name__)
 
+import dateutil.parser
 
 import koordexceptions
 
@@ -99,24 +101,36 @@ class KoordinatesObjectMixin(object):
 
         :param id: ID for the new :class:`Set` object.
         """
-        from collections import namedtuple
-
-        class StubClass(object):
-            pass
 
         self.raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
         if self.raw_response.status_code == 200:
-            set_namedtuple = json.loads(self.raw_response.text, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            for k in set_namedtuple.__dict__.keys():
-                setattr(self, k, getattr(set_namedtuple, k, ""))
+            # convert JSON to dict
+            dic_json = json.loads(self.raw_response.text)
+            # itererte over resulting dict
+            for dict_key, dict_element_value in dic_json.items():
+                if isinstance(dict_element_value, dict):
+                    # build dynamically defined class instances (nested
+                    # if necessary) in order to model associative arrays
+                    att_value = self.__class_builder(dic_json[dict_key], dict_key)
+                elif isinstance(dict_element_value, list) or isinstance(dict_element_value, tuple):
+                    att_value = self.__class_builder_from_sequence(dic_json[dict_key])
+                else:
+                    #Allocate value to attribute directly
+                    att_value = self.__make_date_if_possible(dict_element_value)
+                setattr(self, dict_key, att_value)
         elif self.raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
         elif self.raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
+        elif self.raw_response.status_code == 429:
+            raise koordexceptions.KoordinatesRateLimitExceeded
+        elif self.raw_response.status_code == 504:
+            raise koordexceptions.KoordinatesServerTimeOut
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
+
     def execute_get_list(self):
         import copy
         self.__execute_get_list_no_generator()
@@ -126,6 +140,22 @@ class KoordinatesObjectMixin(object):
                 setattr(this_object, key, value)
             yield this_object
 
+
+    def __make_date_if_possible(self, value):
+        '''
+        Try convering the value to a date
+        and if that doesn't work then just 
+        return the value was it was passed 
+        in.
+        '''
+        try:
+            out = dateutil.parser.parse(value) 
+        except ValueError:
+            out = value
+        except AttributeError:
+            out = value
+
+        return out
 
     def __execute_get_list_no_generator(self):
 
@@ -144,6 +174,12 @@ class KoordinatesObjectMixin(object):
         elif self.raw_response.status_code == 401:
             self.list_of_response_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
+        elif self.raw_response.status_code == 429:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesRateLimitExceeded
+        elif self.raw_response.status_code == 504:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesServerTimeOut
         else:
             self.list_oflayer_dicts = self.raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
@@ -184,6 +220,50 @@ class KoordinatesObjectMixin(object):
 
         # get the url with modified query-string
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
+
+    def __class_builder_from_sequence(self, the_seq):
+        '''__class_builder supports the dynamic creation of 
+        object attributes in response to JSON returned from the 
+        server. 
+
+        Where a JSON blob returned from the server (itself an
+        associative array) includes nested associative arrays
+        we need to create a class that corresponds to the contents
+        of that array, create an instance of the class and then 
+        make that instance an attribute of our container class,
+        for instance, a Layer
+        '''
+        seq_out = []
+        for seq_element in the_seq:
+            if isinstance(seq_element, list) or isinstance(seq_element, tuple):
+                seq_out.append(self.__class_builder_from_sequence(seq_element)) 
+            elif isinstance(seq_element, dict):
+                seq_out.append(self.__class_builder(seq_element,str(uuid.uuid1())))
+            else:
+                seq_out.append(self.__make_date_if_possible(seq_element))
+        return seq_out
+
+    def __class_builder(self, the_dic, the_name):
+        '''__class_builder supports the dynamic creation of 
+        object attributes in response to JSON returned from the 
+        server. 
+
+        Where a JSON blob returned from the server (itself an
+        associative array) includes nested associative arrays
+        we need to create a class that corresponds to the contents
+        of that array, create an instance of the class and then 
+        make that instance an attribute of our container class,
+        for instance, a Layer
+        '''
+        dic_out = {}
+        for dict_key, dict_key_value in the_dic.items():
+            if isinstance(dict_key_value, dict):
+                dic_out[dict_key] = self.__class_builder(dict_key_value, dict_key) 
+            if isinstance(dict_key_value, list) or isinstance(dict_key_value, tuple):
+                dic_out[dict_key] = self.__class_builder_from_sequence(dict_key_value) 
+            else:
+                dic_out[dict_key] = self.__make_date_if_possible(dict_key_value) 
+        return type(str(the_name.title()), (object,), dic_out)
 
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Set  

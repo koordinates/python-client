@@ -186,6 +186,78 @@ class TestKoordinates(unittest.TestCase):
         self.assertTrue(self.contains_substring(parsedurl.query, order_by_key))
 
     @responses.activate
+    def test_get_layer_with_timeout(self, id=1474):
+
+        the_response = "{}"
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
+                      body=the_response, status=504,
+                      content_type='application/json')
+
+        with self.assertRaises(koordexceptions.KoordinatesServerTimeOut):
+            self.koordconn.layer.get(id)
+
+    @responses.activate
+    def test_get_layer_with_rate_limiting(self, id=1474):
+
+        the_response = "{}"
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
+                      body=the_response, status=429,
+                      content_type='application/json')
+
+        with self.assertRaises(koordexceptions.KoordinatesRateLimitExceeded):
+            self.koordconn.layer.get(id)
+
+    @responses.activate
+    def test_layer_hierarchy_of_classes(self, id=1474):
+
+        the_response = layers_single_good_simulated_response
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        self.koordconn.layer.get(id)
+        self.assertEqual(self.koordconn.layer.categories[0].slug, "cadastral")
+        self.assertEqual(self.koordconn.layer.data.crs, "EPSG:2193")
+        self.assertEqual(self.koordconn.layer.data.fields[0].type, "geometry")
+        #The following test changes form between Python 2.x and 3.x
+        try:
+            self.assertItemsEqual(self.koordconn.layer.tags, ['building', 'footprint', 'outline', 'structure'])
+        except AttributeError:
+            self.assertCountEqual(self.koordconn.layer.tags, ['building', 'footprint', 'outline', 'structure'])
+
+    @responses.activate
+    def test_layer_date_conversion(self, id=1474):
+
+        the_response = layers_single_good_simulated_response
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        self.koordconn.layer.get(id)
+        self.assertEqual(self.koordconn.layer.first_published_at.year, 2010)
+        self.assertEqual(self.koordconn.layer.first_published_at.month,   6)
+        self.assertEqual(self.koordconn.layer.first_published_at.day  ,  21)
+        self.assertEqual(self.koordconn.layer.first_published_at.hour ,   5)
+        self.assertEqual(self.koordconn.layer.first_published_at.minute,  5)
+        self.assertEqual(self.koordconn.layer.first_published_at.second,  5)
+
+        self.assertEqual(self.koordconn.layer.collected_at[0].year ,   1996)
+        self.assertEqual(self.koordconn.layer.collected_at[0].month,     12)
+        self.assertEqual(self.koordconn.layer.collected_at[0].day  ,     31)
+
+        self.assertEqual(self.koordconn.layer.collected_at[1].year ,   2012)
+        self.assertEqual(self.koordconn.layer.collected_at[1].month,      5)
+        self.assertEqual(self.koordconn.layer.collected_at[1].day  ,      1)
+        self.assertEqual(self.koordconn.layer.collected_at[1].hour ,      0)
+        self.assertEqual(self.koordconn.layer.collected_at[1].minute,     0)
+        self.assertEqual(self.koordconn.layer.collected_at[1].second,     0)
+
+
+    @responses.activate
     def test_get_layerset_bad_filter_and_sort(self):
 
         filter_value = str(uuid.uuid1())

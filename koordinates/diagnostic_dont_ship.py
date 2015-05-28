@@ -66,23 +66,6 @@ def main4(username):
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
     conn = api.Connection(username, getpass())
     
-    conn.layer.get(1474)
-    print("[a] conn.layer analysis")
-    analyse_object_attributes(conn.layer)
-    print("[b0] conn.layer analysis")
-    print(conn.layer.group)
-    print("[b1] conn.layer analysis")
-    print(type(conn.layer.group))
-    print("[b2] conn.layer analysis")
-    print(type(conn.layer))
-    print("[c] conn.layer analysis")
-    print(conn.layer.id)
-    print("[d] conn.layer analysis")
-    print(conn.layer.name)
-    print("[e] conn.layer analysis")
-    conn.layer.get(3994)
-    print(conn.layer.name)
-    print("[f] conn.layer analysis")
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
     for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
@@ -102,6 +85,48 @@ def main4(username):
             #analyse_object_attributes(the_set)
             bln_first_one = False
     # conn.layer.get_list().filter('Finland').order_by('name').execute_get_list()
+    conn.layer.get(1474)
+    print("[a] conn.layer analysis")
+    analyse_object_attributes(conn.layer)
+    print("[b0] conn.layer analysis")
+    print(conn.layer.group)
+    print("[b1] conn.layer analysis")
+    print(type(conn.layer.group))
+    print("[b2] conn.layer analysis")
+    print(type(conn.layer))
+    print("[c] conn.layer analysis")
+    print(conn.layer.id)
+    print("[d] conn.layer analysis")
+    import datetime
+    print("conn.layer.name ", conn.layer.name)
+    if isinstance(conn.layer.name , datetime.date):
+        print("conn.layer.name is a DATETIME instance")
+    else:
+        print("conn.layer.name is a NOT a DATETIME instance")
+    print("conn.layer.data ", conn.layer.data)
+    print("conn.layer.data.crs ", conn.layer.data.crs)
+    print("conn.layer.data.fields[0] ", conn.layer.data.fields[0])
+    for f in conn.layer.data.fields:
+        print("f.type = ", f.type)
+    print("conn.layer.data.fields[0].__dict__ ", conn.layer.data.fields[0].__dict__)
+    print("conn.layer.data.fields[0].type ", conn.layer.data.fields[0].type)
+    print("conn.layer.tags ", conn.layer.tags)
+    print("conn.layer.created_at ", conn.layer.created_at)
+    print("conn.layer.created_at.month ", conn.layer.created_at.month)
+    if isinstance(conn.layer.created_at, datetime.date):
+        print("conn.layer.created_at is a DATETIME instance")
+    else:
+        print("conn.layer.created_at is a NOT a DATETIME instance")
+
+    print("conn.layer.collected_at " , conn.layer.collected_at)
+    if isinstance(conn.layer.collected_at[0] , datetime.date):
+        print("conn.layer.collected_at[0] is a DATETIME instance")
+    else:
+        print("conn.layer.collected_at[0] is a NOT a DATETIME instance")
+    print("[e] conn.layer analysis")
+    conn.layer.get(3994)
+    print(conn.layer.name)
+    print("[f] conn.layer analysis")
 
 def main3():
     #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])

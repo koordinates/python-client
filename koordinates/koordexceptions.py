@@ -45,3 +45,9 @@ class KoordinatesNotAValidBasisForOrdering(KoordinatesValueException):
     def __str__(self):
         return repr("Sort attribute :'{}' is not a valid basis for sorting")\
             .format(self.value)
+
+class KoordinatesServerTimeOut(KoordinatesBaseException):
+    pass
+
+class KoordinatesRateLimitExceeded(KoordinatesBaseException):
+    pass
