@@ -49,6 +49,9 @@ class KoordinatesNotAValidBasisForOrdering(KoordinatesValueException):
         return repr("Sort attribute :'{}' is not a valid basis for sorting")\
             .format(self.value)
 
+class KoordinatesAttributeNameIsReserved(KoordinatesBaseException):
+    pass
+
 class KoordinatesServerTimeOut(KoordinatesBaseException):
     pass
 

@@ -312,6 +312,24 @@ class TestKoordinates(unittest.TestCase):
                          200)
 
     @responses.activate
+    def test_get_layer_by_id_and_create_attribute_with_reserved_name(self, id=1474):
+        '''
+        Tests to see whether an attribute name which is reserved
+        causes the KoordinatesAttributeNameIsReserved exception
+        to be raised
+        '''
+
+        the_response = '''{"id":1474, "version":"foobar"}'''
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', id),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        with self.assertRaises(koordexceptions.KoordinatesAttributeNameIsReserved):
+            self.koordconn.layer.get(id)
+
+
+    @responses.activate
     def test_get_set_by_id(self, id=1474):
 
         the_response = sets_single_good_simulated_response

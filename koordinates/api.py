@@ -108,6 +108,7 @@ class KoordinatesURLMixin(object):
 
 class KoordinatesObjectMixin(object):
 
+    
     def get(self, id, target_url):
         """Fetches a sing object determined by the value of `id`.
 
@@ -160,8 +161,12 @@ class KoordinatesObjectMixin(object):
 
 
     def __create_attribute(self, att_name, att_value):
-        if att_name in []:
-            raise RuntimeError('That name is reserved')
+        if att_name in self.attribute_reserved_names:
+            errmsg = """The name '{attname}' is not able to be used """ \
+                     """an attribute name for the class '{classname}' """ \
+                     """as it appears in the 'attribute_reserved_names' """ \
+                     """list""".format(attname=att_name, classname=type(self).__name__)
+            raise koordexceptions.KoordinatesAttributeNameIsReserved(errmsg)
 
         if isinstance(att_value, list):
             att_value = [self.__make_date_if_possible(v) for v in att_value]
@@ -309,6 +314,11 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.list_of_response_dicts = []
         self.attribute_sort_candidates = ['name']
         self.attribute_filter_candidates = ['name']
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # attribute_reserved_names 
+        self.attribute_reserved_names = []
         super(self.__class__, self).__init__()
 
     def get_list(self):
@@ -356,6 +366,12 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self.attribute_sort_candidates = ['name']
         self.attribute_filter_candidates = ['name']
+
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # attribute_reserved_names 
+        self.attribute_reserved_names = ['version']
 
         super(self.__class__, self).__init__()
 
