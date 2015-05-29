@@ -55,7 +55,7 @@ def target_url(id=1474):
     url_templates = {}
     url_templates['GET'] = {}
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
-    return url_templates['GET']['single'].format(layer_id=id) 
+    return url_templates['GET']['single'].format(layer_id=id)
 
 def analyse_object_attributes(obj):
     for attribute in [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]:
@@ -65,7 +65,7 @@ def main4(username):
     #conn = api.Connection(username, getpass())
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
     conn = api.Connection(username, getpass())
-    
+
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
     for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
@@ -133,7 +133,7 @@ def main3():
     #print(cctold.order_by().filter_by())
     #print(cctold.filter_by().order_by())
     print()
-    cct = chainclasstest.ChainClassTest([1,20,3,40], 
+    cct = chainclasstest.ChainClassTest([1,20,3,40],
                                         -999,
                                         '''https://koordinates.com/services/api/v1/layers/''')
     print("0" * 50)
@@ -184,7 +184,7 @@ def main1(username, url, log):
 
     # You must initialize logging, otherwise you'll not see debug output.
     if log:
-        logging.basicConfig() 
+        logging.basicConfig()
         logging.getLogger().setLevel(logging.DEBUG)
         requests_log = logging.getLogger("requests.packages.urllib3")
         requests_log.setLevel(logging.DEBUG)
@@ -207,7 +207,7 @@ def main1(username, url, log):
     #
     #
     #
-    
+
     print(dir())
 def logger_tester(log):
     '''
@@ -222,7 +222,7 @@ def logger_tester(log):
         logging.warning('And this, too')
 
 def main():
-    do_some_logging=True 
+    do_some_logging=True
     username = 'rshea@thecubagroup.com'
     url = target_url(id=1474)
     if False:

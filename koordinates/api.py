@@ -38,6 +38,7 @@ import koordexceptions
 
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
+
 class Connection(object):
     """
     This is a python library for accessing the koordinates api
@@ -47,13 +48,13 @@ class Connection(object):
         if activate_logging:
             client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
             logging.basicConfig(filename=client_logfile_name,
-                                level=logging.DEBUG, 
+                                level=logging.DEBUG,
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
         logger.debug('Initializing Connection object')
 
         if api_version not in SUPPORTED_API_VERSIONS:
-            raise KoordinatesInvalidAPIVersion
+            raise koordexceptions.KoordinatesInvalidAPIVersion
         else:
             self.api_version = api_version
 
@@ -79,17 +80,17 @@ class KoordinatesURLMixin(object):
     def __init__(self):
         self._url_templates = {}
         self._url_templates['LAYER'] = {}
-        self._url_templates['LAYER'] ['GET'] = {}
-        self._url_templates['LAYER'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
-        self._url_templates['LAYER'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
+        self._url_templates['LAYER']['GET'] = {}
+        self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
+        self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
         self._url_templates['SET'] = {}
-        self._url_templates['SET'] ['GET'] = {}
-        self._url_templates['SET'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{layer_id}/'''
-        self._url_templates['SET'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/sets/'''
+        self._url_templates['SET']['GET'] = {}
+        self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{layer_id}/'''
+        self._url_templates['SET']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/sets/'''
         self._url_templates['VERSION'] = {}
-        self._url_templates['VERSION'] ['GET'] = {}
-        self._url_templates['VERSION'] ['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
-        self._url_templates['VERSION'] ['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
+        self._url_templates['VERSION']['GET'] = {}
+        self._url_templates['VERSION']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
+        self._url_templates['VERSION']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -97,18 +98,17 @@ class KoordinatesURLMixin(object):
     def get_url(self, datatype, verb, urltype, id=None):
         if id:
             return self.url_templates(datatype, verb, urltype)\
-                    .format(hostname=self.parent.host, 
-                            api_version = self.parent.api_version,
-                            layer_id=id)
+                       .format(hostname=self.parent.host,
+                               api_version=self.parent.api_version,
+                               layer_id=id)
         else:
             return self.url_templates(datatype, verb, urltype)\
-                    .format(hostname=self.parent.host,
-                            api_version = self.parent.api_version)
+                       .format(hostname=self.parent.host,
+                               api_version=self.parent.api_version)
 
 
 class KoordinatesObjectMixin(object):
 
-    
     def get(self, id, target_url):
         """Fetches a sing object determined by the value of `id`.
 
@@ -134,10 +134,9 @@ class KoordinatesObjectMixin(object):
                     # them later is costly so for the moment we just give up at this point
                     raise NotImplementedError("JSON that creates Tuples is not currently supported")
                 else:
-                    #Allocate value to attribute directly
+                    # Allocate value to attribute directly
                     att_value = dict_element_value
                 self.__create_attribute(dict_key, att_value)
-                #setattr(self, dict_key, att_value)
         elif self.raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
         elif self.raw_response.status_code == 401:
@@ -150,15 +149,12 @@ class KoordinatesObjectMixin(object):
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def execute_get_list(self):
-        #raise NotImplementedError("This needs enhancing to deal with the full object explosion")
-        import copy
         self.__execute_get_list_no_generator()
         for response in self.list_of_response_dicts:
             this_object = self.__class__(self.parent)
             for key, value in response.items():
                 setattr(this_object, key, value)
             yield this_object
-
 
     def __create_attribute(self, att_name, att_value):
         if att_name in self.attribute_reserved_names:
@@ -175,16 +171,15 @@ class KoordinatesObjectMixin(object):
 
         setattr(self, att_name, att_value)
 
-
     def __make_date_if_possible(self, value):
         '''
         Try convering the value to a date
-        and if that doesn't work then just 
-        return the value was it was passed 
+        and if that doesn't work then just
+        return the value was it was passed
         in.
         '''
         try:
-            out = dateutil.parser.parse(value) 
+            out = dateutil.parser.parse(value)
         except ValueError:
             out = value
         except AttributeError:
@@ -257,51 +252,52 @@ class KoordinatesObjectMixin(object):
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
     def __class_builder_from_sequence(self, the_seq):
-        '''__class_builder supports the dynamic creation of 
-        object attributes in response to JSON returned from the 
-        server. 
+        '''__class_builder supports the dynamic creation of
+        object attributes in response to JSON returned from the
+        server.
 
         Where a JSON blob returned from the server (itself an
         associative array) includes nested associative arrays
         we need to create a class that corresponds to the contents
-        of that array, create an instance of the class and then 
+        of that array, create an instance of the class and then
         make that instance an attribute of our container class,
         for instance, a Layer
         '''
         seq_out = []
         for seq_element in the_seq:
             if isinstance(seq_element, list) or isinstance(seq_element, tuple):
-                seq_out.append(self.__class_builder_from_sequence(seq_element)) 
+                seq_out.append(self.__class_builder_from_sequence(seq_element))
             elif isinstance(seq_element, dict):
-                seq_out.append(self._class_builder_from_dict(seq_element,str(uuid.uuid1())))
+                seq_out.append(self._class_builder_from_dict(seq_element, str(uuid.uuid1())))
             else:
                 seq_out.append(self.__make_date_if_possible(seq_element))
         return seq_out
 
     def _class_builder_from_dict(self, the_dic, the_name):
-        '''_class_builder_from_dict supports the dynamic creation of 
-        object attributes in response to JSON returned from the 
-        server. 
+        '''_class_builder_from_dict supports the dynamic creation of
+        object attributes in response to JSON returned from the
+        server.
 
         Where a JSON blob returned from the server (itself an
         associative array) includes nested associative arrays
         we need to create a class that corresponds to the contents
-        of that array, create an instance of the class and then 
+        of that array, create an instance of the class and then
         make that instance an attribute of our container class,
         for instance, a Layer
         '''
         dic_out = {}
         for dict_key, dict_key_value in the_dic.items():
             if isinstance(dict_key_value, dict):
-                dic_out[dict_key] = self._class_builder_from_dict(dict_key_value, dict_key) 
+                dic_out[dict_key] = self._class_builder_from_dict(dict_key_value, dict_key)
             if isinstance(dict_key_value, list) or isinstance(dict_key_value, tuple):
-                dic_out[dict_key] = self.__class_builder_from_sequence(dict_key_value) 
+                dic_out[dict_key] = self.__class_builder_from_sequence(dict_key_value)
             else:
-                dic_out[dict_key] = self.__make_date_if_possible(dict_key_value) 
+                dic_out[dict_key] = self.__make_date_if_possible(dict_key_value)
         return type(str(the_name.title()), (object,), dic_out)
 
+
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
-    '''A Set  
+    '''A Set
 
     TODO: Description of what a `Set` is
 
@@ -317,12 +313,12 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         # An attribute may not be created automatically
         # due to JSON returned from the server with any
         # names which appear in the list
-        # attribute_reserved_names 
+        # attribute_reserved_names
         self.attribute_reserved_names = []
         super(self.__class__, self).__init__()
 
     def get_list(self):
-        """Fetches a set of sets  
+        """Fetches a set of sets
         """
         target_url = self.get_url('SET', 'GET', 'multi', None)
         self.url = target_url
@@ -336,6 +332,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         target_url = self.get_url('SET', 'GET', 'single', id)
         super(self.__class__, self).get(id, target_url)
+
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer
@@ -370,11 +367,10 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         # An attribute may not be created automatically
         # due to JSON returned from the server with any
         # names which appear in the list
-        # attribute_reserved_names 
+        # attribute_reserved_names
         self.attribute_reserved_names = ['version']
 
         super(self.__class__, self).__init__()
-
 
     def get_list(self):
         """Fetches a set of layers

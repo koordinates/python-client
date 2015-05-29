@@ -67,7 +67,6 @@ class TestKoordinates(unittest.TestCase):
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
-
     def test_sets_url(self):
         self.assertTrue(self.koordconn.layer.get_url('SET', 'GET', 'single', 999),
                         '''https://koordinates.com/services/api/v1/sets/999/''')
@@ -75,6 +74,7 @@ class TestKoordinates(unittest.TestCase):
     def test_sets_url_template(self):
         self.assertTrue(self.koordconn.layer.url_templates('SET', 'GET', 'single'),
                         '''https://koordinates.com/services/api/v1/sets/{layer_id}/''')
+
     def test_sets_multi_url(self):
         self.assertTrue(self.koordconn.layer.get_url('SET', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/sets/''')
@@ -91,16 +91,28 @@ class TestKoordinates(unittest.TestCase):
         self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/layers/''')
 
-    def test_api_version_in_url(self):
-        test_domain = str(uuid.uuid1()).replace("-","")
-        test_host_name = "{fakedomain}.com".format(fakedomain = test_domain)
+    def test_api_version_in_url_when_valid(self):
+        test_domain = str(uuid.uuid1()).replace("-", "")
+        test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
-                                        TestKoordinates.pwd,
-                                        test_host_name,
-                                        api_version='UNITTESTINGONLY')
-        self.assertTrue(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
+                                                     TestKoordinates.pwd,
+                                                     test_host_name,
+                                                     api_version='UNITTESTINGONLY')
+
+        self.assertTrue(self.koordconnaltapiversion.layer.get_url('LAYER', 'GET', 'multi'),
                         '''https://''' + test_host_name + '''/services/api/UNITTESTINGONLY/layers/''')
 
+    def test_api_version_in_url_when_invalid(self):
+        test_domain = str(uuid.uuid1()).replace("-", "")
+        test_api_version = str(uuid.uuid1()).replace("-", "")
+        test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
+        with self.assertRaises(koordexceptions.KoordinatesInvalidAPIVersion):
+            self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
+                                                         TestKoordinates.pwd,
+                                                         test_host_name,
+                                                         api_version=test_api_version)
+
+            self.koordconnaltapiversion.layer.get(id)
 
     @responses.activate
     def test_get_layerset_bad_auth_check_status(self):
@@ -133,21 +145,6 @@ class TestKoordinates(unittest.TestCase):
             for layer in self.bad_koordconn.layer.get_list().execute_get_list():
                 pass
 
-#   @responses.activate
-#   def test_get_layerset_returns_correct_data(self):
-#       the_response = layers_multiple_good_simulated_response
-
-#       responses.add(responses.GET,
-#                     self.koordconn.layer.get_url('LAYER', 'GET', 'multi', None),
-#                     body=the_response, status="200",
-#                     content_type='application/json')
-
-#       idx = 0
-#       for layer in self.koordconn.layer.get_list().execute_get_list():
-#           self.assertEqual(layer.id, lst_expected_id[idx])
-#           idx += 1
-
-
     @responses.activate
     def test_get_layerset_returns_all_rows(self):
         the_response = layers_multiple_good_simulated_response
@@ -160,21 +157,20 @@ class TestKoordinates(unittest.TestCase):
         cnt_of_layers_returned = 0
 
         for layer in self.koordconn.layer.get_list().execute_get_list():
-            cnt_of_layers_returned += 1 
+            cnt_of_layers_returned += 1
 
-        #self.assertEqual(len(self.koordconn.layer.list_oflayer_dicts), 100)
         self.assertEqual(cnt_of_layers_returned, 100)
 
     @responses.activate
     def test_get_layerset_with_non_default_host(self):
 
         filter_value = str(uuid.uuid1())
-        test_domain = str(uuid.uuid1()).replace("-","")
+        test_domain = str(uuid.uuid1()).replace("-", "")
         order_by_key = 'name'
-        test_host_name = "{fakedomain}.com".format(fakedomain = test_domain)
+        test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         self.koordconnalthost = api.Connection('rshea@thecubagroup.com',
-                                        TestKoordinates.pwd,
-                                        test_host_name)
+                                               TestKoordinates.pwd,
+                                               test_host_name)
 
         self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
 
@@ -232,7 +228,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(self.koordconn.layer.categories[0].slug, "cadastral")
         self.assertEqual(self.koordconn.layer.data.crs, "EPSG:2193")
         self.assertEqual(self.koordconn.layer.data.fields[0].type, "geometry")
-        #The following test changes form between Python 2.x and 3.x
+        # The following test changes form between Python 2.x and 3.x
         try:
             self.assertItemsEqual(self.koordconn.layer.tags, ['building', 'footprint', 'outline', 'structure'])
         except AttributeError:
@@ -250,22 +246,21 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn.layer.get(id)
         self.assertEqual(self.koordconn.layer.first_published_at.year, 2010)
         self.assertEqual(self.koordconn.layer.first_published_at.month,   6)
-        self.assertEqual(self.koordconn.layer.first_published_at.day  ,  21)
-        self.assertEqual(self.koordconn.layer.first_published_at.hour ,   5)
+        self.assertEqual(self.koordconn.layer.first_published_at.day,    21)
+        self.assertEqual(self.koordconn.layer.first_published_at.hour,    5)
         self.assertEqual(self.koordconn.layer.first_published_at.minute,  5)
         self.assertEqual(self.koordconn.layer.first_published_at.second,  5)
 
-        self.assertEqual(self.koordconn.layer.collected_at[0].year ,   1996)
+        self.assertEqual(self.koordconn.layer.collected_at[0].year,    1996)
         self.assertEqual(self.koordconn.layer.collected_at[0].month,     12)
-        self.assertEqual(self.koordconn.layer.collected_at[0].day  ,     31)
+        self.assertEqual(self.koordconn.layer.collected_at[0].day,       31)
 
-        self.assertEqual(self.koordconn.layer.collected_at[1].year ,   2012)
+        self.assertEqual(self.koordconn.layer.collected_at[1].year,    2012)
         self.assertEqual(self.koordconn.layer.collected_at[1].month,      5)
-        self.assertEqual(self.koordconn.layer.collected_at[1].day  ,      1)
-        self.assertEqual(self.koordconn.layer.collected_at[1].hour ,      0)
+        self.assertEqual(self.koordconn.layer.collected_at[1].day,        1)
+        self.assertEqual(self.koordconn.layer.collected_at[1].hour,       0)
         self.assertEqual(self.koordconn.layer.collected_at[1].minute,     0)
         self.assertEqual(self.koordconn.layer.collected_at[1].second,     0)
-
 
     @responses.activate
     def test_get_layerset_bad_filter_and_sort(self):
@@ -303,7 +298,6 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=200,
                       content_type='application/json')
 
-        #import pdb;pdb.set_trace()
         self.koordconn.layer.get(id)
 
         self.assertEqual(self.koordconn.layer.name,
@@ -327,7 +321,6 @@ class TestKoordinates(unittest.TestCase):
 
         with self.assertRaises(koordexceptions.KoordinatesAttributeNameIsReserved):
             self.koordconn.layer.get(id)
-
 
     @responses.activate
     def test_get_set_by_id(self, id=1474):
@@ -362,7 +355,7 @@ class TestKoordinates(unittest.TestCase):
         cnt_of_sets_returned = 0
 
         for layer in self.koordconn.set.get_list().execute_get_list():
-            cnt_of_sets_returned += 1 
+            cnt_of_sets_returned += 1
 
         self.assertEqual(cnt_of_sets_returned, 2)
 
