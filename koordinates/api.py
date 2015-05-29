@@ -125,13 +125,18 @@ class KoordinatesObjectMixin(object):
                 if isinstance(dict_element_value, dict):
                     # build dynamically defined class instances (nested
                     # if necessary) in order to model associative arrays
-                    att_value = self.__class_builder(dic_json[dict_key], dict_key)
-                elif isinstance(dict_element_value, list) or isinstance(dict_element_value, tuple):
+                    att_value = self._class_builder_from_dict(dic_json[dict_key], dict_key)
+                elif isinstance(dict_element_value, list):
                     att_value = self.__class_builder_from_sequence(dic_json[dict_key])
+                elif isinstance(dict_element_value, tuple):
+                    # Don't believe the json.loads will ever create Tuples and supporting
+                    # them later is costly so for the moment we just give up at this point
+                    raise NotImplementedError("JSON that creates Tuples is not currently supported")
                 else:
                     #Allocate value to attribute directly
-                    att_value = self.__make_date_if_possible(dict_element_value)
-                setattr(self, dict_key, att_value)
+                    att_value = dict_element_value
+                self.__create_attribute(dict_key, att_value)
+                #setattr(self, dict_key, att_value)
         elif self.raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
         elif self.raw_response.status_code == 401:
@@ -144,6 +149,7 @@ class KoordinatesObjectMixin(object):
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def execute_get_list(self):
+        #raise NotImplementedError("This needs enhancing to deal with the full object explosion")
         import copy
         self.__execute_get_list_no_generator()
         for response in self.list_of_response_dicts:
@@ -151,6 +157,18 @@ class KoordinatesObjectMixin(object):
             for key, value in response.items():
                 setattr(this_object, key, value)
             yield this_object
+
+
+    def __create_attribute(self, att_name, att_value):
+        if att_name in []:
+            raise RuntimeError('That name is reserved')
+
+        if isinstance(att_value, list):
+            att_value = [self.__make_date_if_possible(v) for v in att_value]
+        else:
+            att_value = self.__make_date_if_possible(att_value)
+
+        setattr(self, att_name, att_value)
 
 
     def __make_date_if_possible(self, value):
@@ -250,13 +268,13 @@ class KoordinatesObjectMixin(object):
             if isinstance(seq_element, list) or isinstance(seq_element, tuple):
                 seq_out.append(self.__class_builder_from_sequence(seq_element)) 
             elif isinstance(seq_element, dict):
-                seq_out.append(self.__class_builder(seq_element,str(uuid.uuid1())))
+                seq_out.append(self._class_builder_from_dict(seq_element,str(uuid.uuid1())))
             else:
                 seq_out.append(self.__make_date_if_possible(seq_element))
         return seq_out
 
-    def __class_builder(self, the_dic, the_name):
-        '''__class_builder supports the dynamic creation of 
+    def _class_builder_from_dict(self, the_dic, the_name):
+        '''_class_builder_from_dict supports the dynamic creation of 
         object attributes in response to JSON returned from the 
         server. 
 
@@ -270,7 +288,7 @@ class KoordinatesObjectMixin(object):
         dic_out = {}
         for dict_key, dict_key_value in the_dic.items():
             if isinstance(dict_key_value, dict):
-                dic_out[dict_key] = self.__class_builder(dict_key_value, dict_key) 
+                dic_out[dict_key] = self._class_builder_from_dict(dict_key_value, dict_key) 
             if isinstance(dict_key_value, list) or isinstance(dict_key_value, tuple):
                 dic_out[dict_key] = self.__class_builder_from_sequence(dict_key_value) 
             else:

@@ -303,6 +303,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=200,
                       content_type='application/json')
 
+        #import pdb;pdb.set_trace()
         self.koordconn.layer.get(id)
 
         self.assertEqual(self.koordconn.layer.name,
