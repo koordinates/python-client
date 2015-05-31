@@ -199,7 +199,7 @@ class TestKoordinates(unittest.TestCase):
         order_by_key = 'name'
         self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-        parsedurl = urlparse(self.koordconn.layer.url)
+        parsedurl = urlparse(self.koordconn.layer._url)
 
         self.assertTrue(self.contains_substring(parsedurl.query, filter_value))
         self.assertTrue(self.contains_substring(parsedurl.query, order_by_key))

@@ -63,7 +63,7 @@ def analyse_object_attributes(obj):
 
 def main6(username):
     print("main 6 START +++++++++++++++++++++++++++++++++++++++++++++")
-    import pdb;pdb.set_trace()
+    #import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass())
     for version in conn.version.get_list(layer_id=1474).execute_get_list():
         print(version.id, " ", version.created_at, " " , version.created_by)

@@ -183,7 +183,7 @@ class KoordinatesObjectMixin(object):
     def add_query_component(self, argname, argvalue):
 
         # parse original string url
-        url_data = urlsplit(self.url)
+        url_data = urlsplit(self._url)
 
         # parse original query-string
         qs_data = parse_qs(url_data.query)
@@ -192,7 +192,7 @@ class KoordinatesObjectMixin(object):
         qs_data[argname] = [argvalue]
 
         # get the url with modified query-string
-        self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
+        self._url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
     def execute_get_list(self):
         self.__execute_get_list_no_generator()
@@ -204,8 +204,8 @@ class KoordinatesObjectMixin(object):
 
     def __execute_get_list_no_generator(self):
 
-        target_url = self.url
-        self.url = ""
+        target_url = self._url
+        self._url = ""
         self.ordering_applied = False
         self.filtering_applied = False
         self.raw_response = requests.get(target_url,
@@ -314,7 +314,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     def __init__(self, parent, id=None):
         logger.info('Initializing Set object')
         self.parent = parent
-        self.url = None
+        self._url = None
         self._id = id
         self.list_of_response_dicts = []
         self.attribute_sort_candidates = ['name']
@@ -330,7 +330,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         """Fetches a set of sets
         """
         target_url = self.get_url('SET', 'GET', 'multi')
-        self.url = target_url
+        self._url = target_url
         return self
 
     def get(self, id):
@@ -350,7 +350,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
     def __init__(self, parent, id=None):
         logger.info('Initializing Version object')
         self.parent = parent
-        self.url = None
+        self._url = None
 
         self.raw_response = None
         self.list_of_response_dicts = []
@@ -372,7 +372,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         """Fetches a set of layers
         """
         target_url = self.get_url('VERSION', 'GET', 'multi', {'layer_id': layer_id})
-        self.url = target_url
+        self._url = target_url
         return self
 
     def get(self, layer_id, version_id):
@@ -400,7 +400,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self.parent = parent
         #self.version = Version(parent)
-        self.url = None
+        self._url = None
         self._id = id
         self.name = layer_name
         self._type = layer_type
@@ -427,7 +427,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         """Fetches a set of layers
         """
         target_url = self.get_url('LAYER', 'GET', 'multi')
-        self.url = target_url
+        self._url = target_url
         return self
 
     def get(self, id):
