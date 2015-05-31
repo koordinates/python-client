@@ -137,7 +137,7 @@ class TestKoordinates(unittest.TestCase):
         except koordexceptions.KoordinatesNotAuthorised:
             pass
 
-        self.assertTrue(self.bad_koordconn.layer.raw_response.status_code,
+        self.assertTrue(self.bad_koordconn.layer._raw_response.status_code,
                         401)
 
     @responses.activate
@@ -298,7 +298,7 @@ class TestKoordinates(unittest.TestCase):
         except:
             pass
 
-        self.assertEqual(self.bad_koordconn.layer.raw_response.status_code,
+        self.assertEqual(self.bad_koordconn.layer._raw_response.status_code,
                          401)
 
     @responses.activate
@@ -315,7 +315,7 @@ class TestKoordinates(unittest.TestCase):
 
         self.assertEqual(self.koordconn.layer.name,
                          "Wellington City Building Footprints")
-        self.assertEqual(self.koordconn.layer.raw_response.status_code,
+        self.assertEqual(self.koordconn.layer._raw_response.status_code,
                          200)
 
 #   @responses.activate
@@ -342,7 +342,7 @@ class TestKoordinates(unittest.TestCase):
 #       self.assertEqual(self.koordconn.layer.version.id, version_id)
 #       self.assertEqual(self.koordconn.layer.version.status, "ok")
 #       self.assertEqual(self.koordconn.layer.version.created_by, 2879)
-#       self.assertEqual(self.koordconn.layer.version.raw_response.status_code, 200)
+#       self.assertEqual(self.koordconn.layer.version._raw_response.status_code, 200)
 #       '''
 
     @responses.activate
@@ -381,7 +381,7 @@ class TestKoordinates(unittest.TestCase):
                          "New Zealand Broadband Map")
         self.assertEqual(self.koordconn.set.url_html,
                          "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
-        self.assertEqual(self.koordconn.set.raw_response.status_code,
+        self.assertEqual(self.koordconn.set._raw_response.status_code,
                          200)
 
     @responses.activate

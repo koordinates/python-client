@@ -124,12 +124,12 @@ class KoordinatesObjectMixin(object):
         :param id: ID for the new :class:`Set` object.
         """
 
-        self.raw_response = requests.get(target_url,
+        self._raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == 200:
+        if self._raw_response.status_code == 200:
             # convert JSON to dict
-            dic_json = json.loads(self.raw_response.text)
+            dic_json = json.loads(self._raw_response.text)
             # itererte over resulting dict
             for dict_key, dict_element_value in dic_json.items():
                 if isinstance(dict_element_value, dict):
@@ -146,13 +146,13 @@ class KoordinatesObjectMixin(object):
                     # Allocate value to attribute directly
                     att_value = dict_element_value
                 self.__create_attribute(dict_key, att_value)
-        elif self.raw_response.status_code == 404:
+        elif self._raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == 401:
+        elif self._raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
-        elif self.raw_response.status_code == 429:
+        elif self._raw_response.status_code == 429:
             raise koordexceptions.KoordinatesRateLimitExceeded
-        elif self.raw_response.status_code == 504:
+        elif self._raw_response.status_code == 504:
             raise koordexceptions.KoordinatesServerTimeOut
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
@@ -208,25 +208,25 @@ class KoordinatesObjectMixin(object):
         self._url = ""
         self.ordering_applied = False
         self.filtering_applied = False
-        self.raw_response = requests.get(target_url,
+        self._raw_response = requests.get(target_url,
                                          auth=self.parent.get_auth())
 
-        if self.raw_response.status_code == 200:
-            self.list_of_response_dicts = self.raw_response.json()
-        elif self.raw_response.status_code == 404:
-            self.list_of_response_dicts = self.raw_response.json()
+        if self._raw_response.status_code == 200:
+            self.list_of_response_dicts = self._raw_response.json()
+        elif self._raw_response.status_code == 404:
+            self.list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == 401:
-            self.list_of_response_dicts = self.raw_response.json()
+        elif self._raw_response.status_code == 401:
+            self.list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
-        elif self.raw_response.status_code == 429:
-            self.list_of_response_dicts = self.raw_response.json()
+        elif self._raw_response.status_code == 429:
+            self.list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesRateLimitExceeded
-        elif self.raw_response.status_code == 504:
-            self.list_of_response_dicts = self.raw_response.json()
+        elif self._raw_response.status_code == 504:
+            self.list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesServerTimeOut
         else:
-            self.list_oflayer_dicts = self.raw_response.json()
+            self.list_oflayer_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def __create_attribute(self, att_name, att_value):
@@ -316,6 +316,8 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.parent = parent
         self._url = None
         self._id = id
+
+        self._raw_response = None
         self.list_of_response_dicts = []
         self.attribute_sort_candidates = ['name']
         self.attribute_filter_candidates = ['name']
@@ -352,7 +354,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.parent = parent
         self._url = None
 
-        self.raw_response = None
+        self._raw_response = None
         self.list_of_response_dicts = []
 
         self.ordering_applied = False
@@ -409,7 +411,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.ordering_applied = False
         self.filtering_applied = False
 
-        self.raw_response = None
+        self._raw_response = None
         self.list_of_response_dicts = []
 
         self.attribute_sort_candidates = ['name']
