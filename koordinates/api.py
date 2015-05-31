@@ -394,20 +394,11 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     of objects that you add on top of the map to designate a common
     association.
     '''
-    def __init__(self, parent, id=None,
-                 layer_name=None,
-                 layer_type=None,
-                 first_published_at=None,
-                 published_at=None):
+    def __init__(self, parent, id=None):
 
         self._parent = parent
-        #self.version = Version(parent)
         self._url = None
         self._id = id
-        self.name = layer_name
-        self._type = layer_type
-        self._first_published_at = first_published_at
-        self.cg_published_at = published_at
         self._ordering_applied = False
         self._filtering_applied = False
 
