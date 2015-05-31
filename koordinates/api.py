@@ -158,7 +158,7 @@ class KoordinatesObjectMixin(object):
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def filter(self, value):
-        if self.filtering_applied:
+        if self._filtering_applied:
             raise koordexceptions.KoordinatesOnlyOneFilterAllowed
 
         # Eventually this check will be a good deal more sophisticated
@@ -167,17 +167,17 @@ class KoordinatesObjectMixin(object):
             raise koordexceptions.KoordinatesFilterMustNotBeSpaces()
 
         self.add_query_component("q", value)
-        self.filtering_applied = True
+        self._filtering_applied = True
         return self
 
     def order_by(self, sort_key):
-        if self.ordering_applied:
+        if self._ordering_applied:
             raise koordexceptions.KoordinatesOnlyOneOrderingAllowed
-        if sort_key not in self.attribute_sort_candidates:
+        if sort_key not in self._attribute_sort_candidates:
             raise koordexceptions.KoordinatesNotAValidBasisForOrdering(sort_key)
 
         self.add_query_component("sort", sort_key)
-        self.ordering_applied = True
+        self._ordering_applied = True
         return self
 
     def add_query_component(self, argname, argvalue):
@@ -196,7 +196,7 @@ class KoordinatesObjectMixin(object):
 
     def execute_get_list(self):
         self.__execute_get_list_no_generator()
-        for response in self.list_of_response_dicts:
+        for response in self._list_of_response_dicts:
             this_object = self.__class__(self._parent)
             for key, value in response.items():
                 setattr(this_object, key, value)
@@ -206,34 +206,34 @@ class KoordinatesObjectMixin(object):
 
         target_url = self._url
         self._url = ""
-        self.ordering_applied = False
-        self.filtering_applied = False
+        self._ordering_applied = False
+        self._filtering_applied = False
         self._raw_response = requests.get(target_url,
                                          auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
-            self.list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts = self._raw_response.json()
         elif self._raw_response.status_code == 404:
-            self.list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 401:
-            self.list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
         elif self._raw_response.status_code == 429:
-            self.list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesRateLimitExceeded
         elif self._raw_response.status_code == 504:
-            self.list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesServerTimeOut
         else:
             self.list_oflayer_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def __create_attribute(self, att_name, att_value):
-        if att_name in self.attribute_reserved_names:
+        if att_name in self._attribute_reserved_names:
             errmsg = """The name '{attname}' is not able to be used """ \
                      """an attribute name for the class '{classname}' """ \
-                     """as it appears in the 'attribute_reserved_names' """ \
+                     """as it appears in the '_attribute_reserved_names' """ \
                      """list""".format(attname=att_name, classname=type(self).__name__)
             raise koordexceptions.KoordinatesAttributeNameIsReserved(errmsg)
 
@@ -318,14 +318,14 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._id = id
 
         self._raw_response = None
-        self.list_of_response_dicts = []
-        self.attribute_sort_candidates = ['name']
-        self.attribute_filter_candidates = ['name']
+        self._list_of_response_dicts = []
+        self._attribute_sort_candidates = ['name']
+        self._attribute_filter_candidates = ['name']
         # An attribute may not be created automatically
         # due to JSON returned from the server with any
         # names which appear in the list
-        # attribute_reserved_names
-        self.attribute_reserved_names = []
+        # _attribute_reserved_names
+        self._attribute_reserved_names = []
         super(self.__class__, self).__init__()
 
     def get_list(self):
@@ -355,18 +355,18 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._url = None
 
         self._raw_response = None
-        self.list_of_response_dicts = []
+        self._list_of_response_dicts = []
 
-        self.ordering_applied = False
-        self.filtering_applied = False
-        self.attribute_sort_candidates = ['name']
-        self.attribute_filter_candidates = ['name']
+        self._ordering_applied = False
+        self._filtering_applied = False
+        self._attribute_sort_candidates = ['name']
+        self._attribute_filter_candidates = ['name']
 
         # An attribute may not be created automatically
         # due to JSON returned from the server with any
         # names which appear in the list
-        # attribute_reserved_names
-        self.attribute_reserved_names = []
+        # _attribute_reserved_names
+        self._attribute_reserved_names = []
 
         super(self.__class__, self).__init__()
 
@@ -408,20 +408,20 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._type = layer_type
         self._first_published_at = first_published_at
         self.cg_published_at = published_at
-        self.ordering_applied = False
-        self.filtering_applied = False
+        self._ordering_applied = False
+        self._filtering_applied = False
 
         self._raw_response = None
-        self.list_of_response_dicts = []
+        self._list_of_response_dicts = []
 
-        self.attribute_sort_candidates = ['name']
-        self.attribute_filter_candidates = ['name']
+        self._attribute_sort_candidates = ['name']
+        self._attribute_filter_candidates = ['name']
 
         # An attribute may not be created automatically
         # due to JSON returned from the server with any
         # names which appear in the list
-        # attribute_reserved_names
-        self.attribute_reserved_names = ['version']
+        # _attribute_reserved_names
+        self._attribute_reserved_names = ['version']
 
         super(self.__class__, self).__init__()
 
