@@ -61,6 +61,14 @@ def analyse_object_attributes(obj):
     for attribute in [a for a in dir(obj) if not a.startswith('__') and not callable(getattr(obj,a))]:
         print(attribute, " " , str(type(attribute)))
 
+def main6(username):
+    print("main 6 START +++++++++++++++++++++++++++++++++++++++++++++")
+    import pdb;pdb.set_trace()
+    conn = api.Connection(username, getpass())
+    for version in conn.version.get_list(layer_id=1474).execute_get_list():
+        print(version.id, " ", version.created_at, " " , version.created_by)
+    print("main 6 STOPx +++++++++++++++++++++++++++++++++++++++++++++")
+
 def main4(username):
     #conn = api.Connection(username, getpass())
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
@@ -232,6 +240,7 @@ def main():
     main4(username)
     main5()
     logger_tester(log=do_some_logging)
+    main6(username)
 
 if __name__ == "__main__":
     main()

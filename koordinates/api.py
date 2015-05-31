@@ -44,7 +44,7 @@ class Connection(object):
     This is a python library for accessing the koordinates api
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=False):
+    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=True):
         if activate_logging:
             client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
             logging.basicConfig(filename=client_logfile_name,
@@ -68,6 +68,7 @@ class Connection(object):
 
         self.layer = Layer(self)
         self.set = Set(self)
+        self.version = Version(self)
 
     def get_auth(self):
         """Creates an Authorisation object
@@ -85,7 +86,7 @@ class KoordinatesURLMixin(object):
         self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
         self._url_templates['SET'] = {}
         self._url_templates['SET']['GET'] = {}
-        self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{layer_id}/'''
+        self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{set_id}/'''
         self._url_templates['SET']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/sets/'''
         self._url_templates['VERSION'] = {}
         self._url_templates['VERSION']['GET'] = {}
@@ -95,7 +96,15 @@ class KoordinatesURLMixin(object):
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
 
-    def get_url(self, datatype, verb, urltype, id=None):
+    def get_url(self, datatype, verb, urltype, kwargs={}):
+        if "hostname" not in kwargs:
+            kwargs['hostname'] = self.parent.host
+        if "api_version" not in kwargs:
+            kwargs['api_version'] = self.parent.api_version
+
+        return self.url_templates(datatype, verb, urltype).format(**kwargs)
+
+    def get_url_TODO_REMOVE(self, datatype, verb, urltype, id=None):
         if id:
             return self.url_templates(datatype, verb, urltype)\
                        .format(hostname=self.parent.host,
@@ -148,72 +157,6 @@ class KoordinatesObjectMixin(object):
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
-    def execute_get_list(self):
-        self.__execute_get_list_no_generator()
-        for response in self.list_of_response_dicts:
-            this_object = self.__class__(self.parent)
-            for key, value in response.items():
-                setattr(this_object, key, value)
-            yield this_object
-
-    def __create_attribute(self, att_name, att_value):
-        if att_name in self.attribute_reserved_names:
-            errmsg = """The name '{attname}' is not able to be used """ \
-                     """an attribute name for the class '{classname}' """ \
-                     """as it appears in the 'attribute_reserved_names' """ \
-                     """list""".format(attname=att_name, classname=type(self).__name__)
-            raise koordexceptions.KoordinatesAttributeNameIsReserved(errmsg)
-
-        if isinstance(att_value, list):
-            att_value = [self.__make_date_if_possible(v) for v in att_value]
-        else:
-            att_value = self.__make_date_if_possible(att_value)
-
-        setattr(self, att_name, att_value)
-
-    def __make_date_if_possible(self, value):
-        '''
-        Try convering the value to a date
-        and if that doesn't work then just
-        return the value was it was passed
-        in.
-        '''
-        try:
-            out = dateutil.parser.parse(value)
-        except ValueError:
-            out = value
-        except AttributeError:
-            out = value
-
-        return out
-
-    def __execute_get_list_no_generator(self):
-
-        target_url = self.url
-        self.url = ""
-        self.ordering_applied = False
-        self.filtering_applied = False
-        self.raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
-
-        if self.raw_response.status_code == 200:
-            self.list_of_response_dicts = self.raw_response.json()
-        elif self.raw_response.status_code == 404:
-            self.list_of_response_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesInvalidURL
-        elif self.raw_response.status_code == 401:
-            self.list_of_response_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesNotAuthorised
-        elif self.raw_response.status_code == 429:
-            self.list_of_response_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesRateLimitExceeded
-        elif self.raw_response.status_code == 504:
-            self.list_of_response_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesServerTimeOut
-        else:
-            self.list_oflayer_dicts = self.raw_response.json()
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
-
     def filter(self, value):
         if self.filtering_applied:
             raise koordexceptions.KoordinatesOnlyOneFilterAllowed
@@ -250,6 +193,72 @@ class KoordinatesObjectMixin(object):
 
         # get the url with modified query-string
         self.url = url_data._replace(query=urlencode(qs_data, True)).geturl()
+
+    def execute_get_list(self):
+        self.__execute_get_list_no_generator()
+        for response in self.list_of_response_dicts:
+            this_object = self.__class__(self.parent)
+            for key, value in response.items():
+                setattr(this_object, key, value)
+            yield this_object
+
+    def __execute_get_list_no_generator(self):
+
+        target_url = self.url
+        self.url = ""
+        self.ordering_applied = False
+        self.filtering_applied = False
+        self.raw_response = requests.get(target_url,
+                                         auth=self.parent.get_auth())
+
+        if self.raw_response.status_code == 200:
+            self.list_of_response_dicts = self.raw_response.json()
+        elif self.raw_response.status_code == 404:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self.raw_response.status_code == 401:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesNotAuthorised
+        elif self.raw_response.status_code == 429:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesRateLimitExceeded
+        elif self.raw_response.status_code == 504:
+            self.list_of_response_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesServerTimeOut
+        else:
+            self.list_oflayer_dicts = self.raw_response.json()
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
+    def __create_attribute(self, att_name, att_value):
+        if att_name in self.attribute_reserved_names:
+            errmsg = """The name '{attname}' is not able to be used """ \
+                     """an attribute name for the class '{classname}' """ \
+                     """as it appears in the 'attribute_reserved_names' """ \
+                     """list""".format(attname=att_name, classname=type(self).__name__)
+            raise koordexceptions.KoordinatesAttributeNameIsReserved(errmsg)
+
+        if isinstance(att_value, list):
+            att_value = [self.__make_date_if_possible(v) for v in att_value]
+        else:
+            att_value = self.__make_date_if_possible(att_value)
+
+        setattr(self, att_name, att_value)
+
+    def __make_date_if_possible(self, value):
+        '''
+        Try convering the value to a date
+        and if that doesn't work then just
+        return the value was it was passed
+        in.
+        '''
+        try:
+            out = dateutil.parser.parse(value)
+        except ValueError:
+            out = value
+        except AttributeError:
+            out = value
+
+        return out
 
     def __class_builder_from_sequence(self, the_seq):
         '''__class_builder supports the dynamic creation of
@@ -303,7 +312,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
 
     '''
     def __init__(self, parent, id=None):
-        logger.info('Initializaing Set object')
+        logger.info('Initializing Set object')
         self.parent = parent
         self.url = None
         self._id = id
@@ -320,7 +329,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     def get_list(self):
         """Fetches a set of sets
         """
-        target_url = self.get_url('SET', 'GET', 'multi', None)
+        target_url = self.get_url('SET', 'GET', 'multi')
         self.url = target_url
         return self
 
@@ -330,8 +339,49 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         :param id: ID for the new :class:`Set` object.
         """
 
-        target_url = self.get_url('SET', 'GET', 'single', id)
+        target_url = self.get_url('SET', 'GET', 'single', {'set_id': id})
         super(self.__class__, self).get(id, target_url)
+
+
+class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
+    '''A Version
+    TODO: Explanation of what a `Version` is from Koordinates
+    '''
+    def __init__(self, parent, id=None):
+        logger.info('Initializing Version object')
+        self.parent = parent
+        self.url = None
+
+        self.raw_response = None
+        self.list_of_response_dicts = []
+
+        self.ordering_applied = False
+        self.filtering_applied = False
+        self.attribute_sort_candidates = ['name']
+        self.attribute_filter_candidates = ['name']
+
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # attribute_reserved_names
+        self.attribute_reserved_names = []
+
+        super(self.__class__, self).__init__()
+
+    def get_list(self, layer_id):
+        """Fetches a set of layers
+        """
+        target_url = self.get_url('VERSION', 'GET', 'multi', {'layer_id': layer_id})
+        self.url = target_url
+        return self
+
+    def get(self, layer_id, version_id):
+        """Fetches a version determined by the value of `version_id`.
+
+        :param id: ID for the new :class:`Version` object.
+        """
+
+        raise NotImplementedError
 
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
@@ -349,6 +399,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                  published_at=None):
 
         self.parent = parent
+        #self.version = Version(parent)
         self.url = None
         self._id = id
         self.name = layer_name
@@ -375,7 +426,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     def get_list(self):
         """Fetches a set of layers
         """
-        target_url = self.get_url('LAYER', 'GET', 'multi', None)
+        target_url = self.get_url('LAYER', 'GET', 'multi')
         self.url = target_url
         return self
 
@@ -385,7 +436,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         :param id: ID for the new :class:`Layer` object.
         """
 
-        target_url = self.get_url('LAYER', 'GET', 'single', id)
+        target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
         super(self.__class__, self).get(id, target_url)
 
 
