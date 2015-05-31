@@ -98,22 +98,22 @@ class KoordinatesURLMixin(object):
 
     def get_url(self, datatype, verb, urltype, kwargs={}):
         if "hostname" not in kwargs:
-            kwargs['hostname'] = self.parent.host
+            kwargs['hostname'] = self._parent.host
         if "api_version" not in kwargs:
-            kwargs['api_version'] = self.parent.api_version
+            kwargs['api_version'] = self._parent.api_version
 
         return self.url_templates(datatype, verb, urltype).format(**kwargs)
 
     def get_url_TODO_REMOVE(self, datatype, verb, urltype, id=None):
         if id:
             return self.url_templates(datatype, verb, urltype)\
-                       .format(hostname=self.parent.host,
-                               api_version=self.parent.api_version,
+                       .format(hostname=self._parent.host,
+                               api_version=self._parent.api_version,
                                layer_id=id)
         else:
             return self.url_templates(datatype, verb, urltype)\
-                       .format(hostname=self.parent.host,
-                               api_version=self.parent.api_version)
+                       .format(hostname=self._parent.host,
+                               api_version=self._parent.api_version)
 
 
 class KoordinatesObjectMixin(object):
@@ -125,7 +125,7 @@ class KoordinatesObjectMixin(object):
         """
 
         self._raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
+                                         auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
             # convert JSON to dict
@@ -197,7 +197,7 @@ class KoordinatesObjectMixin(object):
     def execute_get_list(self):
         self.__execute_get_list_no_generator()
         for response in self.list_of_response_dicts:
-            this_object = self.__class__(self.parent)
+            this_object = self.__class__(self._parent)
             for key, value in response.items():
                 setattr(this_object, key, value)
             yield this_object
@@ -209,7 +209,7 @@ class KoordinatesObjectMixin(object):
         self.ordering_applied = False
         self.filtering_applied = False
         self._raw_response = requests.get(target_url,
-                                         auth=self.parent.get_auth())
+                                         auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
             self.list_of_response_dicts = self._raw_response.json()
@@ -313,7 +313,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''
     def __init__(self, parent, id=None):
         logger.info('Initializing Set object')
-        self.parent = parent
+        self._parent = parent
         self._url = None
         self._id = id
 
@@ -351,7 +351,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''
     def __init__(self, parent, id=None):
         logger.info('Initializing Version object')
-        self.parent = parent
+        self._parent = parent
         self._url = None
 
         self._raw_response = None
@@ -400,7 +400,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                  first_published_at=None,
                  published_at=None):
 
-        self.parent = parent
+        self._parent = parent
         #self.version = Version(parent)
         self._url = None
         self._id = id
