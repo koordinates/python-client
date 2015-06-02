@@ -433,6 +433,19 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         super(self.__class__, self).get(id, target_url)
 
 
+class Group(object):
+    pass
+class Data(object):
+    pass
+class DataSource(object):
+    pass
+class Category(object):
+    pass
+class License(object):
+    pass
+class Metatdata(object):
+    pass
+
 def sample(foo, bar):
     """Is a Sample for testing purposes.
         :param foo: A sample integer
