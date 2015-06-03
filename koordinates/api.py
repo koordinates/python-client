@@ -69,6 +69,7 @@ class Connection(object):
         self.layer = Layer(self)
         self.set = Set(self)
         self.version = Version(self)
+        self.data = KData(self)
 
     def get_auth(self):
         """Creates an Authorisation object
@@ -92,6 +93,11 @@ class KoordinatesURLMixin(object):
         self._url_templates['VERSION']['GET'] = {}
         self._url_templates['VERSION']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['VERSION']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
+        self._url_templates['VERSION']['POST'] = {}
+        self._url_templates['VERSION']['POST']['import'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/import'''
+        self._url_templates['DATA'] = {}
+        self._url_templates['DATA']['GET'] = {}
+        self._url_templates['DATA']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/data/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -124,6 +130,8 @@ class KoordinatesObjectMixin(object):
         :param id: ID for the new :class:`Set` object.
         """
 
+        dynamic_build = True 
+
         self._raw_response = requests.get(target_url,
                                          auth=self._parent.get_auth())
 
@@ -131,21 +139,25 @@ class KoordinatesObjectMixin(object):
             # convert JSON to dict
             dic_json = json.loads(self._raw_response.text)
             # itererte over resulting dict
-            for dict_key, dict_element_value in dic_json.items():
-                if isinstance(dict_element_value, dict):
-                    # build dynamically defined class instances (nested
-                    # if necessary) in order to model associative arrays
-                    att_value = self._class_builder_from_dict(dic_json[dict_key], dict_key)
-                elif isinstance(dict_element_value, list):
-                    att_value = self.__class_builder_from_sequence(dic_json[dict_key])
-                elif isinstance(dict_element_value, tuple):
-                    # Don't believe the json.loads will ever create Tuples and supporting
-                    # them later is costly so for the moment we just give up at this point
-                    raise NotImplementedError("JSON that creates Tuples is not currently supported")
-                else:
-                    # Allocate value to attribute directly
-                    att_value = dict_element_value
-                self.__create_attribute(dict_key, att_value)
+            if dynamic_build:
+                for dict_key, dict_element_value in dic_json.items():
+                    if isinstance(dict_element_value, dict):
+                        # build dynamically defined class instances (nested
+                        # if necessary) in order to model associative arrays
+                        att_value = self._class_builder_from_dict(dic_json[dict_key], dict_key)
+                    elif isinstance(dict_element_value, list):
+                        att_value = self.__class_builder_from_sequence(dic_json[dict_key])
+                    elif isinstance(dict_element_value, tuple):
+                        # Don't believe the json.loads will ever create Tuples and supporting
+                        # them later is costly so for the moment we just give up at this point
+                        raise NotImplementedError("JSON that creates Tuples is not currently supported")
+                    else:
+                        # Allocate value to attribute directly
+                        att_value = dict_element_value
+                    self.__create_attribute(dict_key, att_value)
+            else:
+                raise NotImplementedError
+
         elif self._raw_response.status_code == 404:
             raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 401:
@@ -305,6 +317,37 @@ class KoordinatesObjectMixin(object):
         return type(str(the_name.title()), (object,), dic_out)
 
 
+class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
+    '''A Data
+
+    TODO: Description of what a `Data` is
+
+    '''
+    def __init__(self, parent, id=None):
+        logger.info('Initializing Data object')
+        self._parent = parent
+        self._url = None
+        self._id = id
+
+        self._raw_response = None
+        self._list_of_response_dicts = []
+        self._attribute_sort_candidates = ['name']
+        self._attribute_filter_candidates = ['name']
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # _attribute_reserved_names
+        self._attribute_reserved_names = []
+        super(self.__class__, self).__init__()
+
+    def get_list(self):
+        """Fetches a set of sets
+        """
+        target_url = self.get_url('DATA', 'GET', 'multi')
+        self._url = target_url
+        return self
+
+
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Set
 
@@ -385,6 +428,100 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         raise NotImplementedError
 
+    def import_version(self, layer_id):
+        """Reimport an existing layer from its previous datasources
+        and create a new version
+        """
+        target_url = self.get_url('VERSION', 'POST', 'import', {'layer_id': id})
+        test_auth=self._parent.get_auth()
+        self._raw_response = requests.get(target_url,
+                                          auth=self._parent.get_auth())
+        if self._raw_response.status_code == 202:
+            # Success ! Update accepted for Processing but not 
+            # necesarily complete
+            pass
+        elif self._raw_response.status_code == 409:
+            # Indicates that the request could not be processed because 
+            # of conflict in the request, such as an edit conflict in 
+            # the case of multiple updates
+            raise KoordinatesImportEncounteredUpdateConflict
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
+
+class Group(object):
+    def __init__(self, id=None, url=None, name=None, country=None):
+        self.id = id
+        self.url = url
+        self.name = name
+        self.country = country
+
+class Data(object):
+    def __init__(self, encoding=None, crs=None,
+                 primary_key_fields=[],
+                 datasources=[],
+                 geometry_field=None,
+                 fields=[]):
+
+        assert type(primary_key_fields) is list,\
+                "The 'Data' attribute 'primary_key_fields' must be a list"
+        assert type(datasources) is list,\
+            "The 'Data' attribute 'datasources' must be a list"
+        assert type(fields) is list,\
+            "The 'Data' attribute 'fields' must be a list"
+        assert all(isinstance(ds_instance, DataSource) for ds_instance in datasources),\
+            "The 'Data' attribute 'datasources' must be a list of DataSource objects"
+        assert all(isinstance(ds_instance, Field) for f_instance in fields),\
+            "The 'Data' attribute 'datasources' must be a list of DataSource objects"
+
+        self.encoding = encoding 
+        self.crs = crs
+        self.primary_key_fields = primary_key_fields
+        self.primary_key_fields = primary_key_fields
+        self.datasources = datasources
+        self.geometry_field = geometry_field
+        self.fields = fields
+
+class DataSource(object):
+    def __init__(self, id):
+        self.id = id
+
+class Category(object):
+    def __init__(self, name, slug):
+        self.name = name 
+        self.slug = slug 
+
+class License(object):
+    def __init__(self, 
+                 id=None,
+                 title=None ,
+                 type=None,
+                 jurisdiction=None ,
+                 version=None ,
+                 url=None ,
+                 url_html=None ):
+
+        self.id = id 
+        self.title = title 
+        self.type = type 
+        self.jurisdiction = jurisdiction 
+        self.version = version 
+        self.url = url 
+        self.url_html = url_html 
+
+class Metadata(object):
+    def __init__(self, iso=None, dc=None, native=None):
+        self.iso = iso
+        self.dc = dc 
+        self.native = native
+    
+class Field(object):
+    def __init__(self, name=None, type=None):
+        self.name = name
+        self.type = type
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer
@@ -394,7 +531,31 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     of objects that you add on top of the map to designate a common
     association.
     '''
-    def __init__(self, parent, id=None):
+    def __init__(self, 
+                 parent=None, 
+                 id=None,
+                 url=None,
+                 type=None,
+                 name=None,
+                 first_published_at=None,
+                 published_at=None,
+                 description=None,
+                 description_html=None,
+                 group=None,
+                 data=None,
+                 url_html=None,
+                 published_version=None,
+                 latest_version=None,
+                 this_version=None,
+                 kind=None, 
+                 categories=None,
+                 tags=None,
+                 collected_at=None,
+                 created_at=None,
+                 license=None,
+                 metadata=None,
+                 elevation_field=None):
+
 
         self._parent = parent
         self._url = None
@@ -414,7 +575,40 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         # _attribute_reserved_names
         self._attribute_reserved_names = ['version']
 
+        self.id = id
+        self.url = url
+        self.type = type
+        self.name = name
+        self.first_published_at = first_published_at
+        self.published_at = published_at
+        self.description = description
+        self.description_html = description_html
+        self.group = group if group else Group()
+        self.data = data if data else Data()
+        self.url_html = url_html
+        self.published_version = published_version
+        self.latest_version = latest_version
+        self.this_version = this_version
+        self.kind  = kind
+        self.categories = categories if categories else []
+        self.tags = tags if tags else []
+        self.collected_at = collected_at
+        self.created_at = created_at
+        self.license = license if license else License()
+        self.metadata = metadata if metadata else  Metadata()
+        self.elevation_field = elevation_field
+
         super(self.__class__, self).__init__()
+
+    @classmethod
+    def fromjson(cls, datadict):
+        '''Initialize Layer from a JSON blob
+        
+        la = Layer.fromjson(my_json)
+        
+        '''
+            #return cls(datadict.items())
+
 
     def get_list(self):
         """Fetches a set of layers
@@ -432,19 +626,6 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
         super(self.__class__, self).get(id, target_url)
 
-
-class Group(object):
-    pass
-class Data(object):
-    pass
-class DataSource(object):
-    pass
-class Category(object):
-    pass
-class License(object):
-    pass
-class Metatdata(object):
-    pass
 
 def sample(foo, bar):
     """Is a Sample for testing purposes.

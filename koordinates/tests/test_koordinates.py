@@ -59,10 +59,67 @@ class TestKoordinates(unittest.TestCase):
     def setUp(self):
         self.koordconn = api.Connection('rshea@thecubagroup.com',
                                         TestKoordinates.pwd)
+        self.koordtestconn = api.Connection('rshea@thecubagroup.com',
+                                        TestKoordinates.pwd, 
+                                        host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
+    def test_instantiate_group_class(self):
+        g = api.Group(99, "http//example.com", "Group Name", "NZ")
+        self.assertEqual(g.id, 99)
+        self.assertTrue(self.contains_substring(g.url, "example"))
+        self.assertEqual(g.name, "Group Name")
+        self.assertEqual(g.country, "NZ")
+
+    def test_instantiate_data_class(self):
+        d = api.Data(None, "EPSG:2193",[],[],"GEOMETRY", [])
+        self.assertEqual(d.encoding, None)
+        self.assertEqual(d.crs, "EPSG:2193")
+        self.assertEqual(d.geometry_field, "GEOMETRY")
+
+
+    def test_instantiate_datasource_class(self):
+        ds = api.DataSource(99)
+        self.assertEqual(ds.id, 99)
+        
+    def test_instantiate_category_class(self):
+        ca = api.Category("Category Name Test 0", "cadastral")
+        self.assertEqual(ca.name, "Category Name Test 0")
+        self.assertEqual(ca.slug, "cadastral")
+
+        
+    def test_instantiate_licence_class(self):
+        li = api.License(99, 
+                        "Creative Commons Attribution 3.0 New Zealand",
+                        "cc-by", 
+                        "nz",
+                        "3.0", 
+                        "https://koordinates.com/services/api/v1/licenses/9/",
+                        "https://koordinates.com/license/attribution-3-0-new-zealand/")
+        self.assertEqual(li.id, 99)
+        self.assertEqual(li.title, "Creative Commons Attribution 3.0 New Zealand")
+        self.assertEqual(li.type, 'cc-by')
+        self.assertEqual(li.jurisdiction, "nz")
+        self.assertEqual(li.version, "3.0")
+        self.assertEqual(li.url, "https://koordinates.com/services/api/v1/licenses/9/")
+        self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
+        
+    def test_instantiate_metadata_class(self):
+        m = api.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
+                         "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
+                         "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
+                
+        self.assertEqual(m.iso, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/")
+        self.assertEqual(m.dc, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/")
+        self.assertEqual(m.native, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
+        
+    def test_instantiate_field_class(self):
+        f = api.Field("Field Name", "integer")
+        self.assertEqual(f.name, "Field Name")
+        self.assertEqual(f.type, "integer")
+        
     def test_sets_url(self):
         self.assertEqual(self.koordconn.set.get_url('SET', 'GET', 'single', {'set_id':999}),
                         '''https://koordinates.com/services/api/v1/sets/999/''')
@@ -228,16 +285,29 @@ class TestKoordinates(unittest.TestCase):
         with self.assertRaises(koordexceptions.KoordinatesRateLimitExceeded):
             self.koordconn.layer.get(id)
 
+#   @responses.activate
+#   def test_layer_import(self):
+
+#       the_response = layers_single_good_simulated_response
+#       #import pdb;pdb.set_trace()
+#       dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999})
+#       responses.add(responses.GET,
+#                     self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999}),
+#                     body=the_response, status=200,
+#                     content_type='application/json')
+
+#       self.koordtestconn.version.import_version(999)
+
     @responses.activate
-    def test_layer_hierarchy_of_classes(self, layer_id=1474):
+    def test_layer_hierarchy_of_classes(self):
 
         the_response = layers_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id': layer_id}),
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id': 1474}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        self.koordconn.layer.get(layer_id)
+        self.koordconn.layer.get(1474)
         self.assertEqual(self.koordconn.layer.categories[0].slug, "cadastral")
         self.assertEqual(self.koordconn.layer.data.crs, "EPSG:2193")
         self.assertEqual(self.koordconn.layer.data.fields[0].type, "geometry")

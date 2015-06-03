@@ -69,6 +69,63 @@ def main6(username):
         print(version.id, " ", version.created_at, " " , version.created_by)
     print("main 6 STOPx +++++++++++++++++++++++++++++++++++++++++++++")
 
+def main7(username):
+    print("main 7 START +++++++++++++++++++++++++++++++++++++++++++++")
+    conn = api.Connection(username, getpass())
+    conn.version.url="https://koordinates.com/services/api/v1/layers/1474/versions/4067/"
+    conn.version.status = "ok"
+    conn.version.created_at = "2012-05-09T02:11:27.020Z"
+    conn.version.created_by=2879
+    conn.version.reference=""
+    conn.version.progress = 1 
+
+    conn.version.insert(1474)
+    print("main 7 STOP  +++++++++++++++++++++++++++++++++++++++++++++")
+
+def main9(username):
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    test=True
+    conn.version.import_version(999)
+    test=False
+def main8(username):
+    print("main 8 START +++++++++++++++++++++++++++++++++++++++++++++")
+    conn = api.Connection(username, getpass())
+    conn.layer.name="Shea Test Layer 0"
+    conn.layer.type = "layer"
+    #... and so on
+    #... until we get to this type of thing
+    #... which requires a bit of thought as 
+    #... so far we've avoided having "internal"
+    #... class definitions and now we need a 
+    #... Datasource class (although we do this dynamically
+    #... for the GET's so probably OK)
+    conn.layer.data.datasources = []
+    conn.layer.data.datasources = [Datasource(id=999)]
+    #... however that hightlight the primary
+    #... issue which is this ... there's a danger
+    #... I do this and then the only means
+    #... of understanding that is wrong is when
+    #... the POST hits the server
+    conn.layer.badspellingofattributes = 0
+    #Now k
+    conn.layer.insert()
+    print("main 8 STOP  +++++++++++++++++++++++++++++++++++++++++++++")
+
+def make_list_string(lst):
+    return "| ".join(lst)
+
+def main10(username):
+    conn = api.Connection(username, getpass())
+    dic_types = {}
+    for the_data in conn.data.get_list().execute_get_list():
+        if the_data.type in dic_types:
+            dic_types[the_data.type] += 1
+        else:
+            dic_types[the_data.type] = 1
+    for k,v in dic_types.items():
+        print("{} -> {}".format(k, v))
+
+
 def main4(username):
     #conn = api.Connection(username, getpass())
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
@@ -76,8 +133,14 @@ def main4(username):
 
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
+    import pdb;pdb.set_trace()
     for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
-        print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
+        print(the_layer.tags)
+        print(the_layer.collected_at)
+        print(the_layer.id, " ", the_layer.name, " ", id(the_layer), make_list_string(the_layer.tags))
+
+def main4A(username):
+    conn = api.Connection(username, getpass())
     bln_first_one = True
     for the_layer in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
         print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
@@ -135,6 +198,22 @@ def main4(username):
     conn.layer.get(3994)
     print(conn.layer.name)
     print("[f] conn.layer analysis")
+
+def main4B(username):
+    conn = api.Connection(username, getpass())
+    conn.layer.get(1474)
+    print("")
+    print(conn.layer.tags)
+    print("")
+    print(conn.layer.data.crs)
+    print("")
+    for f in conn.layer.data.fields:
+        print(f.name)
+    print("")
+    print(conn.layer.collected_at)
+    print("")
+    print(conn.layer.id, " ", conn.layer.name, " ", id(conn.layer), make_list_string(conn.layer.tags))
+    print("")
 
 def main3():
     #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
@@ -235,12 +314,19 @@ def main():
     url = target_url(id=1474)
     if False:
         main1(username, url, log=do_some_logging)
-    #main2(username, url)
-    #main3()
-    main4(username)
-    main5()
-    logger_tester(log=do_some_logging)
-    main6(username)
+        main2(username, url)
+        main3()
+    main4B(username)
+    if False:
+        main4(username)
+        main4A(username)
+        main5()
+        logger_tester(log=do_some_logging)
+        main6(username)
+        main7(username)
+        main8(username)
+        main9(username)
+    main10(username)
 
 if __name__ == "__main__":
     main()

@@ -57,3 +57,7 @@ class KoordinatesServerTimeOut(KoordinatesBaseException):
 
 class KoordinatesRateLimitExceeded(KoordinatesBaseException):
     pass
+
+class KoordinatesImportEncounteredUpdateConflict(KoordinatesBaseException):
+    pass
+
