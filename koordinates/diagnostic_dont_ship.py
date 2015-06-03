@@ -117,13 +117,19 @@ def make_list_string(lst):
 def main10(username):
     conn = api.Connection(username, getpass())
     dic_types = {}
+    last_id = None
+    row_count = 0
     for the_data in conn.data.get_list().execute_get_list():
+        row_count += 1
+        last_id = the_data.id
         if the_data.type in dic_types:
             dic_types[the_data.type] += 1
         else:
             dic_types[the_data.type] = 1
     for k,v in dic_types.items():
         print("{} -> {}".format(k, v))
+    print("row_count = {}".format(row_count))
+    print("last id = {}".format(last_id))
 
 
 def main4(username):

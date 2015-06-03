@@ -169,6 +169,8 @@ class KoordinatesObjectMixin(object):
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
+    def __specify_page(self, value):
+        pass
     def filter(self, value):
         if self._filtering_applied:
             raise koordexceptions.KoordinatesOnlyOneFilterAllowed
@@ -207,16 +209,24 @@ class KoordinatesObjectMixin(object):
         self._url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
     def execute_get_list(self):
+        self._list_of_response_dicts = []
+        self._next_page_number = 1  
+        self.add_query_component("page", self._next_page_number)
         self.__execute_get_list_no_generator()
-        for response in self._list_of_response_dicts:
-            this_object = self.__class__(self._parent)
-            for key, value in response.items():
-                setattr(this_object, key, value)
-            yield this_object
+        for list_of_responses in self._list_of_response_dicts:
+            for response in list_of_responses:
+                this_object = self.__class__(self._parent)
+                for key, value in response.items():
+                    setattr(this_object, key, value)
+                yield this_object
+            if self._link_to_next_in_list:
+                self.__execute_get_list_no_generator(target_url=self._link_to_next_in_list)
 
-    def __execute_get_list_no_generator(self):
+    def __execute_get_list_no_generator(self,
+                                        target_url=None):
 
-        target_url = self._url
+        if not target_url:
+            target_url = self._url
         self._url = ""
         self._ordering_applied = False
         self._filtering_applied = False
@@ -224,21 +234,20 @@ class KoordinatesObjectMixin(object):
                                          auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
-            self._list_of_response_dicts = self._raw_response.json()
+            self._list_of_response_dicts.append(self._raw_response.json())
+            if 'page-next' in self._raw_response.links:
+                self._link_to_next_in_list = self._raw_response.links['page-next']['url']
+            else:
+                self._link_to_next_in_list = None
         elif self._raw_response.status_code == 404:
-            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 401:
-            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesNotAuthorised
         elif self._raw_response.status_code == 429:
-            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesRateLimitExceeded
         elif self._raw_response.status_code == 504:
-            self._list_of_response_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesServerTimeOut
         else:
-            self.list_oflayer_dicts = self._raw_response.json()
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def __create_attribute(self, att_name, att_value):
@@ -331,6 +340,8 @@ class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self._raw_response = None
         self._list_of_response_dicts = []
+        self._link_to_next_in_list = ""
+        self._next_page_number = 1  
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
         # An attribute may not be created automatically
@@ -362,6 +373,8 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self._raw_response = None
         self._list_of_response_dicts = []
+        self._link_to_next_in_list = ""
+        self._next_page_number = 1  
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
         # An attribute may not be created automatically
@@ -399,6 +412,8 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self._raw_response = None
         self._list_of_response_dicts = []
+        self._link_to_next_in_list = ""
+        self._next_page_number = 1  
 
         self._ordering_applied = False
         self._filtering_applied = False
@@ -565,6 +580,8 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         self._raw_response = None
         self._list_of_response_dicts = []
+        self._link_to_next_in_list = ""
+        self._next_page_number = 1  
 
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
