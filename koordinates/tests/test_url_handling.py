@@ -58,9 +58,9 @@ class TestKoordinatesURLHandling(unittest.TestCase):
 
     def setUp(self):
         self.koordconn = api.Connection('rshea@thecubagroup.com',
-                                        __class__.pwd)
+                                        TestKoordinatesURLHandling.pwd)
         self.koordtestconn = api.Connection('rshea@thecubagroup.com',
-                                        __class__.pwd, 
+                                        TestKoordinatesURLHandling.pwd, 
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
@@ -106,7 +106,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         test_domain = str(uuid.uuid1()).replace("-", "")
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
-                                                     __class__.pwd,
+                                                     TestKoordinatesURLHandling.pwd,
                                                      test_host_name,
                                                      api_version='UNITTESTINGONLY')
 
@@ -119,7 +119,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         with self.assertRaises(koordexceptions.KoordinatesInvalidAPIVersion):
             self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
-                                                         __class__.pwd,
+                                                         TestKoordinatesURLHandling.pwd,
                                                          test_host_name,
                                                          api_version=test_api_version)
 

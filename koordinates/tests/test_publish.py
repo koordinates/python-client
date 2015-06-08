@@ -59,9 +59,9 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
     def setUp(self):
         self.koordconn = api.Connection('rshea@thecubagroup.com',
-                                        __class__.pwd)
+                                        TestKoordinatesPublishing.pwd)
         self.koordtestconn = api.Connection('rshea@thecubagroup.com',
-                                        __class__.pwd, 
+                                        TestKoordinatesPublishing.pwd, 
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
@@ -126,6 +126,32 @@ class TestKoordinatesPublishing(unittest.TestCase):
         with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
             self.koordtestconn.publish(pr, 'together', 'abort')
+
+    @responses.activate
+    def test_publish_single_layer_version(self, layer_id=1474, version_id=4067):
+        the_response = layers_version_single_good_simulated_response 
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+
+
+        #import pdb;pdb.set_trace()
+        self.koordconn.version.get(1474, 4067)
+
+        self.assertEqual(self.koordconn.version.id, 1474)
+        self.assertEqual(self.koordconn.version.version.id, 4067)
+    
+        the_response = '''{"id": 2057, "url": "https://test.koordinates.com/services/api/v1/publish/2057/", "state": "publishing", "created_at": "2015-06-08T10:39:44.823Z", "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, "error_strategy": "abort", "publish_strategy": "together", "publish_at": null, "items": ["https://test.koordinates.com/services/api/v1/layers/1474/versions/4067/"]}'''
+
+        responses.add(responses.POST,
+                      self.koordconn.get_url('VERSION', 'POST', 'publish', {'layer_id': layer_id, 'version_id': version_id}),
+                      body=the_response, status=201,
+                      content_type='application/json')
+
+        self.koordconn.version.publish()
+        self.assertTrue(self.contains_substring(self.koordconn.version._raw_response.text , "created_by"))
 
     def tearDown(self):
         pass
