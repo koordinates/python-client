@@ -61,3 +61,5 @@ class KoordinatesRateLimitExceeded(KoordinatesBaseException):
 class KoordinatesImportEncounteredUpdateConflict(KoordinatesBaseException):
     pass
 
+class KoordinatesInvalidPublicationResourceList(KoordinatesBaseException):
+    pass

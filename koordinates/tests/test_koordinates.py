@@ -471,6 +471,66 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(cnt_of_sets_returned, 2)
 
     @responses.activate
+    def test_multipublish_resource_specification(self):
+        the_response = '''{}''' 
+        responses.add(responses.POST,
+                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', kwargs={'hostname':"test.koordinates.com"}),
+                      body=the_response, status=999,
+                      content_type='application/json')
+
+
+        with self.assertRaises(AssertionError):
+            self.koordtestconn.publish("")
+
+        pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
+        pr.add_layer_to_publish(100, 1000)
+        pr.add_layer_to_publish(101, 1001)
+        pr.add_layer_to_publish(102, 1002)
+        pr.add_table_to_publish(200, 2000)
+        pr.add_table_to_publish(201, 2001)
+        pr.add_table_to_publish(202, 2002)
+
+        with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
+            #the Responses mocking will result in a 999 being returned
+            self.koordtestconn.publish(pr)
+
+    @responses.activate
+    def test_multipublish_bad_args(self):
+        the_response = '''{}''' 
+
+        responses.add(responses.POST,
+                      self.koordtestconn.layer.get_url('CONN', 'POST', 'publishmulti', kwargs={'hostname':"test.koordinates.com"}),
+                      body=the_response, status=999,
+                      content_type='application/json')
+
+
+        with self.assertRaises(AssertionError):
+            self.koordtestconn.publish("")
+
+        pr = api.PublishRequest([],[])
+
+        with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
+            #the Responses mocking will result in a 999 being returned
+            self.koordtestconn.publish(pr)
+
+        with self.assertRaises(AssertionError):
+            self.koordtestconn.publish("", 'Z')
+
+        with self.assertRaises(AssertionError):
+            self.koordtestconn.publish(pr, 'Z')
+
+        with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
+            #the Responses mocking will result in a 999 being returned
+            self.koordtestconn.publish(pr, 'together')
+
+        with self.assertRaises(AssertionError):
+            self.koordtestconn.publish(pr, 'together', 'Z')
+
+        with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
+            #the Responses mocking will result in a 999 being returned
+            self.koordtestconn.publish(pr, 'together', 'abort')
+
+    @responses.activate
     def test_use_of_responses(self):
         responses.add(responses.GET, 'http://twitter.com/api/1/foobar',
                       body='{"error": "not found"}', status=404,

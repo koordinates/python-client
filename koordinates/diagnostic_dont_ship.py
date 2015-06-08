@@ -114,6 +114,16 @@ def main8(username):
 def make_list_string(lst):
     return "| ".join(lst)
 
+def main11(username):
+
+    import pdb;pdb.set_trace()
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    #pr = api.PublishRequest(hostname="test.koordinates.com")
+    pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
+    pr.add_layer_to_publish(8093, 9823)
+    pr.add_layer_to_publish(8094, 9824)
+    conn.publish(pr)
+
 def main10(username):
     conn = api.Connection(username, getpass())
     dic_types = {}
@@ -333,6 +343,7 @@ def main():
         main8(username)
         main9(username)
     main10(username)
+    main11(username)
 
 if __name__ == "__main__":
     main()

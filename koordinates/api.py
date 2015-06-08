@@ -39,52 +39,19 @@ import koordexceptions
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 
-class Connection(object):
-    """
-    This is a python library for accessing the koordinates api
-    """
-
-    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=True):
-        if activate_logging:
-            client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
-            logging.basicConfig(filename=client_logfile_name,
-                                level=logging.DEBUG,
-                                format='%(asctime)s %(levelname)s %(module)s %(message)s')
-
-        logger.debug('Initializing Connection object')
-
-        if api_version not in SUPPORTED_API_VERSIONS:
-            raise koordexceptions.KoordinatesInvalidAPIVersion
-        else:
-            self.api_version = api_version
-
-        self.host = host
-
-        self.username = username
-        if pwd:
-            self.pwd = pwd
-        else:
-            self.pwd = os.environ['KPWD']
-
-        self.layer = Layer(self)
-        self.set = Set(self)
-        self.version = Version(self)
-        self.data = KData(self)
-
-    def get_auth(self):
-        """Creates an Authorisation object
-        """
-        return requests.auth.HTTPBasicAuth(self.username,
-                                           self.pwd)
-
-
 class KoordinatesURLMixin(object):
     def __init__(self):
         self._url_templates = {}
+        self._url_templates['CONN'] = {}
+        self._url_templates['CONN']['POST'] = {}
+        self._url_templates['CONN']['POST']['publishmulti'] = '''https://{hostname}/services/api/{api_version}/publish/'''
         self._url_templates['LAYER'] = {}
         self._url_templates['LAYER']['GET'] = {}
+        self._url_templates['LAYER']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
         self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
+        self._url_templates['LAYER']['POST'] = {}
+        self._url_templates['LAYER']['POST']['publish'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/publish/'''
         self._url_templates['SET'] = {}
         self._url_templates['SET']['GET'] = {}
         self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{set_id}/'''
@@ -98,15 +65,30 @@ class KoordinatesURLMixin(object):
         self._url_templates['DATA'] = {}
         self._url_templates['DATA']['GET'] = {}
         self._url_templates['DATA']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/data/'''
+        self._url_templates['TABLE'] = {}
+        self._url_templates['TABLE']['GET'] = {}
+        self._url_templates['TABLE']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/tables/{table_id}/versions/{version_id}/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
 
     def get_url(self, datatype, verb, urltype, kwargs={}):
         if "hostname" not in kwargs:
-            kwargs['hostname'] = self._parent.host
+            try:
+                kwargs['hostname'] = self._parent.host
+            except AttributeError:
+                # We need to cater for when `get_url` is
+                # invoked from a method on the `Connection`
+                # object itself
+                kwargs['hostname'] = self.host
         if "api_version" not in kwargs:
-            kwargs['api_version'] = self._parent.api_version
+            try:
+                kwargs['api_version'] = self._parent.api_version
+            except AttributeError:
+                # We need to cater for when `get_url` is
+                # invoked from a method on the `Connection`
+                # object itself
+                kwargs['api_version'] = self.api_version
 
         return self.url_templates(datatype, verb, urltype).format(**kwargs)
 
@@ -326,6 +308,240 @@ class KoordinatesObjectMixin(object):
         return type(str(the_name.title()), (object,), dic_out)
 
 
+class PublishRequest(KoordinatesURLMixin):
+    """
+    Defines the nature of a multiple item Publish request
+    """
+    def __init__(self, layers=[], tables=[], kwargs={}):
+        """
+        `layers`: a list of dicts of the form {'layer_id':n, 'version_id':m}
+        `tables`: a list of dicts of the form {'table_id':n, 'version_id':m}
+        """
+
+        assert type(layers) is list,\
+                "The 'layers' argument must be a list"
+        assert type(tables) is list,\
+                "The 'tables' argument must be a list"
+
+        self.layers = layers 
+        self.tables = tables 
+        if "hostname" in kwargs:
+            self.hostname = kwargs['hostname']
+        else:
+            self.hostname = None
+        if "api_version" in kwargs:
+            self.api_version = kwargs['api_version']
+        else:
+            self.api_version = None 
+
+
+    def add_table_to_publish(self, table_id, version_id):
+        self.tables.append({'table_id': table_id, 'version_id': version_id})
+
+    def add_layer_to_publish(self, layer_id, version_id):
+        self.layers.append({'layer_id': layer_id, 'version_id': version_id})
+
+    def validate(self):
+        '''
+        Validates that the resources specified for Publication are in the
+        correct format.
+        '''
+
+        self.good_layers()
+        self.good_tables()
+
+    def good_tables(self):
+        '''
+        Validates a list of tables ids and a corresponding version id which will be 
+        used to specify the tables to be published
+        '''
+        return self.__good_resource_specifications(self.tables, 'table')
+
+    def good_layers(self):
+        '''
+        Validates a list of layers ids and a corresponding version id which will be 
+        used to specify the layers to be published
+        '''
+        return self.__good_resource_specifications(self.layers, 'layer')
+    
+
+    def __good_resource_specifications(self, lst_resources, resource_name):
+        '''
+        Validates a list of resource ids which will be used to specify the resources
+        to be published
+
+        `lst_resource`: A list of dictionaries which correspond to the resources
+                        to be published. Each dictionary must have the keys: X_id
+                        (where 'X' is 'table', 'layer', etc) ; and 'version_id'.
+                        The associated elements should the unique identifiers of
+                        the table/version or layer/version which is to be published
+
+        `resource_name`: A string which corresponds to the attribute of this class
+                        which is being validated. Valid values are 'layers' and 'tables'
+
+        '''
+
+        if type(lst_resources) is list:
+            if len(lst_resources) == 0:
+                pass
+            else:
+                for resource_dict in lst_resources:
+                    if type(resource_dict) is dict:
+                        if (resource_name + '_id') in resource_dict and 'version_id' in resource_dict:
+                            pass
+                        else:
+                            raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
+                                    "{resname} must be list of dicts. "\
+                                    "Each dict must have the keys "\
+                                    "{resname}_id and version_id".format(resname=resource_name))
+                    else:
+                        raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
+                                "Each element of {resname} must be a dict. "\
+                                .format(resname=resource_name))
+        else:
+            raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
+                    "{resname} must be list of dicts. "\
+                    "Each dict must have the keys "\
+                    "{resname}_id and version_id".format(resname=resource_name))
+
+
+
+class Connection(KoordinatesURLMixin):
+    """
+    This is a python library for accessing the koordinates api
+    """
+
+    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=True):
+        if activate_logging:
+            client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
+            logging.basicConfig(filename=client_logfile_name,
+                                level=logging.DEBUG,
+                                format='%(asctime)s %(levelname)s %(module)s %(message)s')
+
+        logger.debug('Initializing Connection object')
+
+        if api_version not in SUPPORTED_API_VERSIONS:
+            raise koordexceptions.KoordinatesInvalidAPIVersion
+        else:
+            self.api_version = api_version
+
+        self.host = host
+
+        self.username = username
+        if pwd:
+            self.pwd = pwd
+        else:
+            self.pwd = os.environ['KPWD']
+
+        self.layer = Layer(self)
+        self.set = Set(self)
+        self.version = Version(self)
+        self.data = KData(self)
+
+        parent = self
+        super(self.__class__, self).__init__()
+
+    def get_auth(self):
+        """Creates an Authorisation object
+        """
+        return requests.auth.HTTPBasicAuth(self.username,
+                                           self.pwd)
+
+
+    def build_multi_publish_json(self, pub_request, publish_strategy, error_strategy):
+        '''
+        Build a JSON body suitable for the multi-resource 
+        publishing
+        '''
+
+        pub_request.validate()
+
+        dic_out = {}
+        if publish_strategy:
+            dic_out['publish_strategy'] = publish_strategy 
+        if error_strategy:
+            dic_out['error_strategy'] = error_strategy 
+
+        lst_items = []
+
+        for table_resource_dict in pub_request.tables:
+            table_resource_dict['hostname']= self.host 
+            table_resource_dict['api_version']= self.api_version 
+            target_url = self.get_url('TABLE', 'GET', 'singleversion', table_resource_dict)
+            lst_items.append(target_url)
+
+        for layer_resource_dict in pub_request.layers:
+            layer_resource_dict['hostname']= self.host 
+            layer_resource_dict['api_version']= self.api_version 
+            target_url = self.get_url('LAYER', 'GET', 'singleversion', layer_resource_dict)
+            lst_items.append(target_url)
+
+        dic_out['items'] = lst_items
+
+        '''
+        json_out = json.dumps(dic_out)
+        import pdb;pdb.set_trace()
+
+
+        return json_out
+        '''
+        return dic_out
+
+    def publish(self, pub_request, publish_strategy=None, error_strategy=None):
+        """Publishes a set of items, potentially a mixture of Layers and Tables
+
+        `pub_request`: A `PublishRequest' object specifying what resources are to be published 
+        `publish_strategy`: One of: `"individual"`, `"together"`. Default = `"together"`
+        `error_strategy`: One of: `"abort"`, `"ignore"`. Default = `"abort"`
+
+        """
+        assert type(pub_request) is PublishRequest,\
+                "The 'items' argument must be a list"
+        assert publish_strategy in ["individual","together", None],\
+                "The 'publish_strategy' value must be None or 'individual' or 'together'"
+        assert error_strategy in ["abort","ignore", None],\
+                "The 'error_strategy' value must be None or 'abort' or 'ignore'"
+
+        dic_args = {}
+        if pub_request.hostname:
+            dic_args = {'hostname' : pub_request.hostname}
+        if pub_request.api_version:
+            dic_args = {'api_version' : pub_request.api_version}
+
+        target_url = self.get_url('CONN', 'POST', 'publishmulti', dic_args)
+        test_auth=self.get_auth()
+        json_headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        json_headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        dic_body =self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
+        # body_as_json_encoded = body_as_json.encode('ascii')
+        '''
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".json", prefix="koo-utf-", delete=False) as tmp:
+            tmp.write(body_as_json.encode('utf-8'))
+        with tempfile.NamedTemporaryFile(suffix=".json", prefix="koo-asc-", delete=False) as tmp:
+            tmp.write(body_as_json.encode('ascii'))
+        '''
+        self._raw_response = requests.post(target_url,
+                                          json = dic_body,
+                                          headers = json_headers, 
+                                          auth=self.get_auth())
+
+        if self._raw_response.status_code == 201:
+            # Success ! 
+            pass
+        elif self._raw_response.status_code == 409:
+            # Indicates that the request could not be processed because 
+            # of conflict in the request, such as an edit conflict in 
+            # the case of multiple updates
+            raise KoordinatesImportEncounteredUpdateConflict
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
+
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Data
 
@@ -442,6 +658,10 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         """
 
         raise NotImplementedError
+
+    def publish(self, layer_id):
+        """Publish the current Version
+        """
 
     def import_version(self, layer_id):
         """Reimport an existing layer from its previous datasources
