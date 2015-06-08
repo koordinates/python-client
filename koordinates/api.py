@@ -112,10 +112,10 @@ class KoordinatesObjectMixin(object):
         :param id: ID for the new :class:`Set` object.
         """
 
-        dynamic_build = True 
+        dynamic_build = True
 
         self._raw_response = requests.get(target_url,
-                                         auth=self._parent.get_auth())
+                                          auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
             # convert JSON to dict
@@ -153,6 +153,7 @@ class KoordinatesObjectMixin(object):
 
     def __specify_page(self, value):
         pass
+
     def filter(self, value):
         if self._filtering_applied:
             raise koordexceptions.KoordinatesOnlyOneFilterAllowed
@@ -192,7 +193,7 @@ class KoordinatesObjectMixin(object):
 
     def execute_get_list(self):
         self._list_of_response_dicts = []
-        self._next_page_number = 1  
+        self._next_page_number = 1
         self.add_query_component("page", self._next_page_number)
         self.__execute_get_list_no_generator()
         for list_of_responses in self._list_of_response_dicts:
@@ -213,7 +214,7 @@ class KoordinatesObjectMixin(object):
         self._ordering_applied = False
         self._filtering_applied = False
         self._raw_response = requests.get(target_url,
-                                         auth=self._parent.get_auth())
+                                          auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
             self._list_of_response_dicts.append(self._raw_response.json())
@@ -319,12 +320,12 @@ class PublishRequest(KoordinatesURLMixin):
         """
 
         assert type(layers) is list,\
-                "The 'layers' argument must be a list"
+            "The 'layers' argument must be a list"
         assert type(tables) is list,\
-                "The 'tables' argument must be a list"
+            "The 'tables' argument must be a list"
 
-        self.layers = layers 
-        self.tables = tables 
+        self.layers = layers
+        self.tables = tables
         if "hostname" in kwargs:
             self.hostname = kwargs['hostname']
         else:
@@ -332,8 +333,7 @@ class PublishRequest(KoordinatesURLMixin):
         if "api_version" in kwargs:
             self.api_version = kwargs['api_version']
         else:
-            self.api_version = None 
-
+            self.api_version = None
 
     def add_table_to_publish(self, table_id, version_id):
         self.tables.append({'table_id': table_id, 'version_id': version_id})
@@ -352,18 +352,17 @@ class PublishRequest(KoordinatesURLMixin):
 
     def good_tables(self):
         '''
-        Validates a list of tables ids and a corresponding version id which will be 
+        Validates a list of tables ids and a corresponding version id which will be
         used to specify the tables to be published
         '''
         return self.__good_resource_specifications(self.tables, 'table')
 
     def good_layers(self):
         '''
-        Validates a list of layers ids and a corresponding version id which will be 
+        Validates a list of layers ids and a corresponding version id which will be
         used to specify the layers to be published
         '''
         return self.__good_resource_specifications(self.layers, 'layer')
-    
 
     def __good_resource_specifications(self, lst_resources, resource_name):
         '''
@@ -390,20 +389,19 @@ class PublishRequest(KoordinatesURLMixin):
                         if (resource_name + '_id') in resource_dict and 'version_id' in resource_dict:
                             pass
                         else:
-                            raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
-                                    "{resname} must be list of dicts. "\
-                                    "Each dict must have the keys "\
-                                    "{resname}_id and version_id".format(resname=resource_name))
+                            raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+                                "{resname} must be list of dicts. "
+                                "Each dict must have the keys "
+                                "{resname}_id and version_id".format(resname=resource_name))
                     else:
-                        raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
-                                "Each element of {resname} must be a dict. "\
-                                .format(resname=resource_name))
+                        raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+                            "Each element of {resname} must be a dict. "
+                            .format(resname=resource_name))
         else:
-            raise koordexceptions.KoordinatesInvalidPublicationResourceList(\
-                    "{resname} must be list of dicts. "\
-                    "Each dict must have the keys "\
-                    "{resname}_id and version_id".format(resname=resource_name))
-
+            raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+                "{resname} must be list of dicts. "
+                "Each dict must have the keys "
+                "{resname}_id and version_id".format(resname=resource_name))
 
 
 class Connection(KoordinatesURLMixin):
@@ -411,9 +409,11 @@ class Connection(KoordinatesURLMixin):
     This is a python library for accessing the koordinates api
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com', api_version='v1', activate_logging=True):
+    def __init__(self, username, pwd=None, host='koordinates.com', 
+                 api_version='v1', activate_logging=True):
         if activate_logging:
-            client_logfile_name = "koordinates-client-{}.log".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
+            client_logfile_name = "koordinates-client-{}.log"\
+                                  .format(datetime.now().strftime('%Y%m%dT%H%M%S'))
             logging.basicConfig(filename=client_logfile_name,
                                 level=logging.DEBUG,
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
@@ -447,10 +447,9 @@ class Connection(KoordinatesURLMixin):
         return requests.auth.HTTPBasicAuth(self.username,
                                            self.pwd)
 
-
     def build_multi_publish_json(self, pub_request, publish_strategy, error_strategy):
         '''
-        Build a JSON body suitable for the multi-resource 
+        Build a JSON body suitable for the multi-resource
         publishing
         '''
 
@@ -458,83 +457,65 @@ class Connection(KoordinatesURLMixin):
 
         dic_out = {}
         if publish_strategy:
-            dic_out['publish_strategy'] = publish_strategy 
+            dic_out['publish_strategy'] = publish_strategy
         if error_strategy:
-            dic_out['error_strategy'] = error_strategy 
+            dic_out['error_strategy'] = error_strategy
 
         lst_items = []
 
         for table_resource_dict in pub_request.tables:
-            table_resource_dict['hostname']= self.host 
-            table_resource_dict['api_version']= self.api_version 
+            table_resource_dict['hostname'] = self.host
+            table_resource_dict['api_version'] = self.api_version
             target_url = self.get_url('TABLE', 'GET', 'singleversion', table_resource_dict)
             lst_items.append(target_url)
 
         for layer_resource_dict in pub_request.layers:
-            layer_resource_dict['hostname']= self.host 
-            layer_resource_dict['api_version']= self.api_version 
+            layer_resource_dict['hostname'] = self.host
+            layer_resource_dict['api_version'] = self.api_version
             target_url = self.get_url('LAYER', 'GET', 'singleversion', layer_resource_dict)
             lst_items.append(target_url)
 
         dic_out['items'] = lst_items
 
-        '''
-        json_out = json.dumps(dic_out)
-        import pdb;pdb.set_trace()
-
-
-        return json_out
-        '''
         return dic_out
 
     def publish(self, pub_request, publish_strategy=None, error_strategy=None):
         """Publishes a set of items, potentially a mixture of Layers and Tables
 
-        `pub_request`: A `PublishRequest' object specifying what resources are to be published 
+        `pub_request`: A `PublishRequest' object specifying what resources are to be published
         `publish_strategy`: One of: `"individual"`, `"together"`. Default = `"together"`
         `error_strategy`: One of: `"abort"`, `"ignore"`. Default = `"abort"`
 
         """
         assert type(pub_request) is PublishRequest,\
-                "The 'items' argument must be a list"
-        assert publish_strategy in ["individual","together", None],\
-                "The 'publish_strategy' value must be None or 'individual' or 'together'"
-        assert error_strategy in ["abort","ignore", None],\
-                "The 'error_strategy' value must be None or 'abort' or 'ignore'"
+            "The 'items' argument must be a list"
+        assert publish_strategy in ["individual", "together", None],\
+            "The 'publish_strategy' value must be None or 'individual' or 'together'"
+        assert error_strategy in ["abort", "ignore", None],\
+            "The 'error_strategy' value must be None or 'abort' or 'ignore'"
 
         dic_args = {}
         if pub_request.hostname:
-            dic_args = {'hostname' : pub_request.hostname}
+            dic_args = {'hostname': pub_request.hostname}
         if pub_request.api_version:
-            dic_args = {'api_version' : pub_request.api_version}
+            dic_args = {'api_version': pub_request.api_version}
 
         target_url = self.get_url('CONN', 'POST', 'publishmulti', dic_args)
-        test_auth=self.get_auth()
-        json_headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        json_headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
         json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
-        dic_body =self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
-        # body_as_json_encoded = body_as_json.encode('ascii')
-        '''
-        import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".json", prefix="koo-utf-", delete=False) as tmp:
-            tmp.write(body_as_json.encode('utf-8'))
-        with tempfile.NamedTemporaryFile(suffix=".json", prefix="koo-asc-", delete=False) as tmp:
-            tmp.write(body_as_json.encode('ascii'))
-        '''
+        dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
         self._raw_response = requests.post(target_url,
-                                          json = dic_body,
-                                          headers = json_headers, 
-                                          auth=self.get_auth())
+                                           json=dic_body,
+                                           headers=json_headers,
+                                           auth=self.get_auth())
 
         if self._raw_response.status_code == 201:
-            # Success ! 
+            # Success !
             pass
         elif self._raw_response.status_code == 409:
-            # Indicates that the request could not be processed because 
-            # of conflict in the request, such as an edit conflict in 
+            # Indicates that the request could not be processed because
+            # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise KoordinatesImportEncounteredUpdateConflict
+            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
             raise koordexceptions.KoordinatesInvalidURL
@@ -557,7 +538,7 @@ class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._raw_response = None
         self._list_of_response_dicts = []
         self._link_to_next_in_list = ""
-        self._next_page_number = 1  
+        self._next_page_number = 1
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
         # An attribute may not be created automatically
@@ -590,7 +571,7 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._raw_response = None
         self._list_of_response_dicts = []
         self._link_to_next_in_list = ""
-        self._next_page_number = 1  
+        self._next_page_number = 1
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
         # An attribute may not be created automatically
@@ -629,7 +610,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._raw_response = None
         self._list_of_response_dicts = []
         self._link_to_next_in_list = ""
-        self._next_page_number = 1  
+        self._next_page_number = 1
 
         self._ordering_applied = False
         self._filtering_applied = False
@@ -668,18 +649,17 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         and create a new version
         """
         target_url = self.get_url('VERSION', 'POST', 'import', {'layer_id': id})
-        test_auth=self._parent.get_auth()
         self._raw_response = requests.get(target_url,
                                           auth=self._parent.get_auth())
         if self._raw_response.status_code == 202:
-            # Success ! Update accepted for Processing but not 
+            # Success ! Update accepted for Processing but not
             # necesarily complete
             pass
         elif self._raw_response.status_code == 409:
-            # Indicates that the request could not be processed because 
-            # of conflict in the request, such as an edit conflict in 
+            # Indicates that the request could not be processed because
+            # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise KoordinatesImportEncounteredUpdateConflict
+            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
             raise koordexceptions.KoordinatesInvalidURL
@@ -694,6 +674,7 @@ class Group(object):
         self.name = name
         self.country = country
 
+
 class Data(object):
     def __init__(self, encoding=None, crs=None,
                  primary_key_fields=[],
@@ -702,17 +683,17 @@ class Data(object):
                  fields=[]):
 
         assert type(primary_key_fields) is list,\
-                "The 'Data' attribute 'primary_key_fields' must be a list"
+            "The 'Data' attribute 'primary_key_fields' must be a list"
         assert type(datasources) is list,\
             "The 'Data' attribute 'datasources' must be a list"
         assert type(fields) is list,\
             "The 'Data' attribute 'fields' must be a list"
         assert all(isinstance(ds_instance, DataSource) for ds_instance in datasources),\
             "The 'Data' attribute 'datasources' must be a list of DataSource objects"
-        assert all(isinstance(ds_instance, Field) for f_instance in fields),\
+        assert all(isinstance(f_instance, Field) for f_instance in fields),\
             "The 'Data' attribute 'datasources' must be a list of DataSource objects"
 
-        self.encoding = encoding 
+        self.encoding = encoding
         self.crs = crs
         self.primary_key_fields = primary_key_fields
         self.primary_key_fields = primary_key_fields
@@ -720,43 +701,49 @@ class Data(object):
         self.geometry_field = geometry_field
         self.fields = fields
 
+
 class DataSource(object):
     def __init__(self, id):
         self.id = id
 
+
 class Category(object):
     def __init__(self, name, slug):
-        self.name = name 
-        self.slug = slug 
+        self.name = name
+        self.slug = slug
+
 
 class License(object):
-    def __init__(self, 
+    def __init__(self,
                  id=None,
-                 title=None ,
+                 title=None,
                  type=None,
-                 jurisdiction=None ,
-                 version=None ,
-                 url=None ,
-                 url_html=None ):
+                 jurisdiction=None,
+                 version=None,
+                 url=None,
+                 url_html=None):
 
-        self.id = id 
-        self.title = title 
-        self.type = type 
-        self.jurisdiction = jurisdiction 
-        self.version = version 
-        self.url = url 
-        self.url_html = url_html 
+        self.id = id
+        self.title = title
+        self.type = type
+        self.jurisdiction = jurisdiction
+        self.version = version
+        self.url = url
+        self.url_html = url_html
+
 
 class Metadata(object):
     def __init__(self, iso=None, dc=None, native=None):
         self.iso = iso
-        self.dc = dc 
+        self.dc = dc
         self.native = native
-    
+
+
 class Field(object):
     def __init__(self, name=None, type=None):
         self.name = name
         self.type = type
+
 
 class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Layer
@@ -766,8 +753,8 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     of objects that you add on top of the map to designate a common
     association.
     '''
-    def __init__(self, 
-                 parent=None, 
+    def __init__(self,
+                 parent=None,
                  id=None,
                  url=None,
                  type=None,
@@ -782,7 +769,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                  published_version=None,
                  latest_version=None,
                  this_version=None,
-                 kind=None, 
+                 kind=None,
                  categories=None,
                  tags=None,
                  collected_at=None,
@@ -790,7 +777,6 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                  license=None,
                  metadata=None,
                  elevation_field=None):
-
 
         self._parent = parent
         self._url = None
@@ -801,7 +787,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._raw_response = None
         self._list_of_response_dicts = []
         self._link_to_next_in_list = ""
-        self._next_page_number = 1  
+        self._next_page_number = 1
 
         self._attribute_sort_candidates = ['name']
         self._attribute_filter_candidates = ['name']
@@ -826,13 +812,13 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.published_version = published_version
         self.latest_version = latest_version
         self.this_version = this_version
-        self.kind  = kind
+        self.kind = kind
         self.categories = categories if categories else []
         self.tags = tags if tags else []
         self.collected_at = collected_at
         self.created_at = created_at
         self.license = license if license else License()
-        self.metadata = metadata if metadata else  Metadata()
+        self.metadata = metadata if metadata else Metadata()
         self.elevation_field = elevation_field
 
         super(self.__class__, self).__init__()
@@ -840,12 +826,12 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     @classmethod
     def fromjson(cls, datadict):
         '''Initialize Layer from a JSON blob
-        
-        la = Layer.fromjson(my_json)
-        
-        '''
-            #return cls(datadict.items())
 
+        la = Layer.fromjson(my_json)
+
+        '''
+        # return cls(datadict.items())
+        pass
 
     def get_list(self):
         """Fetches a set of layers

@@ -120,8 +120,8 @@ def main11(username):
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     #pr = api.PublishRequest(hostname="test.koordinates.com")
     pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
-    pr.add_layer_to_publish(8093, 9823)
-    pr.add_layer_to_publish(8094, 9824)
+    pr.add_layer_to_publish(8095, 9825)
+    pr.add_layer_to_publish(8096, 9826)
     conn.publish(pr)
 
 def main10(username):
