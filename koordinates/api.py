@@ -50,8 +50,6 @@ class KoordinatesURLMixin(object):
         self._url_templates['LAYER']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
         self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
-        self._url_templates['LAYER']['POST'] = {}
-        self._url_templates['LAYER']['POST']['publish'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/publish/'''
         self._url_templates['SET'] = {}
         self._url_templates['SET']['GET'] = {}
         self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{set_id}/'''
@@ -62,6 +60,7 @@ class KoordinatesURLMixin(object):
         self._url_templates['VERSION']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
         self._url_templates['VERSION']['POST'] = {}
         self._url_templates['VERSION']['POST']['import'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/import'''
+        self._url_templates['VERSION']['POST']['publish'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/publish/'''
         self._url_templates['DATA'] = {}
         self._url_templates['DATA']['GET'] = {}
         self._url_templates['DATA']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/data/'''
@@ -638,11 +637,38 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         :param id: ID for the new :class:`Version` object.
         """
 
-        raise NotImplementedError
+        target_url = self.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id})
+        super(self.__class__, self).get(-1, target_url)
 
-    def publish(self, layer_id):
+    def publish(self):
         """Publish the current Version
         """
+        #import pdb;pdb.set_trace()
+
+        assert type(self.id) is int,\
+            "The 'id' attribute is not an integer, it should be - have you fetched a version ?"
+        assert type(self.version.id) is int,\
+            "The 'version.id' attribute is not an integer, it should be - have you fetched a version ?"
+
+        target_url = self.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': self.version.id})
+        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        self._raw_response = requests.post(target_url,
+                                           headers=json_headers,
+                                           auth=self._parent.get_auth())
+
+        if self._raw_response.status_code == 201:
+            # Success !
+            pass
+        elif self._raw_response.status_code == 409:
+            # Indicates that the request could not be processed because
+            # of conflict in the request, such as an edit conflict in
+            # the case of multiple updates
+            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
 
     def import_version(self, layer_id):
         """Reimport an existing layer from its previous datasources

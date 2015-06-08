@@ -114,6 +114,12 @@ def main8(username):
 def make_list_string(lst):
     return "| ".join(lst)
 
+def main12(username):
+    import pdb;pdb.set_trace()
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn.version.get(8091, 9819)
+    conn.version.publish()
+
 def main11(username):
 
     import pdb;pdb.set_trace()
@@ -342,8 +348,9 @@ def main():
         main7(username)
         main8(username)
         main9(username)
-    main10(username)
-    main11(username)
+        main10(username)
+        main11(username)
+    main12(username)
 
 if __name__ == "__main__":
     main()
