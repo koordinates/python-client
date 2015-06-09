@@ -44,7 +44,11 @@ def getpass():
     '''
     import getpass
     if ('CIRCLECI' in os.environ) and ('KPWD' in os.environ):
+        #circleci specific
         return os.environ['KPWD']
+    elif ('KPWDDEV' in os.environ):
+        #localdev environment
+        return os.environ['KPWDDEV']
     else:
         return(getpass.getpass('Please enter your Koordinates password: '))
 
@@ -226,18 +230,24 @@ class TestKoordinates(unittest.TestCase):
         with self.assertRaises(koordexceptions.KoordinatesRateLimitExceeded):
             self.koordconn.layer.get(id)
 
-#   @responses.activate
-#   def test_layer_import(self):
+    @responses.activate
+    def test_layer_import(self):
 
-#       the_response = layers_single_good_simulated_response
-#       #import pdb;pdb.set_trace()
-#       dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999})
-#       responses.add(responses.GET,
-#                     self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999}),
-#                     body=the_response, status=200,
-#                     content_type='application/json')
+        the_response = layers_single_good_simulated_response
+        #dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'resource_id': 999}, kwargs={'hostname':"test.koordinates.com"})
+                      #self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'resource_id': 999}, kwargs={'hostname':"test.koordinates.com"}),
+        resource_id = 999
+        version_id = 998
+        dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'resource_id': resource_id, 'hostname':"test.koordinates.com"})
+        responses.add(responses.POST,
+                      self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'resource_id': resource_id, 'hostname':"test.koordinates.com"}),
+                      body=the_response, status=202,
+                      content_type='application/json')
 
-#       self.koordtestconn.version.import_version(999)
+        self.koordtestconn.version.import_version(resource_id, version_id)
+
+        self.assertEqual(self.koordtestconn.version._raw_response.status_code,
+                         202)
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):

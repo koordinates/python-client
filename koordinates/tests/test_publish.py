@@ -45,7 +45,11 @@ def getpass():
     '''
     import getpass
     if ('CIRCLECI' in os.environ) and ('KPWD' in os.environ):
+        #circleci specific
         return os.environ['KPWD']
+    elif ('KPWDDEV' in os.environ):
+        #localdev environment
+        return os.environ['KPWDDEV']
     else:
         return(getpass.getpass('Please enter your Koordinates password: '))
 
