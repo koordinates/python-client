@@ -38,24 +38,11 @@ from canned_responses_for_tests_5 import layers_version_single_good_simulated_re
 from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
 
 
-def getpass():
-    '''
-    Prompt user for Password until there is a Connection object
-    '''
-    import getpass
-    if ('CIRCLECI' in os.environ) and ('KPWD' in os.environ):
-        #circleci specific
-        return os.environ['KPWD']
-    elif ('KPWDDEV' in os.environ):
-        #localdev environment
-        return os.environ['KPWDDEV']
-    else:
-        return(getpass.getpass('Please enter your Koordinates password: '))
-
+from . import package_pwd
 
 class TestKoordinates(unittest.TestCase):
 
-    pwd = getpass()
+    pwd = package_pwd
 
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
