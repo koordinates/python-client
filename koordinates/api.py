@@ -59,7 +59,7 @@ class KoordinatesURLMixin(object):
         self._url_templates['VERSION']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['VERSION']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
         self._url_templates['VERSION']['POST'] = {}
-        self._url_templates['VERSION']['POST']['import'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/import'''
+        self._url_templates['VERSION']['POST']['import'] = '''https://{hostname}/services/api/{api_version}/layers/{resource_id}/versions/{version_id}/import/'''
         self._url_templates['VERSION']['POST']['publish'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/publish/'''
         self._url_templates['DATA'] = {}
         self._url_templates['DATA']['GET'] = {}
@@ -670,12 +670,15 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
-    def import_version(self, layer_id):
+    def import_version(self, resource_id, version_id):
         """Reimport an existing layer from its previous datasources
         and create a new version
         """
-        target_url = self.get_url('VERSION', 'POST', 'import', {'layer_id': id})
-        self._raw_response = requests.get(target_url,
+        target_url = self.get_url('VERSION', 'POST', 'import', {'resource_id': resource_id, 'version_id': version_id})
+        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+                                           #json={},
+                                           #headers=json_headers,
+        self._raw_response = requests.post(target_url,
                                           auth=self._parent.get_auth())
         if self._raw_response.status_code == 202:
             # Success ! Update accepted for Processing but not

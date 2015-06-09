@@ -85,7 +85,7 @@ def main7(username):
 def main9(username):
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     test=True
-    conn.version.import_version(999)
+    conn.version.import_version(8098, 9850)
     test=False
 def main8(username):
     print("main 8 START +++++++++++++++++++++++++++++++++++++++++++++")
@@ -117,7 +117,7 @@ def make_list_string(lst):
 def main12(username):
     import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
-    conn.version.get(8091, 9819)
+    conn.version.get(8097, 9849)
     conn.version.publish()
 
 def main11(username):
@@ -338,7 +338,7 @@ def main():
         main1(username, url, log=do_some_logging)
         main2(username, url)
         main3()
-    main4B(username)
+        main4B(username)
     if False:
         main4(username)
         main4A(username)
@@ -347,10 +347,10 @@ def main():
         main6(username)
         main7(username)
         main8(username)
-        main9(username)
         main10(username)
         main11(username)
-    main12(username)
+        main12(username)
+    main9(username)
 
 if __name__ == "__main__":
     main()
