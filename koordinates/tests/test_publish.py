@@ -37,6 +37,8 @@ from canned_responses_for_tests_3 import sets_single_good_simulated_response
 from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
 from canned_responses_for_tests_5 import layers_version_single_good_simulated_response
 from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
+from canned_responses_for_tests_7 import publish_single_good_simulated_response
+from canned_responses_for_tests_7 import publish_multiple_get_simulated_response
 
 from . import package_pwd
 
@@ -58,6 +60,18 @@ class TestKoordinatesPublishing(unittest.TestCase):
                                             invalid_password)
 
     @responses.activate
+    def test_publish_get_by_id(self):
+        the_response = publish_single_good_simulated_response
+
+        publish_id = 2054 
+        responses.add(responses.GET,
+                      self.koordconn.publish.get_url('PUBLISH', 'GET', 'single', {'publish_id': publish_id}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        self.koordconn.publish.get(publish_id)
+
+    @responses.activate
     def test_multipublish_resource_specification(self):
         the_response = '''{}''' 
         responses.add(responses.POST,
@@ -67,7 +81,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.publish("")
+            self.koordtestconn.multi_publish("")
 
         pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
         pr.add_layer_to_publish(100, 1000)
@@ -79,7 +93,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
         with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.publish(pr)
+            self.koordtestconn.multi_publish(pr)
 
     @responses.activate
     def test_multipublish_bad_args(self):
@@ -92,30 +106,30 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.publish("")
+            self.koordtestconn.multi_publish("")
 
         pr = api.PublishRequest([],[])
 
         with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.publish(pr)
+            self.koordtestconn.multi_publish(pr)
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.publish("", 'Z')
+            self.koordtestconn.multi_publish("", 'Z')
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.publish(pr, 'Z')
+            self.koordtestconn.multi_publish(pr, 'Z')
 
         with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.publish(pr, 'together')
+            self.koordtestconn.multi_publish(pr, 'together')
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.publish(pr, 'together', 'Z')
+            self.koordtestconn.multi_publish(pr, 'together', 'Z')
 
         with self.assertRaises(koordexceptions.KoordinatesUnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.publish(pr, 'together', 'abort')
+            self.koordtestconn.multi_publish(pr, 'together', 'abort')
 
     @responses.activate
     def test_publish_single_layer_version(self, layer_id=1474, version_id=4067):

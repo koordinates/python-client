@@ -67,6 +67,10 @@ class KoordinatesURLMixin(object):
         self._url_templates['TABLE'] = {}
         self._url_templates['TABLE']['GET'] = {}
         self._url_templates['TABLE']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/tables/{table_id}/versions/{version_id}/'''
+        self._url_templates['PUBLISH'] = {}
+        self._url_templates['PUBLISH']['GET'] = {}
+        self._url_templates['PUBLISH']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
+        self._url_templates['PUBLISH']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/publish/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -436,6 +440,7 @@ class Connection(KoordinatesURLMixin):
         self.set = Set(self)
         self.version = Version(self)
         self.data = KData(self)
+        self.publish = Publish(self)
 
         parent = self
         super(self.__class__, self).__init__()
@@ -478,7 +483,7 @@ class Connection(KoordinatesURLMixin):
 
         return dic_out
 
-    def publish(self, pub_request, publish_strategy=None, error_strategy=None):
+    def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
         """Publishes a set of items, potentially a mixture of Layers and Tables
 
         `pub_request`: A `PublishRequest' object specifying what resources are to be published
@@ -522,6 +527,39 @@ class Connection(KoordinatesURLMixin):
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
 
+class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
+    '''A Publish
+
+    TODO: Description of what a `Publish` is
+
+    '''
+    def __init__(self, parent, id=None):
+        self._parent = parent
+        self._url = None
+        self._id = id
+
+        self._raw_response = None
+        self._list_of_response_dicts = []
+        self._link_to_next_in_list = ""
+        self._next_page_number = 1
+        self._attribute_sort_candidates = ['name']
+        self._attribute_filter_candidates = ['name']
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # _attribute_reserved_names
+        self._attribute_reserved_names = []
+        super(self.__class__, self).__init__()
+
+    def get(self, id):
+        """Fetches a `Publish` determined by the value of `id`.
+
+        :param id: ID for the new :class:`Publish` object.
+        """
+
+        target_url = self.get_url('PUBLISH', 'GET', 'single', {'publish_id': id})
+        super(self.__class__, self).get(id, target_url)
+
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Data
 
@@ -529,7 +567,7 @@ class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
 
     '''
     def __init__(self, parent, id=None):
-        logger.info('Initializing Data object')
+        logger.info('Initializing KData object')
         self._parent = parent
         self._url = None
         self._id = id

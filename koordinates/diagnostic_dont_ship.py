@@ -114,8 +114,30 @@ def main8(username):
 def make_list_string(lst):
     return "| ".join(lst)
 
+def main13(username):
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn.publish.get(2054)
+    conn.publish.id = 2054
+    assert(conn.publish.id == 2054)
+    assert(conn.publish.error_strategy == 'abort')
+    assert(conn.publish.created_at.year == 2015) 
+    assert(conn.publish.created_at.month == 6) 
+    assert(conn.publish.created_at.day == 8) 
+    assert(conn.publish.created_at.hour == 3) 
+    assert(conn.publish.created_at.minute == 40) 
+    assert(conn.publish.created_at.second == 40) 
+    conn.publish.get(2055)
+    assert(conn.publish.id == 2055)
+    assert(conn.publish.publish_strategy == 'together')
+    assert(conn.publish.created_at.year == 2015) 
+    assert(conn.publish.created_at.month == 6) 
+    assert(conn.publish.created_at.day == 8) 
+    assert(conn.publish.created_at.hour == 4) 
+    assert(conn.publish.created_at.minute == 22) 
+    assert(conn.publish.created_at.second == 3) 
+    
+
 def main12(username):
-    import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     conn.version.get(8097, 9849)
     conn.version.publish()
@@ -128,7 +150,7 @@ def main11(username):
     pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
     pr.add_layer_to_publish(8095, 9825)
     pr.add_layer_to_publish(8096, 9826)
-    conn.publish(pr)
+    conn.multi_publish(pr)
 
 def main10(username):
     conn = api.Connection(username, getpass())
@@ -339,7 +361,6 @@ def main():
         main2(username, url)
         main3()
         main4B(username)
-    if False:
         main4(username)
         main4A(username)
         main5()
@@ -350,7 +371,8 @@ def main():
         main10(username)
         main11(username)
         main12(username)
-    main9(username)
+        main9(username)
+    main13(username)
 
 if __name__ == "__main__":
     main()
