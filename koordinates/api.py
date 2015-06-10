@@ -560,6 +560,13 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('PUBLISH', 'GET', 'single', {'publish_id': id})
         super(self.__class__, self).get(id, target_url)
 
+    def get_list(self):
+        """Fetches a set of layers
+        """
+        target_url = self.get_url('PUBLISH', 'GET', 'multi')
+        self._url = target_url
+        return self
+
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Data
 

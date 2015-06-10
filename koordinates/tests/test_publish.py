@@ -72,6 +72,26 @@ class TestKoordinatesPublishing(unittest.TestCase):
         self.koordconn.publish.get(publish_id)
 
     @responses.activate
+    def test_publish_get_all_rows(self):
+        the_response = publish_multiple_get_simulated_response
+
+        responses.add(responses.GET,
+                      self.koordconn.publish.get_url('PUBLISH', 'GET', 'multi'),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        cnt_of_publish_records_returned = 0
+
+        for pub_record in self.koordconn.publish.get_list().execute_get_list():
+            if cnt_of_publish_records_returned == 0:
+                self.assertEqual(pub_record.id, 2054)
+                self.assertEqual(pub_record.error_strategy, 'abort')
+            cnt_of_publish_records_returned += 1
+
+        self.assertEqual(cnt_of_publish_records_returned, 7)
+
+
+    @responses.activate
     def test_multipublish_resource_specification(self):
         the_response = '''{}''' 
         responses.add(responses.POST,
