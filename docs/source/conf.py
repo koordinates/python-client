@@ -17,6 +17,7 @@ import os
 import shlex
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../koordinates'))
 import koordinates
 from koordinates import __version__
 
