@@ -13,6 +13,7 @@ import os
 import requests
 import json
 import uuid
+import pprint
 from datetime import datetime
 try:
         # from urllib.parse import urlparse
@@ -40,6 +41,9 @@ SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 
 class KoordinatesURLMixin(object):
+    '''
+    A Mixin to support URL operations
+    '''
     def __init__(self):
         self._url_templates = {}
         self._url_templates['CONN'] = {}
@@ -50,6 +54,8 @@ class KoordinatesURLMixin(object):
         self._url_templates['LAYER']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
         self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
+        self._url_templates['LAYER']['POST'] = {}
+        self._url_templates['LAYER']['POST']['create'] = '''https://{hostname}/services/api/{api_version}/layers/'''
         self._url_templates['SET'] = {}
         self._url_templates['SET']['GET'] = {}
         self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{set_id}/'''
@@ -71,6 +77,8 @@ class KoordinatesURLMixin(object):
         self._url_templates['PUBLISH']['GET'] = {}
         self._url_templates['PUBLISH']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
         self._url_templates['PUBLISH']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/publish/'''
+        self._url_templates['PUBLISH']['DELETE'] = {}
+        self._url_templates['PUBLISH']['DELETE']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
 
     def url_templates(self, datatype, verb, urltype):
         return self._url_templates[datatype][verb][urltype]
@@ -107,7 +115,142 @@ class KoordinatesURLMixin(object):
                                api_version=self._parent.api_version)
 
 
+def is_empty_list(candidate_list):
+    '''
+    Determines if the list passed as an argumenent is either
+    a list or a tuple and is empty
+    '''
+    ret_value = False
+    if isinstance(candidate_list, list) or isinstance(candidate_list, tuple):
+        if len(candidate_list) == 0:
+            ret_value = True
+
+    return ret_value
+
+def remove_empty_from_dict(d):
+    '''
+    Given a, potentially, complex dictionary another dictionary
+    is returned with all those parts which contained no data
+    removed from it
+    '''
+    if type(d) is dict:
+        return dict((k, remove_empty_from_dict(v)) for k, v in d.items() if v and remove_empty_from_dict(v))
+    elif type(d) is list:
+        return [remove_empty_from_dict(v) for v in d if v and remove_empty_from_dict(v)]
+    else:
+        return d
+
+def dump_class_attributes_to_dict(obj, path=[], dic_out={}, 
+                                  root=None, skip_underbars = True,
+                                  ignore_nones = False):
+    '''
+    Given an object instance which, potentially, contains a complex
+    heirarchy of other class instances, some of which may be lists
+    of class instances, a dictionary is returned containing the
+    value of the instance attributes keyed on the original
+    attribute names.
+    
+    If `skip_underbars` is True then all attributes which have a
+    name beginning to with an underbar are ignored for the purposes
+    of the output. This also means that attributes within 'underbarred'
+    attributes are ignored regardless of their name.
+
+
+
+    The structure of the resulting dictionary emulates that of the
+    instance heirarchy
+
+    NB: This function relies on recursion.
+    '''
+
+    for attr_name, attr_value in obj.__dict__.items():
+        if skip_underbars and attr_name[0] == "_":
+            pass
+        elif ignore_nones and attr_value is None:
+            pass
+        elif ignore_nones and is_empty_list(attr_value):
+            pass
+        elif ignore_nones and (isinstance(attr_value, list) or isinstance(attr_value, tuple)):
+            pass
+        else:
+            if hasattr(attr_value, '__dict__'):
+                path.append(attr_name) 
+                dic_out[attr_name]={}
+                dump_class_attributes_to_dict(attr_value, 
+                                              path, 
+                                              dic_out[attr_name]) 
+            else:
+                if isinstance(attr_value, list) or isinstance(attr_value, tuple):
+                    lst_dumps = []
+                    dic_out[attr_name]={}
+                    for attr_element in attr_value:
+                        attr_element_as_json = dump_class_attributes_to_dict(attr_element, 
+                                                                             path, 
+                                                                             dic_out[attr_name]) 
+                        lst_dumps.append(attr_element_as_json) 
+                    dic_out[attr_name] = lst_dumps 
+                else:
+                    # +++++++++++++++++++++++++++++++++++++++++
+                    # The variable strpath is for 
+                    # diagnostic use only
+                    strpath = ".".join(path)
+                    if strpath:
+                        dotornot = "."
+                    else:
+                        dotornot = ""
+                    strpath = strpath + dotornot + attr_name
+                    # +++++++++++++++++++++++++++++++++++++++++
+                    dic_out[attr_name] = attr_value
+    if path:
+        path.pop()
+
+    return dic_out
+
 class KoordinatesObjectMixin(object):
+    '''
+    A Mixin providing the generic aspects of server interations
+    for subclasses
+    '''
+
+    def create(self, target_url):
+        """Creates a object based on contents value of `id`.
+
+        """
+
+        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        json_body = dump_class_attributes_to_dict(self)
+        logger.debug('First pass JSON body for create follows')
+        logger.debug(pprint.pformat(json_body))
+
+        json_body = remove_empty_from_dict(json_body)
+        logger.debug('Second pass JSON body for create follows')
+        logger.debug(pprint.pformat(json_body))
+
+        self._raw_response = requests.post(target_url,
+                                           json=json_body,
+                                           headers=json_headers,
+                                           auth=self._parent.get_auth())
+
+        if self._raw_response.status_code == 201:
+            logger.debug('Return value from successful instance create follows')
+            logger.debug(pprint.pformat(self._raw_response.text))
+
+            good_layer_dict = self._raw_response.json()
+
+            self.created_at = self.__make_date_if_possible(good_layer_dict['created_at'])
+            self.created_by = good_layer_dict['created_by']
+            self.url = good_layer_dict['url']
+        elif self._raw_response.status_code == 401:
+            raise koordexceptions.KoordinatesNotAuthorised
+        elif self._raw_response.status_code == 404:
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self._raw_response.status_code == 429:
+            raise koordexceptions.KoordinatesRateLimitExceeded
+        elif self._raw_response.status_code == 504:
+            raise koordexceptions.KoordinatesServerTimeOut
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
 
     def get(self, id, target_url):
         """Fetches a sing object determined by the value of `id`.
@@ -142,11 +285,10 @@ class KoordinatesObjectMixin(object):
                     self.__create_attribute(dict_key, att_value)
             else:
                 raise NotImplementedError
-
-        elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
+        elif self._raw_response.status_code == 404:
+            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 429:
             raise koordexceptions.KoordinatesRateLimitExceeded
         elif self._raw_response.status_code == 504:
@@ -225,10 +367,10 @@ class KoordinatesObjectMixin(object):
                 self._link_to_next_in_list = self._raw_response.links['page-next']['url']
             else:
                 self._link_to_next_in_list = None
-        elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
+        elif self._raw_response.status_code == 404:
+            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 429:
             raise koordexceptions.KoordinatesRateLimitExceeded
         elif self._raw_response.status_code == 504:
@@ -310,6 +452,7 @@ class KoordinatesObjectMixin(object):
             else:
                 dic_out[dict_key] = self.__make_date_if_possible(dict_key_value)
         return type(str(the_name.title()), (object,), dic_out)
+
 
 
 class PublishRequest(KoordinatesURLMixin):
@@ -409,7 +552,9 @@ class PublishRequest(KoordinatesURLMixin):
 
 class Connection(KoordinatesURLMixin):
     """
-    This is a python library for accessing the koordinates api
+    A `Connection` is used to define the host and api-version which the user
+    wants to connect to. The user identity is also defined when `Connection`
+    is instantiated.
     """
 
     def __init__(self, username, pwd=None, host='koordinates.com', 
@@ -515,14 +660,14 @@ class Connection(KoordinatesURLMixin):
         if self._raw_response.status_code == 201:
             # Success !
             pass
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
             raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
-        elif self._raw_response.status_code == 404:
-            # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
@@ -566,6 +711,29 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('PUBLISH', 'GET', 'multi')
         self._url = target_url
         return self
+
+    def cancel(self):
+        """Cancel a pending publish task
+        """
+        assert type(self.id) is int,\
+            "The 'id' attribute is not an integer, it should be - have you fetched a publish record ?"
+
+        target_url = self.get_url('PUBLISH', 'DELETE', 'single', {'publish_id': self.id})
+        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        self._raw_response = requests.delete(target_url,
+                                           headers=json_headers,
+                                           auth=self._parent.get_auth())
+
+        if self._raw_response.status_code == 202:
+            # Success !
+            pass
+        elif self._raw_response.status_code == 409:
+            # Indicates that the publish couldn't be cancelled as the
+            # Publish process has already started
+            raise koordexceptions.KoordinatesPublishAlreadyStarted
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
 
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Data
@@ -688,8 +856,6 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
     def publish(self):
         """Publish the current Version
         """
-        #import pdb;pdb.set_trace()
-
         assert type(self.id) is int,\
             "The 'id' attribute is not an integer, it should be - have you fetched a version ?"
         assert type(self.version.id) is int,\
@@ -704,14 +870,14 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         if self._raw_response.status_code == 201:
             # Success !
             pass
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
             raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
-        elif self._raw_response.status_code == 404:
-            # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
@@ -729,19 +895,24 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             # Success ! Update accepted for Processing but not
             # necesarily complete
             pass
+        elif self._raw_response.status_code == 404:
+            # The resource specificed in the URL could not be found
+            raise koordexceptions.KoordinatesInvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
             raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
-        elif self._raw_response.status_code == 404:
-            # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
 
 class Group(object):
+    '''A Group  
+    TODO: Explanation of what a `Group` is from Koordinates
+
+    NB: Currently this Class is only used as a component of `Layer`
+    '''
     def __init__(self, id=None, url=None, name=None, country=None):
         self.id = id
         self.url = url
@@ -750,6 +921,11 @@ class Group(object):
 
 
 class Data(object):
+    '''A Data  
+    TODO: Explanation of what a `Data` is from Koordinates
+
+    NB: Currently `Data` is only used as a component of `Layer`
+    '''
     def __init__(self, encoding=None, crs=None,
                  primary_key_fields=[],
                  datasources=[],
@@ -777,17 +953,32 @@ class Data(object):
 
 
 class DataSource(object):
+    '''A DataSource  
+    TODO: Explanation of what a `DataSource` is from Koordinates
+
+    NB: Currently `DataSource` is only used as a component of `Layer`
+    '''
     def __init__(self, id):
         self.id = id
 
 
 class Category(object):
+    '''A Category  
+    TODO: Explanation of what a `Category` is from Koordinates
+
+    NB: Currently `Category` is only used as a component of `Layer`
+    '''
     def __init__(self, name, slug):
         self.name = name
         self.slug = slug
 
 
 class License(object):
+    '''A License  
+    TODO: Explanation of what a `License` is from Koordinates
+
+    NB: Currently `License` is only used as a component of `Layer`
+    '''
     def __init__(self,
                  id=None,
                  title=None,
@@ -807,6 +998,11 @@ class License(object):
 
 
 class Metadata(object):
+    '''A Metadata  
+    TODO: Explanation of what a `Metadata` is from Koordinates
+
+    NB: Currently `Metadata` is only used as a component of `Layer`
+    '''
     def __init__(self, iso=None, dc=None, native=None):
         self.iso = iso
         self.dc = dc
@@ -814,6 +1010,11 @@ class Metadata(object):
 
 
 class Field(object):
+    '''A Field  
+    TODO: Explanation of what a `Field` is from Koordinates
+
+    NB: Currently `Field` is only used as a component of `Layer`
+    '''
     def __init__(self, name=None, type=None):
         self.name = name
         self.type = type
@@ -922,6 +1123,14 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
         super(self.__class__, self).get(id, target_url)
+
+    def create(self):
+        """Creates a layer based on the current attributes of the
+        `Layer` instance.
+
+        """
+        target_url = self.get_url('LAYER', 'POST', 'create')
+        super(self.__class__, self).create(target_url)
 
 
 def sample(foo, bar):

@@ -114,6 +114,29 @@ def main8(username):
 def make_list_string(lst):
     return "| ".join(lst)
 
+def main15(username):
+    from datetime import datetime
+    d=datetime.now()
+    test_layer_name = "Test Layer {}".format(d.strftime('%Y%m%dT%H%M%S'))
+
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn.layer.name = api.Layer()
+    conn.layer.name = test_layer_name
+
+    conn.layer.group.id = 263
+    conn.layer.group.url = "https://test.koordinates.com/services/api/v1/groups/{}/".format(conn.layer.group.id)
+    conn.layer.group.name = "Wellington City Council"
+    conn.layer.group.country = "NZ"
+
+    conn.layer.data = api.Data(datasources = [api.DataSource(144355)]) 
+
+    conn.layer.create()
+
+def main14(username):
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    import pdb;pdb.set_trace()
+    conn.publish.get(2058)
+    conn.publish.cancel()
 def main13(username):
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     conn.publish.get(2054)
@@ -372,7 +395,9 @@ def main():
         main11(username)
         main12(username)
         main9(username)
-    main13(username)
+        main13(username)
+        main14(username)
+    main15(username)
 
 if __name__ == "__main__":
     main()

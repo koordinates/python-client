@@ -36,7 +36,7 @@ from canned_responses_for_tests_3 import sets_single_good_simulated_response
 from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
 from canned_responses_for_tests_5 import layers_version_single_good_simulated_response
 from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
-
+from canned_responses_for_tests_8 import layer_create_good_simulated_response
 
 from . import package_pwd
 
@@ -128,6 +128,35 @@ class TestKoordinates(unittest.TestCase):
 
         self.assertTrue(self.bad_koordconn.layer._raw_response.status_code,
                         401)
+
+    @responses.activate
+    def test_create_layer(self):
+        the_response = layer_create_good_simulated_response
+
+        responses.add(responses.POST,
+                      self.koordconn.layer.get_url('LAYER', 'POST', 'create'),
+                      body=the_response, status=201,
+                      content_type='application/json')
+
+        self.koordconn.layer.name = api.Layer()
+        self.koordconn.layer.name = "A Test Layer Name for Unit Testing"
+
+        self.koordconn.layer.group.id = 263
+        self.koordconn.layer.group.url = "https://test.koordinates.com/services/api/v1/groups/{}/".format(self.koordconn.layer.group.id)
+        self.koordconn.layer.group.name = "Wellington City Council"
+        self.koordconn.layer.group.country = "NZ"
+
+        self.koordconn.layer.data = api.Data(datasources = [api.DataSource(144355)]) 
+
+        self.koordconn.layer.create()
+
+        self.assertEqual(self.koordconn.layer.created_at.year, 2015)
+        self.assertEqual(self.koordconn.layer.created_at.month,   6)
+        self.assertEqual(self.koordconn.layer.created_at.day,    11)
+        self.assertEqual(self.koordconn.layer.created_at.hour,   11)
+        self.assertEqual(self.koordconn.layer.created_at.minute, 14)
+        self.assertEqual(self.koordconn.layer.created_at.second, 10)
+        self.assertEqual(self.koordconn.layer.created_by, 18504)
 
     @responses.activate
     def test_get_layerset_bad_auth_check_exception(self):
