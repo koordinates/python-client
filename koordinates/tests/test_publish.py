@@ -59,6 +59,35 @@ class TestKoordinatesPublishing(unittest.TestCase):
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
+#   @responses.activate
+#   def test_create_redaction(self):
+#       the_response = layer_create_good_redaction_response
+
+#       responses.add(responses.POST,
+#                     self.koordconn.layer.get_url('REDACTION', 'POST', 'create'),
+#                     body=the_response, status=201,
+#                     content_type='application/json')
+
+#       self.koordconn.redaction.name = api.Layer()
+#       self.koordconn.redaction.name = "A Test Layer Name for Unit Testing"
+
+#       self.koordconn.redaction.group.id = 263
+#       self.koordconn.redaction.group.url = "https://test.koordinates.com/services/api/v1/groups/{}/".format(self.koordconn.redaction.group.id)
+#       self.koordconn.redaction.group.name = "Wellington City Council"
+#       self.koordconn.redaction.group.country = "NZ"
+
+#       self.koordconn.redaction.data = api.Data(datasources = [api.DataSource(144355)]) 
+
+#       self.koordconn.redaction.create()
+
+#       self.assertEqual(self.koordconn.redaction.created_at.year, 2015)
+#       self.assertEqual(self.koordconn.redaction.created_at.month,   6)
+#       self.assertEqual(self.koordconn.redaction.created_at.day,    11)
+#       self.assertEqual(self.koordconn.redaction.created_at.hour,   11)
+#       self.assertEqual(self.koordconn.redaction.created_at.minute, 14)
+#       self.assertEqual(self.koordconn.redaction.created_at.second, 10)
+#       self.assertEqual(self.koordconn.redaction.created_by, 18504)
+
     @responses.activate
     def test_publish_get_by_id(self):
         the_response = publish_single_good_simulated_response
