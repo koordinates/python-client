@@ -71,6 +71,7 @@ class KoordinatesURLMixin(object):
         self._url_templates['DATA'] = {}
         self._url_templates['DATA']['GET'] = {}
         self._url_templates['DATA']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/data/'''
+        self._url_templates['DATA']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/data/{data_id}'''
         self._url_templates['TABLE'] = {}
         self._url_templates['TABLE']['GET'] = {}
         self._url_templates['TABLE']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/tables/{table_id}/versions/{version_id}/'''
@@ -936,6 +937,15 @@ class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._url = target_url
         return self
 
+    def get(self, id):
+        """Fetches a `KData` determined by the value of `id`.
+
+        :param id: ID for the new :class:`KData` object.
+
+        target_url = self.get_url('DATA', 'GET', 'single', {'data_id': id})
+        super(self.__class__, self).get(id, target_url)
+        """
+        pass
 
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Set
