@@ -407,50 +407,6 @@ class KoordinatesObjectMixin(object):
         else:
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
-    def get_HIDE(self, id, target_url):
-        """Fetches a sing object determined by the value of `id`.
-
-        :param id: ID for the new :class:`Set` object.
-        """
-
-        dynamic_build = True
-
-        self._raw_response = requests.get(target_url,
-                                          auth=self._parent.get_auth())
-
-        if self._raw_response.status_code == 200:
-            # convert JSON to dict
-            dic_json = json.loads(self._raw_response.text)
-            # itererte over resulting dict
-            if dynamic_build:
-                for dict_key, dict_element_value in dic_json.items():
-                    if isinstance(dict_element_value, dict):
-                        # build dynamically defined class instances (nested
-                        # if necessary) in order to model associative arrays
-                        att_value = self._class_builder_from_dict(dic_json[dict_key], dict_key)
-                    elif isinstance(dict_element_value, list):
-                        att_value = self.__class_builder_from_sequence(dic_json[dict_key])
-                    elif isinstance(dict_element_value, tuple):
-                        # Don't believe the json.loads will ever create Tuples and supporting
-                        # them later is costly so for the moment we just give up at this point
-                        raise NotImplementedError("JSON that creates Tuples is not currently supported")
-                    else:
-                        # Allocate value to attribute directly
-                        att_value = dict_element_value
-                    self.__create_attribute(dict_key, att_value)
-            else:
-                raise NotImplementedError("get_HIDE does not support non-dynamic build")
-        elif self._raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
-        elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
-        elif self._raw_response.status_code == 429:
-            raise koordexceptions.KoordinatesRateLimitExceeded
-        elif self._raw_response.status_code == 504:
-            raise koordexceptions.KoordinatesServerTimeOut
-        else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
-
     def __specify_page(self, value):
         pass
 
