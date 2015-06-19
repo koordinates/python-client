@@ -344,7 +344,7 @@ class KoordinatesObjectMixin(object):
 
 
     @abc.abstractmethod
-    def get(self, id, target_url, dynamic_build = True):
+    def get(self, id, target_url, dynamic_build = False):
         """Fetches a sing object determined by the value of `id`.
 
         :param id: ID for the new object.
@@ -909,7 +909,21 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     TODO: Description of what a `Set` is
 
     '''
-    def __init__(self, parent, id=None):
+    def __init__(self, 
+                 parent=None, 
+                 id=None,
+                 title=None,
+                 description=None,
+                 description_html=None,
+                 categories=None,
+                 tags=None,
+                 group=None,
+                 items=None,
+                 url=None,
+                 url_html=None,
+                 metadata=None,
+                 created_at=None):
+
         logger.info('Initializing Set object')
         self._parent = parent
         self._url = None
@@ -926,7 +940,73 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         # names which appear in the list
         # _attribute_reserved_names
         self._attribute_reserved_names = []
+
+        self._initialize_named_attributes(id,
+                                          title,
+                                          description,
+                                          description_html,
+                                          categories,
+                                          tags,
+                                          group,
+                                          items,
+                                          url,
+                                          url_html,
+                                          metadata,
+                                          created_at)
+
         super(self.__class__, self).__init__()
+
+
+    def _initialize_named_attributes(self,
+                                     id,
+                                     title,
+                                     description,
+                                     description_html,
+                                     categories,
+                                     tags,
+                                     group,
+                                     items,
+                                     url,
+                                     url_html,
+                                     metadata,
+                                     created_at):
+        '''
+        `_initialize_named_attributes` initializes those
+        attributes of `Set` which are not prefixed by an
+        underbar. Such attributes are named so as to indicate
+        that they are, in terms of the API, "real" attributes
+        of a `Set`. That is to say an attribute which is returned
+        from the server when a given `Set` is requested. Other
+        attributes, such as `_attribute_reserved_names` have leading
+        underbar to indicate they are not derived from data returned
+        from the server
+        '''
+        '''
+        "id": 933, 
+        "title": "Ultra Fast Broadband Initiative Coverage", 
+        "description": "", 
+        "description_html": "", 
+        "categories": [], 
+        "tags": [], 
+        "group": {"id": 141, "url": "https://koordinates.com/services/api/v1/groups/141/", "name": "New Zealand Broadband Map", "country": "NZ"}, 
+        "items": ["https://koordinates.com/services/api/v1/layers/4226/", "https://koordinates.com/services/api/v1/layers/4228/", "https://koordinates.com/services/api/v1/layers/4227/", "https://koordinates.com/services/api/v1/layers/4061/", "https://koordinates.com/services/api/v1/layers/4147/", "https://koordinates.com/services/api/v1/layers/4148/"], 
+        "url": "https://koordinates.com/services/api/v1/sets/933/", 
+        "url_html": "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/", 
+        "metadata": null, 
+        "created_at": "2012-03-21T21:49:51.420Z"
+        '''
+        self.id = id
+        self.title = title
+        self.description = description
+        self.description_html = description_html
+        self.categories = categories if categories else []
+        self.tags = tags if tags else []
+        self.group = group if group else Group()
+        self.items = items
+        self.url = url
+        self.url_html = url_html
+        self.metadata = metadata if metadata else Metadata()
+        self.created_at = created_at
 
     def get_list(self):
         """Fetches a set of sets
@@ -942,14 +1022,58 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         """
 
         target_url = self.get_url('SET', 'GET', 'single', {'set_id': id})
-        super(self.__class__, self).get(id, target_url)
+
+        dic_set_as_json = super(self.__class__, self).get(id, target_url)
+
+        self._initialize_named_attributes(id = dic_set_as_json.get("id"),
+                                          title = dic_set_as_json.get("title"),
+                                          description = dic_set_as_json.get("description"),
+                                          description_html = dic_set_as_json.get("description_html"),
+                                          categories = make_list_of_Categories(dic_set_as_json.get("categories")),
+                                          tags = dic_set_as_json.get("tags"),
+                                          group = Group.from_dict(dic_set_as_json.get("group")),
+                                          items = dic_set_as_json.get("items", []),
+                                          url = dic_set_as_json.get("url"),
+                                          url_html = dic_set_as_json.get("url_html"),
+                                          metadata = Metadata.from_dict(dic_set_as_json.get("metadata")),
+                                          created_at = make_date(dic_set_as_json.get("created_at")))
+
 
 
 class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Version
     TODO: Explanation of what a `Version` is from Koordinates
     '''
-    def __init__(self, parent, id=None):
+    def __init__(self, 
+                 parent=None,
+                 id=None,
+                 url=None,
+                 type=None,
+                 name=None,
+                 first_published_at=None,
+                 published_at=None,
+                 description=None,
+                 description_html=None,
+                 group=None,
+                 data=None,
+                 url_html=None,
+                 published_version=None,
+                 latest_version=None,
+                 this_version=None,
+                 kind=None,
+                 categories=None,
+                 tags=None,
+                 collected_at=None,
+                 created_at=None,
+                 license=None,
+                 metadata=None,
+                 publish_to_catalog_services=None,
+                 permissions=None,
+                 autoupdate=None,
+                 supplier_reference=None,
+                 elevation_field=None,
+                 version_instance=None):
+
         logger.info('Initializing Version object')
         self._parent = parent
         self._url = None
@@ -970,7 +1094,105 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         # _attribute_reserved_names
         self._attribute_reserved_names = []
 
+
+        self._initialize_named_attributes(id,
+                                         url,
+                                         type,
+                                         name,
+                                         first_published_at,
+                                         published_at,
+                                         description,
+                                         description_html,
+                                         group,
+                                         data,
+                                         url_html,
+                                         published_version,
+                                         latest_version,
+                                         this_version,
+                                         kind,
+                                         categories,
+                                         tags,
+                                         collected_at,
+                                         created_at,
+                                         license,
+                                         metadata,
+                                         publish_to_catalog_services,
+                                         permissions,
+                                         autoupdate,
+                                         supplier_reference,
+                                         elevation_field,
+                                         version_instance)
+
         super(self.__class__, self).__init__()
+
+    def _initialize_named_attributes(self,
+                                     id,
+                                     url,
+                                     type,
+                                     name,
+                                     first_published_at,
+                                     published_at,
+                                     description,
+                                     description_html,
+                                     group,
+                                     data,
+                                     url_html,
+                                     published_version,
+                                     latest_version,
+                                     this_version,
+                                     kind,
+                                     categories,
+                                     tags,
+                                     collected_at,
+                                     created_at,
+                                     license,
+                                     metadata,
+                                     publish_to_catalog_services,
+                                     permissions,
+                                     autoupdate,
+                                     supplier_reference,
+                                     elevation_field,
+                                     version_instance):
+        '''
+        `_initialize_named_attributes` initializes those
+        attributes of `Version` which are not prefixed by an
+        underbar. Such attributes are named so as to indicate
+        that they are, in terms of the API, "real" attributes
+        of a `Version`. That is to say an attribute which is returned
+        from the server when a given `Version` is requested. Other
+        attributes, such as `_attribute_reserved_names` have leading
+        underbar to indicate they are not derived from data returned
+        from the server
+
+        '''
+        
+        self.id = id
+        self.url = url
+        self.type = type
+        self.name = name
+        self.first_published_at = first_published_at
+        self.published_at = published_at
+        self.description = description
+        self.description_html = description_html
+        self.group = group if group else Group()
+        self.data = data if data else Data()
+        self.url_html = url_html
+        self.published_version = published_version
+        self.latest_version = latest_version
+        self.this_version = this_version
+        self.kind = kind
+        self.categories = categories if categories else []
+        self.tags = tags if tags else []
+        self.collected_at = collected_at
+        self.created_at = created_at
+        self.license = license if license else License()
+        self.metadata = metadata if metadata else Metadata()
+        self.publish_to_catalog_services = publish_to_catalog_services
+        self.permissions = permissions
+        self.autoupdate = autoupdate if autoupdate else Autoupdate()
+        self.supplier_reference = supplier_reference
+        self.elevation_field = elevation_field
+        self.version_instance = version_instance if version_instance else Versioninstance()
 
     def get_list(self, layer_id):
         """Fetches a set of layers
@@ -986,17 +1208,45 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         """
 
         target_url = self.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id})
-        super(self.__class__, self).get(-1, target_url)
+        dic_version_as_json = super(self.__class__, self).get(-1, target_url)
+
+        self._initialize_named_attributes(id = dic_version_as_json.get("id"),
+                                          url = dic_version_as_json.get("url"),
+                                          type = dic_version_as_json.get("type"),
+                                          name = dic_version_as_json.get("name"),
+                                          first_published_at = make_date(dic_version_as_json.get("first_published_at")),
+                                          published_at = make_date(dic_version_as_json.get("published_at")),
+                                          description = dic_version_as_json.get("description"),
+                                          description_html = dic_version_as_json.get("description_html"),
+                                          group = Group.from_dict(dic_version_as_json.get("group")),
+                                          data = Data.from_dict(dic_version_as_json.get("data")),
+                                          url_html = dic_version_as_json.get("url_html"),
+                                          published_version = dic_version_as_json.get("published_version"),
+                                          latest_version = dic_version_as_json.get("latest_version"),
+                                          this_version = dic_version_as_json.get("this_version"),
+                                          kind = dic_version_as_json.get("kind"),
+                                          categories = make_list_of_Categories(dic_version_as_json.get("categories")),
+                                          tags = dic_version_as_json.get("tags"),
+                                          collected_at = [make_date(str_date) for str_date in dic_version_as_json.get("collected_at", [])],
+                                          created_at = make_date(dic_version_as_json.get("created_at")),
+                                          license = License.from_dict(dic_version_as_json.get("license")),
+                                          metadata = Metadata.from_dict(dic_version_as_json.get("metadata")),
+                                          publish_to_catalog_services = dic_version_as_json.get("publish_to_catalog_services"),
+                                          permissions = dic_version_as_json.get("permissions"),
+                                          autoupdate = dic_version_as_json.get("autoupdate"),
+                                          supplier_reference = dic_version_as_json.get("supplier_reference"),
+                                          elevation_field = dic_version_as_json.get("elevation_field"),
+                                          version_instance = Versioninstance.from_dict(dic_version_as_json.get("version")))
 
     def publish(self):
         """Publish the current Version
         """
         assert type(self.id) is int,\
             "The 'id' attribute is not an integer, it should be - have you fetched a version ?"
-        assert type(self.version.id) is int,\
-            "The 'version.id' attribute is not an integer, it should be - have you fetched a version ?"
+        assert type(self.version_instance.id) is int,\
+            "The 'version_instance.id' attribute is not an integer, it should be - have you fetched a version ?"
 
-        target_url = self.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': self.version.id})
+        target_url = self.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': self.version_instance.id})
         json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         self._raw_response = requests.post(target_url,
                                            headers=json_headers,
@@ -1145,6 +1395,32 @@ class Category(object):
         self.slug = slug
 
 
+class Autoupdate(object):
+    '''A Autoupdate  
+    TODO: Explanation of what a `Autoupdate` is from Koordinates
+
+    NB: Currently `Autoupdate` is only used as a component of `Version`
+    '''
+    def __init__(self, behaviour=None, schedule=None):
+        self.behaviourk = behaviour
+        self.schedule = schedule
+
+    @classmethod
+    def from_dict(cls, dict_autoupdate):
+        '''Initialize License from a dict.
+
+        la = License.from_dict(a_dict)
+
+
+        '''
+        if dict_autoupdate:
+            the_autoupdate = cls(dict_autoupdate.get("behaviour"), 
+                                 dict_autoupdate.get("schedule")) 
+        else:
+            the_autoupdate = cls()
+
+        return the_autoupdate
+
 class License(object):
     '''A License  
     TODO: Explanation of what a `License` is from Koordinates
@@ -1178,16 +1454,60 @@ class License(object):
         '''
         if dict_license:
             the_license = cls(dict_license.get("id"), 
-                            dict_license.get("title"), 
-                            dict_license.get("type"), 
-                            dict_license.get("jurisdiction"), 
-                            dict_license.get("version"), 
-                            dict_license.get("url"), 
-                            dict_license.get("url_html")), 
+                              dict_license.get("title"), 
+                              dict_license.get("type"), 
+                              dict_license.get("jurisdiction"), 
+                              dict_license.get("version"), 
+                              dict_license.get("url"), 
+                              dict_license.get("url_html")) 
         else:
             the_license = cls()
 
         return the_license
+
+class Versioninstance(object):
+    '''A Versioninstance  
+    TODO: Explanation of what a `Versioninstance` is from Koordinates
+
+    NB: Currently `Versioninstance` is only used as a component of `Version`
+    '''
+    def __init__(self,
+                 id=None,
+                 url=None,
+                 status=None,
+                 created_at=None,
+                 created_by=None,
+                 reference=None,
+                 progress=None):
+
+        self.id=id
+        self.url=url
+        self.status=status
+        self.created_at=make_date(created_at)
+        self.created_by=created_by
+        self.reference=reference
+        self.progress=progress
+
+    @classmethod
+    def from_dict(cls, dict_version_instance):
+        '''Initialize License from a dict.
+
+        la = License.from_dict(a_dict)
+
+
+        '''
+        if dict_version_instance:
+            the_version_instance = cls(dict_version_instance.get("id"), 
+                              dict_version_instance.get("title"), 
+                              dict_version_instance.get("type"), 
+                              dict_version_instance.get("jurisdiction"), 
+                              dict_version_instance.get("version"), 
+                              dict_version_instance.get("url"), 
+                              dict_version_instance.get("url_html")) 
+        else:
+            the_version_instance = cls()
+
+        return the_version_instance
 
 class Metadata(object):
     '''A Metadata  

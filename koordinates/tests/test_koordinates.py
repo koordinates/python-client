@@ -415,6 +415,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=200,
                       content_type='application/json')
 
+        #import pdb;pdb.set_trace()
         self.koordconn.set.get(id)
 
         self.assertEqual(self.koordconn.set.title,

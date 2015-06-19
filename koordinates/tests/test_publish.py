@@ -194,7 +194,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         self.koordconn.version.get(1474, 4067)
 
         self.assertEqual(self.koordconn.version.id, 1474)
-        self.assertEqual(self.koordconn.version.version.id, 4067)
+        self.assertEqual(self.koordconn.version.version_instance.id, 4067)
     
         the_response = '''{"id": 2057, "url": "https://test.koordinates.com/services/api/v1/publish/2057/", "state": "publishing", "created_at": "2015-06-08T10:39:44.823Z", "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, "error_strategy": "abort", "publish_strategy": "together", "publish_at": null, "items": ["https://test.koordinates.com/services/api/v1/layers/1474/versions/4067/"]}'''
 
