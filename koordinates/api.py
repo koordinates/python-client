@@ -347,7 +347,7 @@ class KoordinatesObjectMixin(object):
     def get(self, id, target_url, dynamic_build = True):
         """Fetches a sing object determined by the value of `id`.
 
-        :param id: ID for the new :class:`Set` object.
+        :param id: ID for the new object.
         :param target_url: the url on which to do the GET .
         :param dynamic_build: When True the instance hierarchy arising from the
                               JSON returned is automatically build. When False
