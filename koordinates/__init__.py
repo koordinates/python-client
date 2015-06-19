@@ -8,7 +8,7 @@ Koordinates API Library
 '''
 
 __title__ = 'koordinates'
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 __author__ = 'Richard Shea'
 __license__ = 'BSD'
 __copyright__ = 'Copyright 2015 Koordinates'
