@@ -72,7 +72,7 @@ class TestKoordinates(unittest.TestCase):
 
 
     def test_instantiate_datasource_class(self):
-        ds = api.DataSource(99)
+        ds = api.Datasource(99)
         self.assertEqual(ds.id, 99)
         
     def test_instantiate_category_class(self):
@@ -146,7 +146,7 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn.layer.group.name = "Wellington City Council"
         self.koordconn.layer.group.country = "NZ"
 
-        self.koordconn.layer.data = api.Data(datasources = [api.DataSource(144355)]) 
+        self.koordconn.layer.data = api.Data(datasources = [api.Datasource(144355)]) 
 
         self.koordconn.layer.create()
 
@@ -382,22 +382,27 @@ class TestKoordinates(unittest.TestCase):
 #       self.assertEqual(self.koordconn.layer.version._raw_response.status_code, 200)
 #       '''
 
-    @responses.activate
-    def test_get_layer_by_id_and_create_attribute_with_reserved_name(self, id=1474):
-        '''
-        Tests to see whether an attribute name which is reserved
-        causes the KoordinatesAttributeNameIsReserved exception
-        to be raised
-        '''
+#   '''
+#   The following test is redundant since we started to use "non-dynamic" instance
+#   create by default. I'm just going to leave it here until the corresponding
+#   "dynamic" instance creation code is removed entirely (as oposed to just branched
+#   around) in api.py then the test can be removed entirely
+#   @responses.activate
+#   def test_get_layer_by_id_and_create_attribute_with_reserved_name(self, id=1474):
+#       '''
+#       Tests to see whether an attribute name which is reserved
+#       causes the KoordinatesAttributeNameIsReserved exception
+#       to be raised
+#       '''
 
-        the_response = '''{"id":1474, "version":"foobar"}'''
-        responses.add(responses.GET,
-                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id':id}),
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        with self.assertRaises(koordexceptions.KoordinatesAttributeNameIsReserved):
-            self.koordconn.layer.get(id)
+#       the_response = '''{"id":1474, "version":"foobar"}'''
+#       responses.add(responses.GET,
+#                     self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id':id}),
+#                     body=the_response, status=200,
+#                     content_type='application/json')
+#       import pdb;pdb.set_trace()
+#       with self.assertRaises(koordexceptions.KoordinatesAttributeNameIsReserved):
+#           self.koordconn.layer.get(id)
 
     @responses.activate
     def test_get_set_by_id(self, id=1474):
