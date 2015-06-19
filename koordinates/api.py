@@ -9,6 +9,7 @@ This module implements the Koordinates API.
 :license: BSD, see LICENSE for more details.
 """
 
+import abc
 import os
 import requests
 import json
@@ -206,11 +207,100 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
 
     return dic_out
 
+def make_date_list_from_string_list(list):
+    pass
+
+def make_date(value):
+    '''
+    `value` should either be a string
+    parseable as a date/time; an empty
+    string; or None
+
+    Return either a `DateTime` corresponding
+    to `value` or an empty String
+    '''
+    if value == "" or value is None:
+        return ""
+    else:
+        return dateutil.parser.parse(value)
+
+
+def make_date_if_possible(value):
+    '''
+    Try converting the value to a date
+    and if that doesn't work then just
+    return the value was it was passed
+    in.
+    '''
+    try:
+        out = dateutil.parser.parse(value)
+    except ValueError:
+        out = value
+    except AttributeError:
+        out = value
+
+    return out
+
+def make_list_of_Datasources(list):
+    '''
+    Given a list of dictionaries, each 
+    of which has the key 'id',
+    this function returns a list of 
+    `Datasource` instances instantiated
+    using the values in the input argument
+    `list`.
+    '''
+    list_out = []
+    if list:
+        for elem in list:
+            the_ds = Datasource(elem['id'])
+            list_out.append(the_ds)
+
+    return list_out
+
+def make_list_of_Fields(list):
+    '''
+    Given a list of dictionaries, each 
+    of which has the keys 'name' and 'type'
+    in this function returns a list of 
+    `Field` instances instantiated
+    using the values in the input argument
+    `list`.
+    '''
+    list_out = []
+    if list:
+        for elem in list:
+            the_field = Field(elem['name'],
+                               elem['type'])
+            list_out.append(the_field)
+
+    return list_out
+
+def make_list_of_Categories(list):
+    '''
+    Given a list of dictionaries, each 
+    of which has the keys 'name' and 'slug'
+    in this function returns a list of 
+    `Category` instances instantiated
+    using the values in the input argument
+    `list`.
+    '''
+    list_out = []
+    if list:
+        for elem in list:
+            the_cat = Category(elem['name'],
+                               elem['slug'])
+            list_out.append(the_cat)
+
+    return list_out
+
+
 class KoordinatesObjectMixin(object):
     '''
     A Mixin providing the generic aspects of server interations
     for subclasses
     '''
+    __metaclass__ = abc.ABCMeta
 
     def create(self, target_url):
         """Creates a object based on contents value of `id`.
@@ -252,7 +342,71 @@ class KoordinatesObjectMixin(object):
             raise koordexceptions.KoordinatesUnexpectedServerResponse
 
 
-    def get(self, id, target_url):
+    @abc.abstractmethod
+    def get(self, id, target_url, dynamic_build = True):
+        """Fetches a sing object determined by the value of `id`.
+
+        :param id: ID for the new :class:`Set` object.
+        :param target_url: the url on which to do the GET .
+        :param dynamic_build: When True the instance hierarchy arising from the
+                              JSON returned is automatically build. When False
+                              control is handed back to the calling subclass to
+                              build the instance hierarchy based on pre-defined
+                              classes.
+
+                              An example of `dynamic_build` being False is that 
+                              the `Layer` class will have the JSON arising from
+                              GET returned to it and will then follow processing
+                              defined in `Layer.get` to create an instance of 
+                              `Layer` from the JSON returned.
+
+                              NB: In later versions this flag will be withdrawn
+                              and all processing will be done as if `dynamic_build`
+                              was False.
+        """
+
+        self._raw_response = requests.get(target_url,
+                                          auth=self._parent.get_auth())
+
+        if self._raw_response.status_code == 200:
+            # convert JSON to dict
+            dic_json = json.loads(self._raw_response.text)
+            # itererte over resulting dict
+            if dynamic_build:
+                # Build an instance hierarchy based on an introspection of the
+                # JSON returned.
+                for dict_key, dict_element_value in dic_json.items():
+                    if isinstance(dict_element_value, dict):
+                        # build dynamically defined class instances (nested
+                        # if necessary) in order to model associative arrays
+                        att_value = self._class_builder_from_dict(dic_json[dict_key], dict_key)
+                    elif isinstance(dict_element_value, list):
+                        att_value = self.__class_builder_from_sequence(dic_json[dict_key])
+                    elif isinstance(dict_element_value, tuple):
+                        # Don't believe the json.loads will ever create Tuples and supporting
+                        # them later is costly so for the moment we just give up at this point
+                        raise NotImplementedError("JSON that creates Tuples is not currently supported")
+                    else:
+                        # Allocate value to attribute directly
+                        att_value = dict_element_value
+                    self.__create_attribute(dict_key, att_value)
+            else:
+                # Return a representation of the JSON returned to calling subclass
+                # method and allow that method to build the resulting instance
+                # hierarchy
+                return dic_json
+        elif self._raw_response.status_code == 401:
+            raise koordexceptions.KoordinatesNotAuthorised
+        elif self._raw_response.status_code == 404:
+            raise koordexceptions.KoordinatesInvalidURL
+        elif self._raw_response.status_code == 429:
+            raise koordexceptions.KoordinatesRateLimitExceeded
+        elif self._raw_response.status_code == 504:
+            raise koordexceptions.KoordinatesServerTimeOut
+        else:
+            raise koordexceptions.KoordinatesUnexpectedServerResponse
+
+    def get_HIDE(self, id, target_url):
         """Fetches a sing object determined by the value of `id`.
 
         :param id: ID for the new :class:`Set` object.
@@ -284,7 +438,7 @@ class KoordinatesObjectMixin(object):
                         att_value = dict_element_value
                     self.__create_attribute(dict_key, att_value)
             else:
-                raise NotImplementedError
+                raise NotImplementedError("get_HIDE does not support non-dynamic build")
         elif self._raw_response.status_code == 401:
             raise koordexceptions.KoordinatesNotAuthorised
         elif self._raw_response.status_code == 404:
@@ -393,9 +547,24 @@ class KoordinatesObjectMixin(object):
 
         setattr(self, att_name, att_value)
 
+    def __make_date(self, value):
+        '''
+        `value` should either be a string
+        parseable as a date/time; an empty
+        string; or None
+
+        Return either a `DateTime` corresponding
+        to `value` or an empty String
+        '''
+        if value == "" or value is None:
+            return ""
+        else:
+            return dateutil.parser.parse(value)
+
+
     def __make_date_if_possible(self, value):
         '''
-        Try convering the value to a date
+        Try converting the value to a date
         and if that doesn't work then just
         return the value was it was passed
         in.
@@ -637,7 +806,7 @@ class Connection(KoordinatesURLMixin):
 
         """
         assert type(pub_request) is PublishRequest,\
-            "The 'items' argument must be a list"
+            "The 'pub_request' argument must be a PublishRequest instance"
         assert publish_strategy in ["individual", "together", None],\
             "The 'publish_strategy' value must be None or 'individual' or 'together'"
         assert error_strategy in ["abort", "ignore", None],\
@@ -918,6 +1087,24 @@ class Group(object):
         self.url = url
         self.name = name
         self.country = country
+    
+    @classmethod
+    def from_dict(cls, dict_group):
+        '''Initialize Group from a dict.
+
+        la = Group.from_dict(a_dict)
+
+
+        '''
+        if dict_group:
+            the_group = cls(dict_group.get("id", None), 
+                            dict_group.get("url", None), 
+                            dict_group.get("name", None), 
+                            dict_group.get("country", None)) 
+        else:
+            the_group = cls()
+
+        return the_group
 
 
 class Data(object):
@@ -938,10 +1125,10 @@ class Data(object):
             "The 'Data' attribute 'datasources' must be a list"
         assert type(fields) is list,\
             "The 'Data' attribute 'fields' must be a list"
-        assert all(isinstance(ds_instance, DataSource) for ds_instance in datasources),\
-            "The 'Data' attribute 'datasources' must be a list of DataSource objects"
+        assert all(isinstance(ds_instance, Datasource) for ds_instance in datasources),\
+            "The 'Data' attribute 'datasources' must be a list of Datasource objects"
         assert all(isinstance(f_instance, Field) for f_instance in fields),\
-            "The 'Data' attribute 'datasources' must be a list of DataSource objects"
+            "The 'Data' attribute 'fields' must be a list of Datasource objects"
 
         self.encoding = encoding
         self.crs = crs
@@ -951,12 +1138,31 @@ class Data(object):
         self.geometry_field = geometry_field
         self.fields = fields
 
+    @classmethod
+    def from_dict(cls, dict_data):
+        '''Initialize Data from a dict.
 
-class DataSource(object):
-    '''A DataSource  
-    TODO: Explanation of what a `DataSource` is from Koordinates
+        la = Data.from_dict(a_dict)
 
-    NB: Currently `DataSource` is only used as a component of `Layer`
+
+        '''
+        if dict_data:
+            the_data = cls(dict_data.get("encoding"), 
+                           dict_data.get("crs"), 
+                           dict_data.get("primary_key_fields", []), 
+                           make_list_of_Datasources(dict_data.get("datasources")),
+                           dict_data.get("geometry_field"),
+                           make_list_of_Fields(dict_data.get("fields")))
+        else:
+            the_data = cls()
+
+        return the_data
+
+class Datasource(object):
+    '''A Datasource  
+    TODO: Explanation of what a `Datasource` is from Koordinates
+
+    NB: Currently `Datasource` is only used as a component of `Layer`
     '''
     def __init__(self, id):
         self.id = id
@@ -996,6 +1202,26 @@ class License(object):
         self.url = url
         self.url_html = url_html
 
+    @classmethod
+    def from_dict(cls, dict_license):
+        '''Initialize License from a dict.
+
+        la = License.from_dict(a_dict)
+
+
+        '''
+        if dict_license:
+            the_license = cls(dict_license.get("id"), 
+                            dict_license.get("title"), 
+                            dict_license.get("type"), 
+                            dict_license.get("jurisdiction"), 
+                            dict_license.get("version"), 
+                            dict_license.get("url"), 
+                            dict_license.get("url_html")), 
+        else:
+            the_license = cls()
+
+        return the_license
 
 class Metadata(object):
     '''A Metadata  
@@ -1008,6 +1234,22 @@ class Metadata(object):
         self.dc = dc
         self.native = native
 
+    @classmethod
+    def from_dict(cls, dict_mdata):
+        '''Initialize Metadata from a dict.
+
+        la = Metadata.from_dict(a_dict)
+
+
+        '''
+        if dict_mdata:
+            the_metadata = cls(dict_mdata.get("iso"), 
+                            dict_mdata.get("dc"), 
+                            dict_mdata.get("native")) 
+        else:
+            the_metadata = cls()
+
+        return the_metadata
 
 class Field(object):
     '''A Field  
@@ -1073,6 +1315,67 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         # _attribute_reserved_names
         self._attribute_reserved_names = ['version']
 
+        self._initialize_named_attributes(id,
+                                         url,
+                                         type,
+                                         name,
+                                         first_published_at,
+                                         published_at,
+                                         description,
+                                         description_html,
+                                         group,
+                                         data,
+                                         url_html,
+                                         published_version,
+                                         latest_version,
+                                         this_version,
+                                         kind,
+                                         categories,
+                                         tags,
+                                         collected_at,
+                                         created_at,
+                                         license,
+                                         metadata,
+                                         elevation_field)
+
+        super(self.__class__, self).__init__()
+
+    def _initialize_named_attributes(self,
+                                     id,
+                                     url,
+                                     type,
+                                     name,
+                                     first_published_at,
+                                     published_at,
+                                     description,
+                                     description_html,
+                                     group,
+                                     data,
+                                     url_html,
+                                     published_version,
+                                     latest_version,
+                                     this_version,
+                                     kind,
+                                     categories,
+                                     tags,
+                                     collected_at,
+                                     created_at,
+                                     license,
+                                     metadata,
+                                     elevation_field):
+        '''
+        `_initialize_named_attributes` initializes those
+        attributes of `Layer` which are not prefixed by an
+        underbar. Such attributes are named so as to indicate
+        that they are, in terms of the API, "real" attributes
+        of a `Layer`. That is to say an attribute which is returned
+        from the server when a given `Layer` is requested. Other
+        attributes, such as `_attribute_reserved_names` have leading
+        underbar to indicate they are not derived from data returned
+        from the server
+
+        '''
+        
         self.id = id
         self.url = url
         self.type = type
@@ -1096,13 +1399,12 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self.metadata = metadata if metadata else Metadata()
         self.elevation_field = elevation_field
 
-        super(self.__class__, self).__init__()
 
     @classmethod
     def fromjson(cls, datadict):
-        '''Initialize Layer from a JSON blob
+        '''Initialize Layer from a dict.
 
-        la = Layer.fromjson(my_json)
+        la = Layer.fromjson(a_dict)
 
         '''
         # return cls(datadict.items())
@@ -1115,14 +1417,41 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._url = target_url
         return self
 
-    def get(self, id):
+    def get(self, id, dynamic_build = False):
         """Fetches a layer determined by the value of `id`.
 
         :param id: ID for the new :class:`Layer` object.
         """
 
         target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
-        super(self.__class__, self).get(id, target_url)
+        # Call the superclass `get` with dynamic_build set to False
+        dic_layer_as_json = super(self.__class__, self).get(id,     
+                                                            target_url, 
+                                                            dynamic_build)
+        # Clear all existing attributes
+        self._initialize_named_attributes(id = dic_layer_as_json.get("id"),
+                                          url = dic_layer_as_json.get("url"),
+                                          type = dic_layer_as_json.get("type"),
+                                          name = dic_layer_as_json.get("name"),
+                                          first_published_at = make_date(dic_layer_as_json.get("first_published_at")),
+                                          published_at = make_date(dic_layer_as_json.get("published_at")),
+                                          description = dic_layer_as_json.get("description"),
+                                          description_html = dic_layer_as_json.get("description_html"),
+                                          group = Group.from_dict(dic_layer_as_json.get("group")),
+                                          data = Data.from_dict(dic_layer_as_json.get("data")),
+                                          url_html = dic_layer_as_json.get("url_html"),
+                                          published_version = dic_layer_as_json.get("published_version"),
+                                          latest_version = dic_layer_as_json.get("latest_version"),
+                                          this_version = dic_layer_as_json.get("this_version"),
+                                          kind = dic_layer_as_json.get("kind"),
+                                          categories = make_list_of_Categories(dic_layer_as_json.get("categories")),
+                                          tags = dic_layer_as_json.get("tags"),
+                                          collected_at = [make_date(str_date) for str_date in dic_layer_as_json.get("collected_at", [])],
+                                          created_at = make_date(dic_layer_as_json.get("created_at")),
+                                          license = License.from_dict(dic_layer_as_json.get("license")),
+                                          metadata = Metadata.from_dict(dic_layer_as_json.get("metadata")),
+                                          elevation_field = dic_layer_as_json.get("elevation_field"))
+
 
     def create(self):
         """Creates a layer based on the current attributes of the
