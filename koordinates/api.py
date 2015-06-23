@@ -473,7 +473,16 @@ class KoordinatesObjectMixin(object):
                                           auth=self._parent.get_auth())
 
         if self._raw_response.status_code == 200:
-            self._list_of_response_dicts.append(self._raw_response.json())
+            # If only row is returned the JSON corresponds to a single dict,
+            # if more than one row is returned the JSON corresponds to a list
+            # of dicts. To make life simpler in the case of a single dict we 
+            # coerce the single dict into a list
+            if isinstance(self._raw_response.json(), dict):
+                response_json = [self._raw_response.json()]
+            else:
+                response_json = self._raw_response.json()
+
+            self._list_of_response_dicts.append(response_json)
             if 'page-next' in self._raw_response.links:
                 self._link_to_next_in_list = self._raw_response.links['page-next']['url']
             else:

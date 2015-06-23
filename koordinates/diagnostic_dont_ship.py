@@ -128,9 +128,13 @@ def main15(username):
     conn.layer.group.name = "Wellington City Council"
     conn.layer.group.country = "NZ"
 
-    conn.layer.data = api.Data(datasources = [api.DataSource(144355)]) 
+    conn.layer.data = api.Data(datasources = [api.Datasource(144355)]) 
 
     conn.layer.create()
+
+def main16(username):
+    print("main 16 has not yet been implemented")
+    pass
 
 def main14(username):
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
@@ -397,7 +401,7 @@ def main():
         main9(username)
         main13(username)
         main14(username)
-    main15(username)
+        main15(username)
 
 if __name__ == "__main__":
     main()

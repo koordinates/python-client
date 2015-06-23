@@ -37,6 +37,7 @@ from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
 from canned_responses_for_tests_5 import layers_version_single_good_simulated_response
 from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
 from canned_responses_for_tests_8 import layer_create_good_simulated_response
+from canned_responses_for_tests_9 import single_layer_all_versions_good_response
 
 from . import package_pwd
 
@@ -355,23 +356,22 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(self.koordconn.layer._raw_response.status_code,
                          200)
 
-#   @responses.activate
-#   def test_get_all_layer_version_by_layer_id(self, layer_id=1474, version_id=4067):
+    @responses.activate
+    def test_get_all_layer_version_by_layer_id(self, layer_id=1474, version_id=4067):
 
-#       the_response = layers_version_single_good_simulated_response
+        the_response = single_layer_all_versions_good_response
 
-#       responses.add(responses.GET,
-#                     self.koordconn.version.get_url('VERSION','GET', 'multi', {'layer_id':layer_id}),
-#                     body=the_response, status=200,
-#                     content_type='application/json')
+        responses.add(responses.GET,
+                      self.koordconn.version.get_url('VERSION','GET', 'multi', {'layer_id':layer_id}),
+                      body=the_response, status=200,
+                      content_type='application/json')
 
-#       #import pdb; pdb.set_trace()
-#       cnt_of_versions_returned = 0
+        cnt_of_versions_returned = 0
 
-#       for version in self.koordconn.version.get_list(layer_id=layer_id).execute_get_list():
-#           cnt_of_versions_returned += 1
+        for version in self.koordconn.version.get_list(layer_id=layer_id).execute_get_list():
+            cnt_of_versions_returned += 1
 
-#       self.assertEqual(cnt_of_versions_returned, 2)
+        self.assertEqual(cnt_of_versions_returned, 2)
 
 
 #       '''
