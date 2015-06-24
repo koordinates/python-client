@@ -55,6 +55,7 @@ class KoordinatesURLMixin(object):
         self._url_templates['LAYER']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
         self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
         self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
+        self._url_templates['LAYER']['GET']['multidraft'] = '''https://{hostname}/services/api/{api_version}/layers/drafts/'''
         self._url_templates['LAYER']['POST'] = {}
         self._url_templates['LAYER']['POST']['create'] = '''https://{hostname}/services/api/{api_version}/layers/'''
         self._url_templates['SET'] = {}
@@ -345,7 +346,7 @@ class KoordinatesObjectMixin(object):
 
     @abc.abstractmethod
     def get(self, id, target_url, dynamic_build = False):
-        """Fetches a sing object determined by the value of `id`.
+        """Fetches a single object determined by the value of `id`.
 
         :param id: ID for the new object.
         :param target_url: the url on which to do the GET .
@@ -447,17 +448,38 @@ class KoordinatesObjectMixin(object):
         # get the url with modified query-string
         self._url = url_data._replace(query=urlencode(qs_data, True)).geturl()
 
-    def execute_get_list(self):
+    def execute_get_list(self, dynamic_build = False):
+        """Fetches zero, one or more objects .
+
+        :param dynamic_build: When True the instance hierarchy arising from the
+                              JSON returned is automatically build. When False
+                              control is handed back to the calling subclass to
+                              build the instance hierarchy based on pre-defined
+                              classes.
+
+                              An example of `dynamic_build` being False is that 
+                              the `Layer` class will have the JSON arising from
+                              GET returned to it and will then follow processing
+                              defined in `Layer.get` to create an instance of 
+                              `Layer` from the JSON returned.
+
+                              NB: In later versions this flag will be withdrawn
+                              and all processing will be done as if `dynamic_build`
+                              was False.
+        """
         self._list_of_response_dicts = []
         self._next_page_number = 1
         self.add_query_component("page", self._next_page_number)
         self.__execute_get_list_no_generator()
         for list_of_responses in self._list_of_response_dicts:
             for response in list_of_responses:
-                this_object = self.__class__(self._parent)
-                for key, value in response.items():
-                    setattr(this_object, key, value)
-                yield this_object
+                if dynamic_build:
+                    this_object = self.__class__(self._parent)
+                    for key, value in response.items():
+                        setattr(this_object, key, value)
+                    yield this_object
+                else:
+                    yield response
             if self._link_to_next_in_list:
                 self.__execute_get_list_no_generator(target_url=self._link_to_next_in_list)
 
@@ -813,7 +835,30 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
     TODO: Description of what a `Publish` is
 
     '''
-    def __init__(self, parent, id=None):
+    '''
+    "id": 2054, 
+    "url": "https://test.koordinates.com/services/api/v1/publish/2054/", 
+    "state": "completed", 
+    "created_at": "2015-06-08T03:40:40.368Z", 
+    "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, 
+    "error_strategy": "abort", 
+    "publish_strategy": "together", 
+    "publish_at": null, 
+    "items": ["https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/"]
+    '''
+    def __init__(self, 
+                 parent=None,
+                 id=None,
+                 url=None, 
+                 state=None, 
+                 created_at=None, 
+                 created_by=None, 
+                 error_strategy=None, 
+                 publish_strategy=None, 
+                 publish_at=None, 
+                 items=None):
+
+
         self._parent = parent
         self._url = None
         self._id = id
@@ -829,7 +874,99 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         # names which appear in the list
         # _attribute_reserved_names
         self._attribute_reserved_names = []
+
+        self._initialize_named_attributes(id,
+                                         url, 
+                                         state, 
+                                         created_at, 
+                                         created_by, 
+                                         error_strategy, 
+                                         publish_strategy, 
+                                         publish_at, 
+                                         items)
+
         super(self.__class__, self).__init__()
+
+    def _initialize_named_attributes(self,
+                                     id,
+                                     url,
+                                     state, 
+                                     created_at, 
+                                     created_by, 
+                                     error_strategy, 
+                                     publish_strategy, 
+                                     publish_at, 
+                                     items):
+        '''
+        `_initialize_named_attributes` initializes those
+        attributes of `Publish` which are not prefixed by an
+        underbar. Such attributes are named so as to indicate
+        that they are, in terms of the API, "real" attributes
+        of a `Publish`. That is to say an attribute which is returned
+        from the server when a given `Publish` is requested. Other
+        attributes, such as `_attribute_reserved_names` have leading
+        underbar to indicate they are not derived from data returned
+        from the server
+
+        '''
+        
+        self.id = id
+        self.url = url
+        self.state = state
+        self.created_at = created_at
+        self.created_by = created_by if created_by else Createdby()
+        self.error_strategy = error_strategy
+        self.publish_strategy = publish_strategy
+        self.publish_at = publish_at
+        self.items = items if items else []
+
+
+    @classmethod
+    def from_dict(cls, dict_publish):
+        '''Initialize Group from a dict.
+
+        la = Group.from_dict(a_dict)
+
+
+        '''
+        if dict_publish:
+            the_publish = cls(None, 
+                              dict_publish.get("id", None), 
+                              dict_publish.get("url", None),
+                              dict_publish.get("state", None),
+                              make_date(dict_publish.get("created_at", None)),
+                              Createdby.from_dict(dict_publish.get("created_by", None)),
+                              dict_publish.get("error_strategy",None),
+                              dict_publish.get("publish_strategy", None),
+                              make_date(dict_publish.get("publish_at", None)),
+                              dict_publish.get("items", []))
+        else:
+            the_publish = cls()
+
+        return the_publish
+
+    def execute_get_list(self):
+        """Fetches zero, one or more Publishs .
+
+        :param dynamic_build: When True the instance hierarchy arising from the
+                              JSON returned is automatically build. When False
+                              control is handed back to the calling subclass to
+                              build the instance hierarchy based on pre-defined
+                              classes.
+
+                              An example of `dynamic_build` being False is that 
+                              the `Publish` class will have the JSON arising from
+                              GET returned to it and will then follow processing
+                              defined in `Publish.get` to create an instance of 
+                              `Publish` from the JSON returned.
+
+                              NB: In later versions this flag will be withdrawn
+                              and all processing will be done as if `dynamic_build`
+                              was False.
+        """
+        for dic_publish_as_json in super(self.__class__, self).execute_get_list():
+            the_publish =  Publish.from_dict(dic_publish_as_json)
+            yield the_publish
 
     def get(self, id):
         """Fetches a `Publish` determined by the value of `id`.
@@ -1430,6 +1567,38 @@ class Autoupdate(object):
 
         return the_autoupdate
 
+class Createdby(object):
+    '''A Createdby  
+    A basket of information identifying the creator
+    '''
+    def __init__(self,
+                 id=None,
+                 url=None,
+                 first_name=None,
+                 last_name=None,
+                 country=None):
+
+        self.id = id
+        self.url = url 
+        self.first_name = first_name
+        self.last_name = last_name
+        self.country = country
+
+    @classmethod
+    def from_dict(cls, dict_createdby):
+        '''Initialize Createdby from a dict.
+        '''
+        if dict_createdby:
+            the_createdby = cls(dict_createdby.get("id"), 
+                              dict_createdby.get("url"), 
+                              dict_createdby.get("first_name"), 
+                              dict_createdby.get("last_name"), 
+                              dict_createdby.get("country")) 
+        else:
+            the_createdby = cls()
+
+        return the_createdby
+
 class License(object):
     '''A License  
     TODO: Explanation of what a `License` is from Koordinates
@@ -1696,14 +1865,38 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
 
     @classmethod
-    def fromjson(cls, datadict):
+    def from_dict(cls, dict_layer):
         '''Initialize Layer from a dict.
-
-        la = Layer.fromjson(a_dict)
-
         '''
-        # return cls(datadict.items())
-        pass
+        if dict_layer:
+            the_layer = cls(None,
+                            dict_layer.get("id", None),
+                            dict_layer.get("url", None),
+                            dict_layer.get("type", None),
+                            dict_layer.get("name", None),
+                            make_date(dict_layer.get("first_published_at", None)),
+                            make_date(dict_layer.get("published_at", None)),
+                            dict_layer.get("description", None),
+                            dict_layer.get("description_html", None),
+                            Group.from_dict(dict_layer.get("group", None)),
+                            Data.from_dict(dict_layer.get("data", None)),
+                            dict_layer.get("url_html", None),
+                            dict_layer.get("published_version", None),
+                            dict_layer.get("latest_version", None),
+                            dict_layer.get("this_version", None),
+                            dict_layer.get("kind", None),
+                            make_list_of_Categories(dict_layer.get("categories", None)),
+                            dict_layer.get("tags", None),
+                            [make_date(str_date) for str_date in dict_layer.get("collected_at", [])],
+                            make_date(dict_layer.get("created_at", None)),
+                            License.from_dict(dict_layer.get("license", None)),
+                            Metadata.from_dict(dict_layer.get("metadata", None)),
+                            dict_layer.get("elevation_field", None))
+        else:
+            the_layer = cls()
+
+        return the_layer
+
 
     def get_list(self):
         """Fetches a set of layers
@@ -1711,6 +1904,36 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('LAYER', 'GET', 'multi')
         self._url = target_url
         return self
+
+    def get_list_of_drafts(self):
+        """Fetches a set of layers
+        """
+        target_url = self.get_url('LAYER', 'GET', 'multidraft')
+        self._url = target_url
+        return self
+
+    def execute_get_list(self):
+        """Fetches zero, one or more Layers .
+
+        :param dynamic_build: When True the instance hierarchy arising from the
+                              JSON returned is automatically build. When False
+                              control is handed back to the calling subclass to
+                              build the instance hierarchy based on pre-defined
+                              classes.
+
+                              An example of `dynamic_build` being False is that 
+                              the `Layer` class will have the JSON arising from
+                              GET returned to it and will then follow processing
+                              defined in `Layer.get` to create an instance of 
+                              `Layer` from the JSON returned.
+
+                              NB: In later versions this flag will be withdrawn
+                              and all processing will be done as if `dynamic_build`
+                              was False.
+        """
+        for dic_layer_as_json in super(self.__class__, self).execute_get_list():
+            the_layer =  Layer.from_dict(dic_layer_as_json)
+            yield the_layer
 
     def get(self, id, dynamic_build = False):
         """Fetches a layer determined by the value of `id`.

@@ -133,8 +133,9 @@ def main15(username):
     conn.layer.create()
 
 def main16(username):
-    print("main 16 has not yet been implemented")
-    pass
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    for layer in conn.layer.get_list_of_drafts().execute_get_list():
+        print(layer.id)
 
 def main14(username):
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
@@ -402,6 +403,7 @@ def main():
         main13(username)
         main14(username)
         main15(username)
+    main16(username)
 
 if __name__ == "__main__":
     main()

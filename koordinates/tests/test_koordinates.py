@@ -38,6 +38,7 @@ from canned_responses_for_tests_5 import layers_version_single_good_simulated_re
 from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
 from canned_responses_for_tests_8 import layer_create_good_simulated_response
 from canned_responses_for_tests_9 import single_layer_all_versions_good_response
+from canned_responses_for_tests_9 import good_multi_layers_drafts_response
 
 from . import package_pwd
 
@@ -183,10 +184,58 @@ class TestKoordinates(unittest.TestCase):
 
         cnt_of_layers_returned = 0
 
+        #import pdb;pdb.set_trace()
         for layer in self.koordconn.layer.get_list().execute_get_list():
             cnt_of_layers_returned += 1
 
+        #import pdb;pdb.set_trace()
         self.assertEqual(cnt_of_layers_returned, 100)
+
+    @responses.activate
+    def test_get_draft_layerset_returns_all_rows(self):
+        the_response = good_multi_layers_drafts_response
+
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'multidraft'),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        cnt_of_draft_layers_returned = 0
+
+        for layer in self.koordconn.layer.get_list_of_drafts().execute_get_list():
+            cnt_of_draft_layers_returned += 1
+
+        self.assertEqual(cnt_of_draft_layers_returned, 12)
+
+    @responses.activate
+    def test_get_draft_layerset_test_characteristics_of_response(self):
+        the_response = good_multi_layers_drafts_response
+
+        responses.add(responses.GET,
+                      self.koordconn.layer.get_url('LAYER', 'GET', 'multidraft'),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        cnt_of_draft_layers_returned = 0
+
+        #import pdb;pdb.set_trace()
+        for layer in self.koordconn.layer.get_list_of_drafts().execute_get_list():
+            if cnt_of_draft_layers_returned == 0:
+                self.assertEqual(layer.id, 7955)
+                self.assertEqual(layer.name, "Built-Up Area")
+                self.assertEqual(layer.first_published_at.year, 2015)
+                self.assertEqual(layer.first_published_at.month, 4)
+                self.assertEqual(layer.first_published_at.day, 21)
+                self.assertEqual(layer.first_published_at.hour, 0)
+                self.assertEqual(layer.first_published_at.minute, 59)
+                self.assertEqual(layer.first_published_at.second, 55)
+            if cnt_of_draft_layers_returned == 11:
+                self.assertEqual(layer.id, 8113)
+                self.assertEqual(layer.name, "shea-test-layer-14")
+            cnt_of_draft_layers_returned += 1
+
+
+
 
     # This test is now impossible to conduct with the change in the way the
     # the URL templates are populated - part of which is that the hostname
