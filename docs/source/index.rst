@@ -10,6 +10,27 @@ Release v\ |version|.
 
 Koordinates is an open source Python client library for a number of Koordinates APIs.
 
+The library provides easy access to the Koordinates webservices allowing the 
+developer to consume and generate data provided through the Koordinates webservices.
+
+Feature Support
+---------------
+
+- Feature 1
+- Feature 2
+- Feature 3
+- Feature 4
+- Python 2.6—3.4
+
+User Guide
+----------
+.. toctree::
+   :maxdepth: 2
+
+   user/intro
+   user/install
+   user/quickstart
+
 
 
 
