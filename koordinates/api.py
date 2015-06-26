@@ -35,6 +35,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import dateutil.parser
+import six
 
 import koordexceptions
 
@@ -84,9 +85,26 @@ class KoordinatesURLMixin(object):
         self._url_templates['PUBLISH']['DELETE']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
 
     def url_templates(self, datatype, verb, urltype):
+        """Returns a url template
+
+        :param datatype: a string identifying the data the url will access .
+        :param verb: the HTTP verb needed for use with the url .
+        :param urltype: an adjective used to the nature of the request .
+        :return: string
+        :rtype: A non-populated url template
+        """
         return self._url_templates[datatype][verb][urltype]
 
     def get_url(self, datatype, verb, urltype, kwargs={}):
+        """Returns a fully formed url
+
+        :param datatype: a string identifying the data the url will access .
+        :param verb: the HTTP verb needed for use with the url .
+        :param urltype: an adjective used to the nature of the request .
+        :param \*\*kwargs: Optional arguments that allows override of the hostname or api version to be embedded in teh resulting url.
+        :return: string
+        :rtype: A fully formed url.
+        """
         if "hostname" not in kwargs:
             try:
                 kwargs['hostname'] = self._parent.host
@@ -122,6 +140,9 @@ def is_empty_list(candidate_list):
     '''
     Determines if the list passed as an argumenent is either
     a list or a tuple and is empty
+
+    :param candidate_list: a list to inspect.
+    :return: boolean
     '''
     ret_value = False
     if isinstance(candidate_list, list) or isinstance(candidate_list, tuple):
@@ -135,6 +156,9 @@ def remove_empty_from_dict(d):
     Given a, potentially, complex dictionary another dictionary
     is returned with all those parts which contained no data
     removed from it
+
+    :param d: a list to inspect.
+    :return: dict   
     '''
     if type(d) is dict:
         return dict((k, remove_empty_from_dict(v)) for k, v in d.items() if v and remove_empty_from_dict(v))
@@ -212,19 +236,17 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
 def make_date_list_from_string_list(list):
     pass
 
-def make_date(value):
-    '''
-    `value` should either be a string
-    parseable as a date/time; an empty
-    string; or None
+def make_date(v):
+    '''Returns a `DateTime` object, if `v` is a populated string, or an empty string.
 
-    Return either a `DateTime` corresponding
-    to `value` or an empty String
+    :param v: either a string parseable as a date/time; an empty string; or None
+    :return either a `DateTime` corresponding to `v` or an empty String
+
     '''
-    if value == "" or value is None:
+    if v == "" or v is None:
         return ""
     else:
-        return dateutil.parser.parse(value)
+        return dateutil.parser.parse(v)
 
 
 def make_date_if_possible(value):
@@ -1483,18 +1505,17 @@ class Data(object):
 
         assert type(primary_key_fields) is list,\
             "The 'Data' attribute 'primary_key_fields' must be a list"
-        assert type(datasources) is list,\
-            "The 'Data' attribute 'datasources' must be a list"
+        #assert type(datasources) is list,\
+        #    "The 'Data' attribute 'datasources' must be a list"
         assert type(fields) is list,\
             "The 'Data' attribute 'fields' must be a list"
-        assert all(isinstance(ds_instance, Datasource) for ds_instance in datasources),\
-            "The 'Data' attribute 'datasources' must be a list of Datasource objects"
+        #assert all(isinstance(ds_instance, Datasource) for ds_instance in datasources),\
+        #    "The 'Data' attribute 'datasources' must be a list of Datasource objects"
         assert all(isinstance(f_instance, Field) for f_instance in fields),\
             "The 'Data' attribute 'fields' must be a list of Datasource objects"
 
         self.encoding = encoding
         self.crs = crs
-        self.primary_key_fields = primary_key_fields
         self.primary_key_fields = primary_key_fields
         self.datasources = datasources
         self.geometry_field = geometry_field
@@ -1509,10 +1530,21 @@ class Data(object):
 
         '''
         if dict_data:
+            # To allow for resuse across the API we allow for the 
+            # possibility that `datasources` is either : a string
+            # (containing a url referencing a `datasources` object
+            # or list of dictionaries defining one or more `datasources`
+            # objects
+            if isinstance(dict_data.get("datasources"), six.string_types):
+                the_datasources = dict_data.get("datasources")
+            else:
+                the_datasources = make_list_of_Datasources(dict_data.get("datasources"))
+
+            # Now build the `Data` object
             the_data = cls(dict_data.get("encoding"), 
                            dict_data.get("crs"), 
                            dict_data.get("primary_key_fields", []), 
-                           make_list_of_Datasources(dict_data.get("datasources")),
+                           the_datasources,
                            dict_data.get("geometry_field"),
                            make_list_of_Fields(dict_data.get("fields")))
         else:
@@ -1646,6 +1678,10 @@ class License(object):
 class Versioninstance(object):
     '''A Versioninstance  
     TODO: Explanation of what a `Versioninstance` is from Koordinates
+
+    TODO: Rename this class `Versioninstance` is a very bad name for a
+    class but I really wanted to push on when I encountered the need for the
+    class.
 
     NB: Currently `Versioninstance` is only used as a component of `Version`
     '''
