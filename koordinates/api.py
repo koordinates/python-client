@@ -177,17 +177,24 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
     value of the instance attributes keyed on the original
     attribute names.
     
-    If `skip_underbars` is True then all attributes which have a
-    name beginning to with an underbar are ignored for the purposes
-    of the output. This also means that attributes within 'underbarred'
-    attributes are ignored regardless of their name.
-
-
-
     The structure of the resulting dictionary emulates that of the
     instance heirarchy
 
-    NB: This function relies on recursion.
+    NB: This function is recursive.
+
+    :param obj: a instance on which to operate
+    :param path: a list of key names traversed to get to the current point of processing
+    :param dic_out: a dictionary containing the current state of the dictionary which\
+            will eventually be returned
+    :param root: TODO - remove this argument as it is redundant
+    :param skip_underbars: When True then all attributes which have a name beginning\
+            to with an underbar are ignored for the purposes of the output. This also\
+            means that attributes within 'underbarred' attributes are ignored regardless\
+            of their name.
+    :param ignore_nones: TODO - remove this argument as it is redundant
+
+    :return: dict   
+
     '''
 
     for attr_name, attr_value in obj.__dict__.items():
@@ -255,6 +262,10 @@ def make_date_if_possible(value):
     and if that doesn't work then just
     return the value was it was passed
     in.
+
+    :param value: a value which may be a string parseable as a date
+
+    :return: either a DateTime instance or whatever was passed in `value`.
     '''
     try:
         out = dateutil.parser.parse(value)
@@ -273,6 +284,11 @@ def make_list_of_Datasources(list):
     `Datasource` instances instantiated
     using the values in the input argument
     `list`.
+
+    :param list: a list of dictionaries which contain, at least,\
+            an integer element keyed by 'id'.
+
+    :return: a list of `Datasource` objects or an empty list.
     '''
     list_out = []
     if list:
@@ -290,6 +306,11 @@ def make_list_of_Fields(list):
     `Field` instances instantiated
     using the values in the input argument
     `list`.
+
+    :param list: a list of dictionaries which contain, at least,\
+            an integer element keyed by 'id'.
+
+    :return: a list of `Field` objects or an empty list.
     '''
     list_out = []
     if list:
@@ -308,6 +329,11 @@ def make_list_of_Categories(list):
     `Category` instances instantiated
     using the values in the input argument
     `list`.
+
+    :param list: a list of dictionaries which contain, at least,\
+            an integer element keyed by 'id'.
+
+    :return: a list of `Category` objects or an empty list.
     '''
     list_out = []
     if list:
@@ -738,6 +764,14 @@ class Connection(KoordinatesURLMixin):
 
     def __init__(self, username, pwd=None, host='koordinates.com', 
                  api_version='v1', activate_logging=True):
+        '''
+        :param username: the username under which to make the connections
+        :param pwd: the password under which to make the connections
+        :param host: the host to connect to
+        :param api_version: the version of teh api to connect to
+        :param activate_logging: When True then logging to timestamped log files is activated
+
+        '''
         if activate_logging:
             client_logfile_name = "koordinates-client-{}.log"\
                                   .format(datetime.now().strftime('%Y%m%dT%H%M%S'))
@@ -770,7 +804,11 @@ class Connection(KoordinatesURLMixin):
         super(self.__class__, self).__init__()
 
     def get_auth(self):
-        """Creates an Authorisation object
+        """Creates an Authorisation object based on the 
+        instance data of the `Connection` instance.
+
+
+        :return: a `requests.auth.HTTPBasicAuth` instance   
         """
         return requests.auth.HTTPBasicAuth(self.username,
                                            self.pwd)
@@ -779,6 +817,14 @@ class Connection(KoordinatesURLMixin):
         '''
         Build a JSON body suitable for the multi-resource
         publishing
+
+        :param pub_request: a PublishRequest instance .
+        :param pub_strategy: a string defining the publish_strategy.
+        :param error_strategy: a string defining the error_strategy.
+
+        :return: a dictionary which corresponds to the body required\
+                when doing a `Connection.multipublish` of resources.
+
         '''
 
         pub_request.validate()
@@ -810,9 +856,12 @@ class Connection(KoordinatesURLMixin):
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
         """Publishes a set of items, potentially a mixture of Layers and Tables
 
-        `pub_request`: A `PublishRequest' object specifying what resources are to be published
-        `publish_strategy`: One of: `"individual"`, `"together"`. Default = `"together"`
-        `error_strategy`: One of: `"abort"`, `"ignore"`. Default = `"abort"`
+        :param pub_request: A `PublishRequest' object specifying what resources are to be published
+        :param pub_strategy: A string defining the publish_strategy. One of: `"individual"`, `"together"`. Default = `"together"`
+        :param error_strategy: a string defining the error_strategy. One of: `"abort"`, `"ignore"`. Default = `"abort"`
+
+        :return: a dictionary which corresponds to the body required\
+                when doing a `Connection.multipublish` of resources.
 
         """
         assert type(pub_request) is PublishRequest,\
