@@ -19,7 +19,8 @@ def getpass():
         return(getpass.getpass('Please enter your Koordinates password: '))
 
 def setup_package():
-    package_pwd = getpass() 
-         
+    global package_pwd
+    package_pwd = getpass()
+
 def teardown_package():
     pass

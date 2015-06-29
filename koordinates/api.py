@@ -10,36 +10,32 @@ This module implements the Koordinates API.
 """
 
 import abc
-import os
-import requests
+import logging
 import json
-import uuid
+import os
 import pprint
+import uuid
 from datetime import datetime
 try:
-        # from urllib.parse import urlparse
-        from urllib.parse import urlencode
-        from urllib.parse import urlsplit
-        from urllib.parse import parse_qs
+    from urllib.parse import urlencode
+    from urllib.parse import urlsplit
+    from urllib.parse import parse_qs
 except ImportError:
-        # from urlparse import urlparse
-        from urllib import urlencode
-        from urlparse import urlsplit
-        from urlparse import parse_qs
-
-import sys
-sys.path = [os.path.abspath(os.path.dirname(__file__))] + sys.path
-
-
-import logging
-logger = logging.getLogger(__name__)
+    from urllib import urlencode
+    from urlparse import urlsplit
+    from urlparse import parse_qs
 
 import dateutil.parser
+import requests
 import six
 
 from koordinates import exceptions
 
+
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
+
+
+logger = logging.getLogger(__name__)
 
 
 class KoordinatesURLMixin(object):
@@ -2074,12 +2070,3 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         """
         target_url = self.get_url('LAYER', 'POST', 'create')
         super(self.__class__, self).create(target_url)
-
-
-def sample(foo, bar):
-    """Is a Sample for testing purposes.
-        :param foo: A sample integer
-        :param bar: Another sample integer
-    """
-
-    return foo * bar

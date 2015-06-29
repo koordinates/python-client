@@ -12,35 +12,26 @@ Tests for the publishing part of the
 :license: BSD, see LICENSE for more details.
 "
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
-import sys
-import os
 import unittest
 import uuid
 
 import responses
-import requests
-try:
-        from urllib.parse import urlparse
-except ImportError:
-        from urlparse import urlparse
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import api
+from koordinates import api
 from koordinates import exceptions
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-from canned_responses_for_tests_1 import layers_multiple_good_simulated_response
-from canned_responses_for_tests_2 import layers_single_good_simulated_response
-from canned_responses_for_tests_3 import sets_single_good_simulated_response
-from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
-from canned_responses_for_tests_5 import layers_version_single_good_simulated_response
-from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
-from canned_responses_for_tests_7 import publish_single_good_simulated_response
-from canned_responses_for_tests_7 import publish_multiple_get_simulated_response
-
 from . import package_pwd
+from .canned_responses_for_tests_1 import layers_multiple_good_simulated_response
+from .canned_responses_for_tests_2 import layers_single_good_simulated_response
+from .canned_responses_for_tests_3 import sets_single_good_simulated_response
+from .canned_responses_for_tests_4 import sets_multiple_good_simulated_response
+from .canned_responses_for_tests_5 import layers_version_single_good_simulated_response
+from .canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
+from .canned_responses_for_tests_7 import publish_single_good_simulated_response
+from .canned_responses_for_tests_7 import publish_multiple_get_simulated_response
+
 
 class TestKoordinatesPublishing(unittest.TestCase):
 
@@ -208,6 +199,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
     def tearDown(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()

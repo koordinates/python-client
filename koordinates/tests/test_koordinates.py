@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 test_koordinates
 ----------------------------------
@@ -11,36 +10,31 @@ Tests for `koordinates` module.
 :license: BSD, see LICENSE for more details.
 "
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
-import sys
-import os
 import unittest
 import uuid
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 import responses
-import requests
-try:
-        from urllib.parse import urlparse
-except ImportError:
-        from urlparse import urlparse
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import api
+from koordinates import api
 from koordinates import exceptions
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-from canned_responses_for_tests_1 import layers_multiple_good_simulated_response
-from canned_responses_for_tests_2 import layers_single_good_simulated_response
-from canned_responses_for_tests_3 import sets_single_good_simulated_response
-from canned_responses_for_tests_4 import sets_multiple_good_simulated_response
-from canned_responses_for_tests_5 import layers_version_single_good_simulated_response
-from canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
-from canned_responses_for_tests_8 import layer_create_good_simulated_response
-from canned_responses_for_tests_9 import single_layer_all_versions_good_response
-from canned_responses_for_tests_9 import good_multi_layers_drafts_response
-
 from . import package_pwd
+from .canned_responses_for_tests_1 import layers_multiple_good_simulated_response
+from .canned_responses_for_tests_2 import layers_single_good_simulated_response
+from .canned_responses_for_tests_3 import sets_single_good_simulated_response
+from .canned_responses_for_tests_4 import sets_multiple_good_simulated_response
+from .canned_responses_for_tests_5 import layers_version_single_good_simulated_response
+from .canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
+from .canned_responses_for_tests_8 import layer_create_good_simulated_response
+from .canned_responses_for_tests_9 import single_layer_all_versions_good_response
+from .canned_responses_for_tests_9 import good_multi_layers_drafts_response
+
 
 class TestKoordinates(unittest.TestCase):
 
@@ -494,6 +488,7 @@ class TestKoordinates(unittest.TestCase):
 
     def tearDown(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()
