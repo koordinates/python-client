@@ -1,6 +1,10 @@
 machine:
   python:
-    version: 3.4.2
+    version: 2.7.6
+
+dependencies:
+  pre:
+    - pyenv install 3.4.2
 
 test:
   pre:
