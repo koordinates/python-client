@@ -13,8 +13,9 @@ test:
   override:
     - tox --
       --verbose
+      --with-xunit
       --cover-package=koordinates
       --cover-html
       --cover-html-dir=${CIRCLE_ARTIFACTS}/coverage/
-      --with-xunit
-      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/{envname}.xml
+  post:
+    - cp nosetests.*.xml ${CIRCLE_TEST_REPORTS}/junit/
