@@ -42,54 +42,61 @@ class KoordinatesURLMixin(object):
     '''
     A Mixin to support URL operations
     '''
-    def __init__(self):
-        self._url_templates = {}
-        self._url_templates['CONN'] = {}
-        self._url_templates['CONN']['POST'] = {}
-        self._url_templates['CONN']['POST']['publishmulti'] = '''https://{hostname}/services/api/{api_version}/publish/'''
-        self._url_templates['LAYER'] = {}
-        self._url_templates['LAYER']['GET'] = {}
-        self._url_templates['LAYER']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
-        self._url_templates['LAYER']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/'''
-        self._url_templates['LAYER']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/'''
-        self._url_templates['LAYER']['GET']['multidraft'] = '''https://{hostname}/services/api/{api_version}/layers/drafts/'''
-        self._url_templates['LAYER']['POST'] = {}
-        self._url_templates['LAYER']['POST']['create'] = '''https://{hostname}/services/api/{api_version}/layers/'''
-        self._url_templates['SET'] = {}
-        self._url_templates['SET']['GET'] = {}
-        self._url_templates['SET']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/sets/{set_id}/'''
-        self._url_templates['SET']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/sets/'''
-        self._url_templates['VERSION'] = {}
-        self._url_templates['VERSION']['GET'] = {}
-        self._url_templates['VERSION']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/'''
-        self._url_templates['VERSION']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/'''
-        self._url_templates['VERSION']['POST'] = {}
-        self._url_templates['VERSION']['POST']['import'] = '''https://{hostname}/services/api/{api_version}/layers/{resource_id}/versions/{version_id}/import/'''
-        self._url_templates['VERSION']['POST']['publish'] = '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/publish/'''
-        self._url_templates['DATA'] = {}
-        self._url_templates['DATA']['GET'] = {}
-        self._url_templates['DATA']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/data/'''
-        self._url_templates['DATA']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/data/{data_id}'''
-        self._url_templates['TABLE'] = {}
-        self._url_templates['TABLE']['GET'] = {}
-        self._url_templates['TABLE']['GET']['singleversion'] = '''https://{hostname}/services/api/{api_version}/tables/{table_id}/versions/{version_id}/'''
-        self._url_templates['PUBLISH'] = {}
-        self._url_templates['PUBLISH']['GET'] = {}
-        self._url_templates['PUBLISH']['GET']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
-        self._url_templates['PUBLISH']['GET']['multi'] = '''https://{hostname}/services/api/{api_version}/publish/'''
-        self._url_templates['PUBLISH']['DELETE'] = {}
-        self._url_templates['PUBLISH']['DELETE']['single'] = '''https://{hostname}/services/api/{api_version}/publish/{publish_id}/'''
-
-    def url_templates(self, datatype, verb, urltype):
-        """Returns a url template
-
-        :param datatype: a string identifying the data the url will access .
-        :param verb: the HTTP verb needed for use with the url .
-        :param urltype: an adjective used to the nature of the request .
-        :return: string
-        :rtype: A non-populated url template
-        """
-        return self._url_templates[datatype][verb][urltype]
+    URL_TEMPLATES = {
+        'CONN': {
+            'POST': {
+                'publishmulti': '/publish/',
+            },
+        },
+        'LAYER': {
+            'GET': {
+                'singleversion': '/layers/{layer_id}/versions/{version_id}/',
+                'single': '/layers/{layer_id}/',
+                'multi': '/layers/',
+                'multidraft': '/layers/drafts/',
+            },
+            'POST': {
+                'create': '/layers/',
+                'update': '/layers/{layer_id}/import/',
+            },
+        },
+        'SET': {
+            'GET': {
+                'single': '/sets/{set_id}/',
+                'multi': '/sets/',
+            },
+        },
+        'VERSION': {
+            'GET': {
+                'single': '/layers/{layer_id}/versions/{version_id}/',
+                'multi': '/layers/{layer_id}/versions/',
+            },
+            'POST': {
+                'import': '/layers/{resource_id}/versions/{version_id}/import/',
+                'publish': '/layers/{layer_id}/versions/{version_id}/publish/',
+            },
+        },
+        'DATA': {
+            'GET': {
+                'multi': '/data/',
+                'single': '/data/{data_id}',
+            },
+        },
+        'TABLE': {
+            'GET': {
+                'singleversion': '/tables/{table_id}/versions/{version_id}/',
+            },
+        },
+        'PUBLISH': {
+            'GET': {
+                'single': '/publish/{publish_id}/',
+                'multi': '/publish/',
+            },
+            'DELETE': {
+                'single': '/publish/{publish_id}/',
+            }
+        },
+    }
 
     def get_url(self, datatype, verb, urltype, kwargs={}):
         """Returns a fully formed url
@@ -118,19 +125,9 @@ class KoordinatesURLMixin(object):
                 # object itself
                 kwargs['api_version'] = self.api_version
 
-        return self.url_templates(datatype, verb, urltype).format(**kwargs)
-
-    def get_url_TODO_REMOVE(self, datatype, verb, urltype, id=None):
-        if id:
-            return self.url_templates(datatype, verb, urltype)\
-                       .format(hostname=self._parent.host,
-                               api_version=self._parent.api_version,
-                               layer_id=id)
-        else:
-            return self.url_templates(datatype, verb, urltype)\
-                       .format(hostname=self._parent.host,
-                               api_version=self._parent.api_version)
-
+        url = "https://{hostname}/services/api/{api_version}"
+        url += self.URL_TEMPLATES[datatype][verb][urltype]
+        return url.format(**kwargs)
 
 def is_empty_list(candidate_list):
     '''
@@ -2070,3 +2067,6 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         """
         target_url = self.get_url('LAYER', 'POST', 'create')
         super(self.__class__, self).create(target_url)
+
+    def import_version(self):
+        target_url = self.get_url('LAYER', 'POST', 'import')

@@ -47,9 +47,9 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         self.assertEqual(self.koordconn.set.get_url('SET', 'GET', 'single', {'set_id':999}),
                         '''https://koordinates.com/services/api/v1/sets/999/''')
 
-    def test_sets_url_template(self):
-        self.assertEqual(self.koordconn.set.url_templates('SET', 'GET', 'single'),
-                        '''https://{hostname}/services/api/{api_version}/sets/{set_id}/''')
+    def test_sets_domain_url(self):
+        self.assertEqual(self.koordtestconn.set.get_url('SET', 'GET', 'single', {'set_id':999}),
+                        '''https://test.koordinates.com/services/api/v1/sets/999/''')
 
     def test_sets_multi_url(self):
         self.assertEqual(self.koordconn.set.get_url('SET', 'GET', 'multi'),
@@ -59,10 +59,6 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         self.assertEqual(self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id':999}),
                         '''https://koordinates.com/services/api/v1/layers/999/''')
 
-    def test_layers_url_template(self):
-        self.assertEqual(self.koordconn.layer.url_templates('LAYER', 'GET', 'single'),
-                        '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/''')
-
     def test_layers_multi_url(self):
         self.assertEqual(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/layers/''')
@@ -70,10 +66,6 @@ class TestKoordinatesURLHandling(unittest.TestCase):
     def test_layer_versions_url(self, layer_id=1494, version_id=4067):
         self.assertEqual(self.koordconn.layer.get_url('VERSION', 'GET', 'single', {'layer_id':layer_id, 'version_id':version_id}),
                         '''https://koordinates.com/services/api/v1/layers/1494/versions/4067/''')
-
-    def test_layer_versions_url_template(self, layer_id=1494, version_id=4067):
-        self.assertEqual(self.koordconn.layer.url_templates('VERSION', 'GET', 'single'),
-                        '''https://{hostname}/services/api/{api_version}/layers/{layer_id}/versions/{version_id}/''')
 
     def test_layer_versions_multi_url(self, layer_id=1494, version_id=4067):
         self.assertEqual(self.koordconn.layer.get_url('VERSION', 'GET', 'multi', {'layer_id':layer_id}),
