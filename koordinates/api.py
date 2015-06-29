@@ -240,8 +240,19 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
 
     return dic_out
 
-def make_date_list_from_string_list(list):
-    pass
+def make_date_list_from_string_list(listin):
+    '''Returns a `DateTime` object, if `v` is a populated string, or an empty string.
+
+    :param v: either a string parseable as a date/time; an empty string; or None
+    :return either a `DateTime` corresponding to `v` or an empty String
+
+    '''
+    lstout = []
+    if listin:
+        for listin_elem in listin:
+            lstout.append(dateutil.parser.parse(listin_elem))
+
+    return lstout
 
 def make_date(v):
     '''Returns a `DateTime` object, if `v` is a populated string, or an empty string.
@@ -1444,7 +1455,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
                                           kind = dic_version_as_json.get("kind"),
                                           categories = make_list_of_Categories(dic_version_as_json.get("categories")),
                                           tags = dic_version_as_json.get("tags"),
-                                          collected_at = [make_date(str_date) for str_date in dic_version_as_json.get("collected_at", [])],
+                                          collected_at = make_date_list_from_string_list(dic_version_as_json.get("collected_at", [])),
                                           created_at = make_date(dic_version_as_json.get("created_at")),
                                           license = License.from_dict(dic_version_as_json.get("license")),
                                           metadata = Metadata.from_dict(dic_version_as_json.get("metadata")),
@@ -2049,7 +2060,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                                           kind = dic_layer_as_json.get("kind"),
                                           categories = make_list_of_Categories(dic_layer_as_json.get("categories")),
                                           tags = dic_layer_as_json.get("tags"),
-                                          collected_at = [make_date(str_date) for str_date in dic_layer_as_json.get("collected_at", [])],
+                                          collected_at = make_date_list_from_string_list(dic_layer_as_json.get("collected_at", [])),
                                           created_at = make_date(dic_layer_as_json.get("created_at")),
                                           license = License.from_dict(dic_layer_as_json.get("license")),
                                           metadata = Metadata.from_dict(dic_layer_as_json.get("metadata")),

@@ -25,6 +25,10 @@ class TestClassSubSub(TestClassSub):
 
 
 def main5():
+    '''
+    Not a Koordinates test as such but a test
+    of function handling .
+    '''
     tc = TestClassSubSub("foo")
     tc2 = tc.makeme("bar")
     print("tc : {0}. value is {1}".format(id(tc), tc.value))
@@ -62,6 +66,9 @@ def analyse_object_attributes(obj):
         print(attribute, " " , str(type(attribute)))
 
 def main6(username):
+    '''
+    Iterate over all version for a given Layer
+    '''
     print("main 6 START +++++++++++++++++++++++++++++++++++++++++++++")
     #import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass())
@@ -70,6 +77,9 @@ def main6(username):
     print("main 6 STOPx +++++++++++++++++++++++++++++++++++++++++++++")
 
 def main7(username):
+    '''
+    Insert a version
+    '''
     print("main 7 START +++++++++++++++++++++++++++++++++++++++++++++")
     conn = api.Connection(username, getpass())
     conn.version.url="https://koordinates.com/services/api/v1/layers/1474/versions/4067/"
@@ -83,11 +93,17 @@ def main7(username):
     print("main 7 STOP  +++++++++++++++++++++++++++++++++++++++++++++")
 
 def main9(username):
+    '''
+    Import a Version
+    '''
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     test=True
     conn.version.import_version(8098, 9850)
     test=False
 def main8(username):
+    '''
+    Illustrating what was wrong with dynamic creation of classes/attributes
+    '''
     print("main 8 START +++++++++++++++++++++++++++++++++++++++++++++")
     conn = api.Connection(username, getpass())
     conn.layer.name="Shea Test Layer 0"
@@ -115,6 +131,9 @@ def make_list_string(lst):
     return "| ".join(lst)
 
 def main15(username):
+    '''
+    Create a new Layer
+    '''
     from datetime import datetime
     d=datetime.now()
     test_layer_name = "Test Layer {}".format(d.strftime('%Y%m%dT%H%M%S'))
@@ -133,16 +152,17 @@ def main15(username):
     conn.layer.create()
 
 def main16(username):
+    '''
+    Iterate over a list of layers which are drafts
+    '''
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     for layer in conn.layer.get_list_of_drafts().execute_get_list():
         print(layer.id)
 
-def main14(username):
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
-    import pdb;pdb.set_trace()
-    conn.publish.get(2058)
-    conn.publish.cancel()
 def main13(username):
+    '''
+    Fetch a pre-existing Publish request
+    '''
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     conn.publish.get(2054)
     conn.publish.id = 2054
@@ -164,13 +184,28 @@ def main13(username):
     assert(conn.publish.created_at.minute == 22) 
     assert(conn.publish.created_at.second == 3) 
     
-
-def main12(username):
+def main14(username):
+    '''
+    Find a pre-existing Publish request and then cancel it
+    '''
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
-    conn.version.get(8097, 9849)
+    import pdb;pdb.set_trace()
+    conn.publish.get(2058)
+    conn.publish.cancel()
+
+def main12(username, cmdargs):
+    '''
+    Fetch a specific Version
+    '''
+    import pdb;pdb.set_trace()
+    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn.version.get(cmdargs['layerid'], cmdargs['versionid'])
     conn.version.publish()
 
 def main11(username):
+    '''
+    Do a multiple publish
+    '''
 
     import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
@@ -181,6 +216,9 @@ def main11(username):
     conn.multi_publish(pr)
 
 def main10(username):
+    '''
+    Iterates over a set of `Data` items
+    '''
     conn = api.Connection(username, getpass())
     dic_types = {}
     last_id = None
@@ -199,6 +237,9 @@ def main10(username):
 
 
 def main4(username):
+    '''
+    Iterate over a filtered, ordered, list of Layer objects
+    '''
     #conn = api.Connection(username, getpass())
     #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
     conn = api.Connection(username, getpass())
@@ -212,6 +253,10 @@ def main4(username):
         print(the_layer.id, " ", the_layer.name, " ", id(the_layer), make_list_string(the_layer.tags))
 
 def main4A(username):
+    '''
+    Iterate over a filtered, ordered, list of Layer objects
+    and examine the results in detail
+    '''
     conn = api.Connection(username, getpass())
     bln_first_one = True
     for the_layer in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
@@ -272,6 +317,9 @@ def main4A(username):
     print("[f] conn.layer analysis")
 
 def main4B(username):
+    '''
+    Fetch a single Layer object
+    '''
     conn = api.Connection(username, getpass())
     conn.layer.get(1474)
     print("")
@@ -288,6 +336,9 @@ def main4B(username):
     print("")
 
 def main3():
+    '''
+    Not really a koordinates test, just some testing of system ideas
+    '''
     #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
     #print(cctold.order_by().filter_by())
     #print(cctold.filter_by().order_by())
@@ -323,6 +374,9 @@ def main3():
 #    conn = api.Connection(username, getpass())
 #    conn.layer.get(9999)
 def main1(username, url, log):
+    '''
+    Primarily testing of logging
+    '''
     the_auth=get_auth(username, getpass())
     my_config = {'verbose': sys.stderr}
 
@@ -380,7 +434,7 @@ def logger_tester(log):
         logging.info('So should this')
         logging.warning('And this, too')
 
-def main():
+def main(cmdargs):
     do_some_logging=True
     username = 'rshea@thecubagroup.com'
     url = target_url(id=1474)
@@ -398,12 +452,28 @@ def main():
         main8(username)
         main10(username)
         main11(username)
-        main12(username)
         main9(username)
         main13(username)
         main14(username)
-        main15(username)
+    main12(username, cmdargs)
+    main15(username)
     main16(username)
 
+def getcommandlineargs():
+    '''
+    Read command line args to get input and output paths
+    '''
+    print("If args are supplied the first is the layerid to be published, the second is the corresponding versionid")
+    dout = {'layerid': -1, 'versionid': -1}
+    if len(sys.argv) < 3:
+        print("No publishing information provided")
+    else:
+        dout['layerid'] = int(sys.argv[1])
+        dout['versionid'] = int(sys.argv[2])
+
+    return dout
+
+
 if __name__ == "__main__":
-    main()
+    cmdargs = getcommandlineargs()
+    main(cmdargs)
