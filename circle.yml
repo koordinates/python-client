@@ -19,12 +19,11 @@ test:
     - mkdir -p ${CIRCLE_TEST_REPORTS}/junit ${CIRCLE_ARTIFACTS}/coverage
   override:
     - >
-      tox --
-      tests
+      nosetests
       --verbose
       --cover-package=koordinates
       --cover-html
       --cover-html-dir=${CIRCLE_ARTIFACTS}/coverage/
       --with-xunit
-      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/{envname}.xml:
+      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/py$(pyenv global | awk -F. '{print $1$2}').xml:
           parallel: true
