@@ -22,20 +22,19 @@ import responses
 from koordinates import api
 from koordinates import exceptions
 
-from . import package_pwd
-from .canned_responses_for_tests_1 import layers_multiple_good_simulated_response
-from .canned_responses_for_tests_2 import layers_single_good_simulated_response
-from .canned_responses_for_tests_3 import sets_single_good_simulated_response
-from .canned_responses_for_tests_4 import sets_multiple_good_simulated_response
-from .canned_responses_for_tests_5 import layers_version_single_good_simulated_response
-from .canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
-from .canned_responses_for_tests_7 import publish_single_good_simulated_response
-from .canned_responses_for_tests_7 import publish_multiple_get_simulated_response
+from response_data.responses_1 import layers_multiple_good_simulated_response
+from response_data.responses_2 import layers_single_good_simulated_response
+from response_data.responses_3 import sets_single_good_simulated_response
+from response_data.responses_4 import sets_multiple_good_simulated_response
+from response_data.responses_5 import layers_version_single_good_simulated_response
+from response_data.responses_6 import layers_version_multiple_good_simulated_response
+from response_data.responses_7 import publish_single_good_simulated_response
+from response_data.responses_7 import publish_multiple_get_simulated_response
 
 
 class TestKoordinatesPublishing(unittest.TestCase):
 
-    pwd = package_pwd
+    pwd = 'password'
 
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1

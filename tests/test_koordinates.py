@@ -24,21 +24,20 @@ import responses
 from koordinates import api
 from koordinates import exceptions
 
-from . import package_pwd
-from .canned_responses_for_tests_1 import layers_multiple_good_simulated_response
-from .canned_responses_for_tests_2 import layers_single_good_simulated_response
-from .canned_responses_for_tests_3 import sets_single_good_simulated_response
-from .canned_responses_for_tests_4 import sets_multiple_good_simulated_response
-from .canned_responses_for_tests_5 import layers_version_single_good_simulated_response
-from .canned_responses_for_tests_6 import layers_version_multiple_good_simulated_response
-from .canned_responses_for_tests_8 import layer_create_good_simulated_response
-from .canned_responses_for_tests_9 import single_layer_all_versions_good_response
-from .canned_responses_for_tests_9 import good_multi_layers_drafts_response
+from response_data.responses_1 import layers_multiple_good_simulated_response
+from response_data.responses_2 import layers_single_good_simulated_response
+from response_data.responses_3 import sets_single_good_simulated_response
+from response_data.responses_4 import sets_multiple_good_simulated_response
+from response_data.responses_5 import layers_version_single_good_simulated_response
+from response_data.responses_6 import layers_version_multiple_good_simulated_response
+from response_data.responses_8 import layer_create_good_simulated_response
+from response_data.responses_9 import single_layer_all_versions_good_response
+from response_data.responses_9 import good_multi_layers_drafts_response
 
 
 class TestKoordinates(unittest.TestCase):
 
-    pwd = package_pwd
+    pwd = 'password'
 
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1

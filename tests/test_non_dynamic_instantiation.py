@@ -20,14 +20,13 @@ import responses
 
 from koordinates import api
 
-from . import package_pwd
-from .canned_responses_for_tests_1 import layers_multiple_good_simulated_response
-from .canned_responses_for_tests_2 import layers_single_good_simulated_response
+from response_data.responses_1 import layers_multiple_good_simulated_response
+from response_data.responses_2 import layers_single_good_simulated_response
 
 
 class TestKoordinatesURLHandling(unittest.TestCase):
 
-    pwd = package_pwd
+    pwd = 'password'
 
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
