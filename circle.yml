@@ -26,6 +26,5 @@ test:
       --cover-html
       --cover-html-dir=${CIRCLE_ARTIFACTS}/coverage/
       --with-xunit
-      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/{envname}.xml
-    :
-      parallel: true
+      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/{envname}.xml:
+          parallel: true
