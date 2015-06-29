@@ -10,6 +10,7 @@ dependencies:
   post:
     - make docs
     - mv docs/build ${CIRCLE_ARTIFACTS}/docs
+    - cd ${CIRCLE_ARTIFACTS}; zip -r docs.zip docs
 
 test:
   pre:
