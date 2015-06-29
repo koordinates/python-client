@@ -4,12 +4,12 @@ Introduction
 ============
 
 
-Requests is released under terms of `BSD License`_.
+The Koordinates Python Client Library is released under the terms of the `BSD License`_.
 
 .. _`BSD License`: http://opensource.org/licenses/BSD-3-Clause
 
 
-Requests License
-----------------
+Koordinates Python Client Library License
+-----------------------------------------
 
     .. include:: ../../../LICENSE
