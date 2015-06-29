@@ -4,7 +4,7 @@ machine:
 
 dependencies:
   pre:
-    - pyenv install 3.4.2
+    - pyenv install -s 3.4.2
 
 test:
   pre:
