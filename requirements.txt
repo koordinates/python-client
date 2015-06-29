@@ -24,3 +24,4 @@ snowballstemmer==1.2.0
 sphinx-rtd-theme==0.1.8
 tox==2.0.1
 virtualenv==12.1.1
+coverage==3.7.1

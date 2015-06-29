@@ -25,14 +25,14 @@ setup(
     packages=['koordinates',],
     version=version,
     description='koordinates is a Python client library for a number of Koordinates web APIs',
-    long_description=readme + '\n\n' + history, 
+    long_description=readme + '\n\n' + history,
     author='Richard Shea',
     author_email='rshea@thecubagroup.com',
     url='https://github.com/koordinates/python-client',
-    download_url = 'https://github.com/koordinates/python-client/tarball/0.1', 
+    download_url = 'https://github.com/koordinates/python-client/tarball/0.1',
     keywords='koordinates api',
     license = 'BSD',
     classifiers=[],
-    test_suite='koordinates.tests',
+    test_suite = 'nose.collector',
 )
 

@@ -7,14 +7,25 @@
 #    override:
 #        - python setup.py test
 machine:
-    python:
-        version: 3.4.2
+  python:
+    version: 3.4.2
 
 dependencies:
-    pre:
-        - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pyenv global 2.7.9 ; fi
+  pre:
+    - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pyenv global 2.7.9 ; fi
 
 test:
-    override:
-        - make test:
-            parallel: true
+  pre:
+    - mkdir -p ${CIRCLE_TEST_REPORTS}/junit ${CIRCLE_ARTIFACTS}/coverage
+  override:
+    - >
+      tox --
+      tests
+      --verbose
+      --cover-package=koordinates
+      --cover-html
+      --cover-html-dir=${CIRCLE_ARTIFACTS}/coverage/
+      --with-xunit
+      --xunit-file=${CIRCLE_TEST_REPORTS}/junit/{envname}.xml
+    :
+      parallel: true
