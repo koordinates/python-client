@@ -27,7 +27,6 @@ except ImportError:
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import api
-import koordexceptions
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from canned_responses_for_tests_1 import layers_multiple_good_simulated_response
@@ -47,7 +46,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         self.koordconn = api.Connection('rshea@thecubagroup.com',
                                         TestKoordinatesURLHandling.pwd)
         self.koordtestconn = api.Connection('rshea@thecubagroup.com',
-                                        TestKoordinatesURLHandling.pwd, 
+                                        TestKoordinatesURLHandling.pwd,
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',

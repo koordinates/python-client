@@ -7,7 +7,7 @@ import requests
 import logging
 
 import api
-import koordexceptions
+
 import chainclasstest
 
 class TestClass(object):
@@ -87,7 +87,7 @@ def main7(username):
     conn.version.created_at = "2012-05-09T02:11:27.020Z"
     conn.version.created_by=2879
     conn.version.reference=""
-    conn.version.progress = 1 
+    conn.version.progress = 1
 
     conn.version.insert(1474)
     print("main 7 STOP  +++++++++++++++++++++++++++++++++++++++++++++")
@@ -110,9 +110,9 @@ def main8(username):
     conn.layer.type = "layer"
     #... and so on
     #... until we get to this type of thing
-    #... which requires a bit of thought as 
+    #... which requires a bit of thought as
     #... so far we've avoided having "internal"
-    #... class definitions and now we need a 
+    #... class definitions and now we need a
     #... Datasource class (although we do this dynamically
     #... for the GET's so probably OK)
     conn.layer.data.datasources = []
@@ -147,7 +147,7 @@ def main15(username):
     conn.layer.group.name = "Wellington City Council"
     conn.layer.group.country = "NZ"
 
-    conn.layer.data = api.Data(datasources = [api.Datasource(144355)]) 
+    conn.layer.data = api.Data(datasources = [api.Datasource(144355)])
 
     conn.layer.create()
 
@@ -168,22 +168,22 @@ def main13(username):
     conn.publish.id = 2054
     assert(conn.publish.id == 2054)
     assert(conn.publish.error_strategy == 'abort')
-    assert(conn.publish.created_at.year == 2015) 
-    assert(conn.publish.created_at.month == 6) 
-    assert(conn.publish.created_at.day == 8) 
-    assert(conn.publish.created_at.hour == 3) 
-    assert(conn.publish.created_at.minute == 40) 
-    assert(conn.publish.created_at.second == 40) 
+    assert(conn.publish.created_at.year == 2015)
+    assert(conn.publish.created_at.month == 6)
+    assert(conn.publish.created_at.day == 8)
+    assert(conn.publish.created_at.hour == 3)
+    assert(conn.publish.created_at.minute == 40)
+    assert(conn.publish.created_at.second == 40)
     conn.publish.get(2055)
     assert(conn.publish.id == 2055)
     assert(conn.publish.publish_strategy == 'together')
-    assert(conn.publish.created_at.year == 2015) 
-    assert(conn.publish.created_at.month == 6) 
-    assert(conn.publish.created_at.day == 8) 
-    assert(conn.publish.created_at.hour == 4) 
-    assert(conn.publish.created_at.minute == 22) 
-    assert(conn.publish.created_at.second == 3) 
-    
+    assert(conn.publish.created_at.year == 2015)
+    assert(conn.publish.created_at.month == 6)
+    assert(conn.publish.created_at.day == 8)
+    assert(conn.publish.created_at.hour == 4)
+    assert(conn.publish.created_at.minute == 22)
+    assert(conn.publish.created_at.second == 3)
+
 def main14(username):
     '''
     Find a pre-existing Publish request and then cancel it

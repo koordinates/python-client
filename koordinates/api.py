@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 import dateutil.parser
 import six
 
-import koordexceptions
+from koordinates import exceptions
 
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
@@ -158,7 +158,7 @@ def remove_empty_from_dict(d):
     removed from it
 
     :param d: a list to inspect.
-    :return: dict   
+    :return: dict
     '''
     if type(d) is dict:
         return dict((k, remove_empty_from_dict(v)) for k, v in d.items() if v and remove_empty_from_dict(v))
@@ -167,7 +167,7 @@ def remove_empty_from_dict(d):
     else:
         return d
 
-def dump_class_attributes_to_dict(obj, path=[], dic_out={}, 
+def dump_class_attributes_to_dict(obj, path=[], dic_out={},
                                   root=None, skip_underbars = True,
                                   ignore_nones = False):
     '''
@@ -176,7 +176,7 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
     of class instances, a dictionary is returned containing the
     value of the instance attributes keyed on the original
     attribute names.
-    
+
     The structure of the resulting dictionary emulates that of the
     instance heirarchy
 
@@ -193,7 +193,7 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
             of their name.
     :param ignore_nones: TODO - remove this argument as it is redundant
 
-    :return: dict   
+    :return: dict
 
     '''
 
@@ -208,24 +208,24 @@ def dump_class_attributes_to_dict(obj, path=[], dic_out={},
             pass
         else:
             if hasattr(attr_value, '__dict__'):
-                path.append(attr_name) 
+                path.append(attr_name)
                 dic_out[attr_name]={}
-                dump_class_attributes_to_dict(attr_value, 
-                                              path, 
-                                              dic_out[attr_name]) 
+                dump_class_attributes_to_dict(attr_value,
+                                              path,
+                                              dic_out[attr_name])
             else:
                 if isinstance(attr_value, list) or isinstance(attr_value, tuple):
                     lst_dumps = []
                     dic_out[attr_name]={}
                     for attr_element in attr_value:
-                        attr_element_as_json = dump_class_attributes_to_dict(attr_element, 
-                                                                             path, 
-                                                                             dic_out[attr_name]) 
-                        lst_dumps.append(attr_element_as_json) 
-                    dic_out[attr_name] = lst_dumps 
+                        attr_element_as_json = dump_class_attributes_to_dict(attr_element,
+                                                                             path,
+                                                                             dic_out[attr_name])
+                        lst_dumps.append(attr_element_as_json)
+                    dic_out[attr_name] = lst_dumps
                 else:
                     # +++++++++++++++++++++++++++++++++++++++++
-                    # The variable strpath is for 
+                    # The variable strpath is for
                     # diagnostic use only
                     strpath = ".".join(path)
                     if strpath:
@@ -289,9 +289,9 @@ def make_date_if_possible(value):
 
 def make_list_of_Datasources(list):
     '''
-    Given a list of dictionaries, each 
+    Given a list of dictionaries, each
     of which has the key 'id',
-    this function returns a list of 
+    this function returns a list of
     `Datasource` instances instantiated
     using the values in the input argument
     `list`.
@@ -311,9 +311,9 @@ def make_list_of_Datasources(list):
 
 def make_list_of_Fields(list):
     '''
-    Given a list of dictionaries, each 
+    Given a list of dictionaries, each
     of which has the keys 'name' and 'type'
-    in this function returns a list of 
+    in this function returns a list of
     `Field` instances instantiated
     using the values in the input argument
     `list`.
@@ -334,9 +334,9 @@ def make_list_of_Fields(list):
 
 def make_list_of_Categories(list):
     '''
-    Given a list of dictionaries, each 
+    Given a list of dictionaries, each
     of which has the keys 'name' and 'slug'
-    in this function returns a list of 
+    in this function returns a list of
     `Category` instances instantiated
     using the values in the input argument
     `list`.
@@ -392,15 +392,15 @@ class KoordinatesObjectMixin(object):
             self.created_by = good_layer_dict['created_by']
             self.url = good_layer_dict['url']
         elif self._raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
+            raise exceptions.NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 429:
-            raise koordexceptions.KoordinatesRateLimitExceeded
+            raise exceptions.RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise koordexceptions.KoordinatesServerTimeOut
+            raise exceptions.ServerTimeOut
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
 
     @abc.abstractmethod
@@ -415,10 +415,10 @@ class KoordinatesObjectMixin(object):
                               build the instance hierarchy based on pre-defined
                               classes.
 
-                              An example of `dynamic_build` being False is that 
+                              An example of `dynamic_build` being False is that
                               the `Layer` class will have the JSON arising from
                               GET returned to it and will then follow processing
-                              defined in `Layer.get` to create an instance of 
+                              defined in `Layer.get` to create an instance of
                               `Layer` from the JSON returned.
 
                               NB: In later versions this flag will be withdrawn
@@ -457,27 +457,27 @@ class KoordinatesObjectMixin(object):
                 # hierarchy
                 return dic_json
         elif self._raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
+            raise exceptions.NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 429:
-            raise koordexceptions.KoordinatesRateLimitExceeded
+            raise exceptions.RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise koordexceptions.KoordinatesServerTimeOut
+            raise exceptions.ServerTimeOut
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
     def __specify_page(self, value):
         pass
 
     def filter(self, value):
         if self._filtering_applied:
-            raise koordexceptions.KoordinatesOnlyOneFilterAllowed
+            raise exceptions.OnlyOneFilterAllowed
 
         # Eventually this check will be a good deal more sophisticated
         # so it's here in its current form to some degree as a placeholder
         if value.isspace():
-            raise koordexceptions.KoordinatesFilterMustNotBeSpaces()
+            raise exceptions.FilterMustNotBeSpaces()
 
         self.add_query_component("q", value)
         self._filtering_applied = True
@@ -485,9 +485,9 @@ class KoordinatesObjectMixin(object):
 
     def order_by(self, sort_key):
         if self._ordering_applied:
-            raise koordexceptions.KoordinatesOnlyOneOrderingAllowed
+            raise exceptions.OnlyOneOrderingAllowed
         if sort_key not in self._attribute_sort_candidates:
-            raise koordexceptions.KoordinatesNotAValidBasisForOrdering(sort_key)
+            raise exceptions.NotAValidBasisForOrdering(sort_key)
 
         self.add_query_component("sort", sort_key)
         self._ordering_applied = True
@@ -516,10 +516,10 @@ class KoordinatesObjectMixin(object):
                               build the instance hierarchy based on pre-defined
                               classes.
 
-                              An example of `dynamic_build` being False is that 
+                              An example of `dynamic_build` being False is that
                               the `Layer` class will have the JSON arising from
                               GET returned to it and will then follow processing
-                              defined in `Layer.get` to create an instance of 
+                              defined in `Layer.get` to create an instance of
                               `Layer` from the JSON returned.
 
                               NB: In later versions this flag will be withdrawn
@@ -556,7 +556,7 @@ class KoordinatesObjectMixin(object):
         if self._raw_response.status_code == 200:
             # If only row is returned the JSON corresponds to a single dict,
             # if more than one row is returned the JSON corresponds to a list
-            # of dicts. To make life simpler in the case of a single dict we 
+            # of dicts. To make life simpler in the case of a single dict we
             # coerce the single dict into a list
             if isinstance(self._raw_response.json(), dict):
                 response_json = [self._raw_response.json()]
@@ -569,15 +569,15 @@ class KoordinatesObjectMixin(object):
             else:
                 self._link_to_next_in_list = None
         elif self._raw_response.status_code == 401:
-            raise koordexceptions.KoordinatesNotAuthorised
+            raise exceptions.NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 429:
-            raise koordexceptions.KoordinatesRateLimitExceeded
+            raise exceptions.RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise koordexceptions.KoordinatesServerTimeOut
+            raise exceptions.ServerTimeOut
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
     def __create_attribute(self, att_name, att_value):
         if att_name in self._attribute_reserved_names:
@@ -585,7 +585,7 @@ class KoordinatesObjectMixin(object):
                      """an attribute name for the class '{classname}' """ \
                      """as it appears in the '_attribute_reserved_names' """ \
                      """list""".format(attname=att_name, classname=type(self).__name__)
-            raise koordexceptions.KoordinatesAttributeNameIsReserved(errmsg)
+            raise exceptions.AttributeNameIsReserved(errmsg)
 
         if isinstance(att_value, list):
             att_value = [self.__make_date_if_possible(v) for v in att_value]
@@ -751,16 +751,16 @@ class PublishRequest(KoordinatesURLMixin):
                         if (resource_name + '_id') in resource_dict and 'version_id' in resource_dict:
                             pass
                         else:
-                            raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+                            raise exceptions.InvalidPublicationResourceList(
                                 "{resname} must be list of dicts. "
                                 "Each dict must have the keys "
                                 "{resname}_id and version_id".format(resname=resource_name))
                     else:
-                        raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+                        raise exceptions.InvalidPublicationResourceList(
                             "Each element of {resname} must be a dict. "
                             .format(resname=resource_name))
         else:
-            raise koordexceptions.KoordinatesInvalidPublicationResourceList(
+            raise exceptions.InvalidPublicationResourceList(
                 "{resname} must be list of dicts. "
                 "Each dict must have the keys "
                 "{resname}_id and version_id".format(resname=resource_name))
@@ -773,7 +773,7 @@ class Connection(KoordinatesURLMixin):
     is instantiated.
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com', 
+    def __init__(self, username, pwd=None, host='koordinates.com',
                  api_version='v1', activate_logging=True):
         '''
         :param username: the username under which to make the connections
@@ -793,7 +793,7 @@ class Connection(KoordinatesURLMixin):
         logger.debug('Initializing Connection object')
 
         if api_version not in SUPPORTED_API_VERSIONS:
-            raise koordexceptions.KoordinatesInvalidAPIVersion
+            raise exceptions.InvalidAPIVersion
         else:
             self.api_version = api_version
 
@@ -815,11 +815,11 @@ class Connection(KoordinatesURLMixin):
         super(self.__class__, self).__init__()
 
     def get_auth(self):
-        """Creates an Authorisation object based on the 
+        """Creates an Authorisation object based on the
         instance data of the `Connection` instance.
 
 
-        :return: a `requests.auth.HTTPBasicAuth` instance   
+        :return: a `requests.auth.HTTPBasicAuth` instance
         """
         return requests.auth.HTTPBasicAuth(self.username,
                                            self.pwd)
@@ -901,14 +901,14 @@ class Connection(KoordinatesURLMixin):
             pass
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
+            raise exceptions.ImportEncounteredUpdateConflict
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
 
 class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
@@ -918,26 +918,26 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
 
     '''
     '''
-    "id": 2054, 
-    "url": "https://test.koordinates.com/services/api/v1/publish/2054/", 
-    "state": "completed", 
-    "created_at": "2015-06-08T03:40:40.368Z", 
-    "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, 
-    "error_strategy": "abort", 
-    "publish_strategy": "together", 
-    "publish_at": null, 
+    "id": 2054,
+    "url": "https://test.koordinates.com/services/api/v1/publish/2054/",
+    "state": "completed",
+    "created_at": "2015-06-08T03:40:40.368Z",
+    "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"},
+    "error_strategy": "abort",
+    "publish_strategy": "together",
+    "publish_at": null,
     "items": ["https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/"]
     '''
-    def __init__(self, 
+    def __init__(self,
                  parent=None,
                  id=None,
-                 url=None, 
-                 state=None, 
-                 created_at=None, 
-                 created_by=None, 
-                 error_strategy=None, 
-                 publish_strategy=None, 
-                 publish_at=None, 
+                 url=None,
+                 state=None,
+                 created_at=None,
+                 created_by=None,
+                 error_strategy=None,
+                 publish_strategy=None,
+                 publish_at=None,
                  items=None):
 
 
@@ -958,13 +958,13 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._attribute_reserved_names = []
 
         self._initialize_named_attributes(id,
-                                         url, 
-                                         state, 
-                                         created_at, 
-                                         created_by, 
-                                         error_strategy, 
-                                         publish_strategy, 
-                                         publish_at, 
+                                         url,
+                                         state,
+                                         created_at,
+                                         created_by,
+                                         error_strategy,
+                                         publish_strategy,
+                                         publish_at,
                                          items)
 
         super(self.__class__, self).__init__()
@@ -972,12 +972,12 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
     def _initialize_named_attributes(self,
                                      id,
                                      url,
-                                     state, 
-                                     created_at, 
-                                     created_by, 
-                                     error_strategy, 
-                                     publish_strategy, 
-                                     publish_at, 
+                                     state,
+                                     created_at,
+                                     created_by,
+                                     error_strategy,
+                                     publish_strategy,
+                                     publish_at,
                                      items):
         '''
         `_initialize_named_attributes` initializes those
@@ -991,7 +991,7 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         from the server
 
         '''
-        
+
         self.id = id
         self.url = url
         self.state = state
@@ -1012,8 +1012,8 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         '''
         if dict_publish:
-            the_publish = cls(None, 
-                              dict_publish.get("id", None), 
+            the_publish = cls(None,
+                              dict_publish.get("id", None),
                               dict_publish.get("url", None),
                               dict_publish.get("state", None),
                               make_date(dict_publish.get("created_at", None)),
@@ -1036,10 +1036,10 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
                               build the instance hierarchy based on pre-defined
                               classes.
 
-                              An example of `dynamic_build` being False is that 
+                              An example of `dynamic_build` being False is that
                               the `Publish` class will have the JSON arising from
                               GET returned to it and will then follow processing
-                              defined in `Publish.get` to create an instance of 
+                              defined in `Publish.get` to create an instance of
                               `Publish` from the JSON returned.
 
                               NB: In later versions this flag will be withdrawn
@@ -1084,9 +1084,9 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         elif self._raw_response.status_code == 409:
             # Indicates that the publish couldn't be cancelled as the
             # Publish process has already started
-            raise koordexceptions.KoordinatesPublishAlreadyStarted
+            raise exceptions.PublishAlreadyStarted
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
 
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
@@ -1137,8 +1137,8 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     TODO: Description of what a `Set` is
 
     '''
-    def __init__(self, 
-                 parent=None, 
+    def __init__(self,
+                 parent=None,
                  id=None,
                  title=None,
                  description=None,
@@ -1210,17 +1210,17 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         from the server
         '''
         '''
-        "id": 933, 
-        "title": "Ultra Fast Broadband Initiative Coverage", 
-        "description": "", 
-        "description_html": "", 
-        "categories": [], 
-        "tags": [], 
-        "group": {"id": 141, "url": "https://koordinates.com/services/api/v1/groups/141/", "name": "New Zealand Broadband Map", "country": "NZ"}, 
-        "items": ["https://koordinates.com/services/api/v1/layers/4226/", "https://koordinates.com/services/api/v1/layers/4228/", "https://koordinates.com/services/api/v1/layers/4227/", "https://koordinates.com/services/api/v1/layers/4061/", "https://koordinates.com/services/api/v1/layers/4147/", "https://koordinates.com/services/api/v1/layers/4148/"], 
-        "url": "https://koordinates.com/services/api/v1/sets/933/", 
-        "url_html": "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/", 
-        "metadata": null, 
+        "id": 933,
+        "title": "Ultra Fast Broadband Initiative Coverage",
+        "description": "",
+        "description_html": "",
+        "categories": [],
+        "tags": [],
+        "group": {"id": 141, "url": "https://koordinates.com/services/api/v1/groups/141/", "name": "New Zealand Broadband Map", "country": "NZ"},
+        "items": ["https://koordinates.com/services/api/v1/layers/4226/", "https://koordinates.com/services/api/v1/layers/4228/", "https://koordinates.com/services/api/v1/layers/4227/", "https://koordinates.com/services/api/v1/layers/4061/", "https://koordinates.com/services/api/v1/layers/4147/", "https://koordinates.com/services/api/v1/layers/4148/"],
+        "url": "https://koordinates.com/services/api/v1/sets/933/",
+        "url_html": "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/",
+        "metadata": null,
         "created_at": "2012-03-21T21:49:51.420Z"
         '''
         self.id = id
@@ -1272,7 +1272,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Version
     TODO: Explanation of what a `Version` is from Koordinates
     '''
-    def __init__(self, 
+    def __init__(self,
                  parent=None,
                  id=None,
                  url=None,
@@ -1393,7 +1393,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         from the server
 
         '''
-        
+
         self.id = id
         self.url = url
         self.type = type
@@ -1485,14 +1485,14 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             pass
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
+            raise exceptions.ImportEncounteredUpdateConflict
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
     def import_version(self, resource_id, version_id):
         """Reimport an existing layer from its previous datasources
@@ -1510,18 +1510,18 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             pass
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise koordexceptions.KoordinatesInvalidURL
+            raise exceptions.InvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise koordexceptions.KoordinatesImportEncounteredUpdateConflict
+            raise exceptions.ImportEncounteredUpdateConflict
         else:
-            raise koordexceptions.KoordinatesUnexpectedServerResponse
+            raise exceptions.UnexpectedServerResponse
 
 
 class Group(object):
-    '''A Group  
+    '''A Group
     TODO: Explanation of what a `Group` is from Koordinates
 
     NB: Currently this Class is only used as a component of `Layer`
@@ -1531,7 +1531,7 @@ class Group(object):
         self.url = url
         self.name = name
         self.country = country
-    
+
     @classmethod
     def from_dict(cls, dict_group):
         '''Initialize Group from a dict.
@@ -1541,10 +1541,10 @@ class Group(object):
 
         '''
         if dict_group:
-            the_group = cls(dict_group.get("id", None), 
-                            dict_group.get("url", None), 
-                            dict_group.get("name", None), 
-                            dict_group.get("country", None)) 
+            the_group = cls(dict_group.get("id", None),
+                            dict_group.get("url", None),
+                            dict_group.get("name", None),
+                            dict_group.get("country", None))
         else:
             the_group = cls()
 
@@ -1552,7 +1552,7 @@ class Group(object):
 
 
 class Data(object):
-    '''A Data  
+    '''A Data
     TODO: Explanation of what a `Data` is from Koordinates
 
     NB: Currently `Data` is only used as a component of `Layer`
@@ -1590,7 +1590,7 @@ class Data(object):
 
         '''
         if dict_data:
-            # To allow for resuse across the API we allow for the 
+            # To allow for resuse across the API we allow for the
             # possibility that `datasources` is either : a string
             # (containing a url referencing a `datasources` object
             # or list of dictionaries defining one or more `datasources`
@@ -1601,9 +1601,9 @@ class Data(object):
                 the_datasources = make_list_of_Datasources(dict_data.get("datasources"))
 
             # Now build the `Data` object
-            the_data = cls(dict_data.get("encoding"), 
-                           dict_data.get("crs"), 
-                           dict_data.get("primary_key_fields", []), 
+            the_data = cls(dict_data.get("encoding"),
+                           dict_data.get("crs"),
+                           dict_data.get("primary_key_fields", []),
                            the_datasources,
                            dict_data.get("geometry_field"),
                            make_list_of_Fields(dict_data.get("fields")))
@@ -1613,7 +1613,7 @@ class Data(object):
         return the_data
 
 class Datasource(object):
-    '''A Datasource  
+    '''A Datasource
     TODO: Explanation of what a `Datasource` is from Koordinates
 
     NB: Currently `Datasource` is only used as a component of `Layer`
@@ -1623,7 +1623,7 @@ class Datasource(object):
 
 
 class Category(object):
-    '''A Category  
+    '''A Category
     TODO: Explanation of what a `Category` is from Koordinates
 
     NB: Currently `Category` is only used as a component of `Layer`
@@ -1634,7 +1634,7 @@ class Category(object):
 
 
 class Autoupdate(object):
-    '''A Autoupdate  
+    '''A Autoupdate
     TODO: Explanation of what a `Autoupdate` is from Koordinates
 
     NB: Currently `Autoupdate` is only used as a component of `Version`
@@ -1652,15 +1652,15 @@ class Autoupdate(object):
 
         '''
         if dict_autoupdate:
-            the_autoupdate = cls(dict_autoupdate.get("behaviour"), 
-                                 dict_autoupdate.get("schedule")) 
+            the_autoupdate = cls(dict_autoupdate.get("behaviour"),
+                                 dict_autoupdate.get("schedule"))
         else:
             the_autoupdate = cls()
 
         return the_autoupdate
 
 class Createdby(object):
-    '''A Createdby  
+    '''A Createdby
     A basket of information identifying the creator
     '''
     def __init__(self,
@@ -1671,7 +1671,7 @@ class Createdby(object):
                  country=None):
 
         self.id = id
-        self.url = url 
+        self.url = url
         self.first_name = first_name
         self.last_name = last_name
         self.country = country
@@ -1681,18 +1681,18 @@ class Createdby(object):
         '''Initialize Createdby from a dict.
         '''
         if dict_createdby:
-            the_createdby = cls(dict_createdby.get("id"), 
-                              dict_createdby.get("url"), 
-                              dict_createdby.get("first_name"), 
-                              dict_createdby.get("last_name"), 
-                              dict_createdby.get("country")) 
+            the_createdby = cls(dict_createdby.get("id"),
+                              dict_createdby.get("url"),
+                              dict_createdby.get("first_name"),
+                              dict_createdby.get("last_name"),
+                              dict_createdby.get("country"))
         else:
             the_createdby = cls()
 
         return the_createdby
 
 class License(object):
-    '''A License  
+    '''A License
     TODO: Explanation of what a `License` is from Koordinates
 
     NB: Currently `License` is only used as a component of `Layer`
@@ -1723,20 +1723,20 @@ class License(object):
 
         '''
         if dict_license:
-            the_license = cls(dict_license.get("id"), 
-                              dict_license.get("title"), 
-                              dict_license.get("type"), 
-                              dict_license.get("jurisdiction"), 
-                              dict_license.get("version"), 
-                              dict_license.get("url"), 
-                              dict_license.get("url_html")) 
+            the_license = cls(dict_license.get("id"),
+                              dict_license.get("title"),
+                              dict_license.get("type"),
+                              dict_license.get("jurisdiction"),
+                              dict_license.get("version"),
+                              dict_license.get("url"),
+                              dict_license.get("url_html"))
         else:
             the_license = cls()
 
         return the_license
 
 class Versioninstance(object):
-    '''A Versioninstance  
+    '''A Versioninstance
     TODO: Explanation of what a `Versioninstance` is from Koordinates
 
     TODO: Rename this class `Versioninstance` is a very bad name for a
@@ -1771,20 +1771,20 @@ class Versioninstance(object):
 
         '''
         if dict_version_instance:
-            the_version_instance = cls(dict_version_instance.get("id"), 
-                              dict_version_instance.get("title"), 
-                              dict_version_instance.get("type"), 
-                              dict_version_instance.get("jurisdiction"), 
-                              dict_version_instance.get("version"), 
-                              dict_version_instance.get("url"), 
-                              dict_version_instance.get("url_html")) 
+            the_version_instance = cls(dict_version_instance.get("id"),
+                              dict_version_instance.get("title"),
+                              dict_version_instance.get("type"),
+                              dict_version_instance.get("jurisdiction"),
+                              dict_version_instance.get("version"),
+                              dict_version_instance.get("url"),
+                              dict_version_instance.get("url_html"))
         else:
             the_version_instance = cls()
 
         return the_version_instance
 
 class Metadata(object):
-    '''A Metadata  
+    '''A Metadata
     TODO: Explanation of what a `Metadata` is from Koordinates
 
     NB: Currently `Metadata` is only used as a component of `Layer`
@@ -1803,16 +1803,16 @@ class Metadata(object):
 
         '''
         if dict_mdata:
-            the_metadata = cls(dict_mdata.get("iso"), 
-                            dict_mdata.get("dc"), 
-                            dict_mdata.get("native")) 
+            the_metadata = cls(dict_mdata.get("iso"),
+                            dict_mdata.get("dc"),
+                            dict_mdata.get("native"))
         else:
             the_metadata = cls()
 
         return the_metadata
 
 class Field(object):
-    '''A Field  
+    '''A Field
     TODO: Explanation of what a `Field` is from Koordinates
 
     NB: Currently `Field` is only used as a component of `Layer`
@@ -1935,7 +1935,7 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         from the server
 
         '''
-        
+
         self.id = id
         self.url = url
         self.type = type
@@ -2017,10 +2017,10 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
                               build the instance hierarchy based on pre-defined
                               classes.
 
-                              An example of `dynamic_build` being False is that 
+                              An example of `dynamic_build` being False is that
                               the `Layer` class will have the JSON arising from
                               GET returned to it and will then follow processing
-                              defined in `Layer.get` to create an instance of 
+                              defined in `Layer.get` to create an instance of
                               `Layer` from the JSON returned.
 
                               NB: In later versions this flag will be withdrawn
@@ -2039,8 +2039,8 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
         # Call the superclass `get` with dynamic_build set to False
-        dic_layer_as_json = super(self.__class__, self).get(id,     
-                                                            target_url, 
+        dic_layer_as_json = super(self.__class__, self).get(id,
+                                                            target_url,
                                                             dynamic_build)
         # Clear all existing attributes
         self._initialize_named_attributes(id = dic_layer_as_json.get("id"),

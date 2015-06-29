@@ -27,7 +27,7 @@ except ImportError:
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import api
-import koordexceptions
+from koordinates import exceptions
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from canned_responses_for_tests_1 import layers_multiple_good_simulated_response
@@ -53,7 +53,7 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn = api.Connection('rshea@thecubagroup.com',
                                         TestKoordinates.pwd)
         self.koordtestconn = api.Connection('rshea@thecubagroup.com',
-                                        TestKoordinates.pwd, 
+                                        TestKoordinates.pwd,
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
         self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
@@ -76,19 +76,19 @@ class TestKoordinates(unittest.TestCase):
     def test_instantiate_datasource_class(self):
         ds = api.Datasource(99)
         self.assertEqual(ds.id, 99)
-        
+
     def test_instantiate_category_class(self):
         ca = api.Category("Category Name Test 0", "cadastral")
         self.assertEqual(ca.name, "Category Name Test 0")
         self.assertEqual(ca.slug, "cadastral")
 
-        
+
     def test_instantiate_licence_class(self):
-        li = api.License(99, 
+        li = api.License(99,
                         "Creative Commons Attribution 3.0 New Zealand",
-                        "cc-by", 
+                        "cc-by",
                         "nz",
-                        "3.0", 
+                        "3.0",
                         "https://koordinates.com/services/api/v1/licenses/9/",
                         "https://koordinates.com/license/attribution-3-0-new-zealand/")
         self.assertEqual(li.id, 99)
@@ -98,21 +98,21 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(li.version, "3.0")
         self.assertEqual(li.url, "https://koordinates.com/services/api/v1/licenses/9/")
         self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
-        
+
     def test_instantiate_metadata_class(self):
         m = api.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
-                
+
         self.assertEqual(m.iso, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/")
         self.assertEqual(m.dc, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/")
         self.assertEqual(m.native, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
-        
+
     def test_instantiate_field_class(self):
         f = api.Field("Field Name", "integer")
         self.assertEqual(f.name, "Field Name")
         self.assertEqual(f.type, "integer")
-        
+
     @responses.activate
     def test_get_layerset_bad_auth_check_status(self):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
@@ -125,7 +125,7 @@ class TestKoordinates(unittest.TestCase):
         try:
             for layer in self.bad_koordconn.layer.get_list().execute_get_list():
                 pass
-        except koordexceptions.KoordinatesNotAuthorised:
+        except exceptions.NotAuthorised:
             pass
 
         self.assertTrue(self.bad_koordconn.layer._raw_response.status_code,
@@ -148,7 +148,7 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn.layer.group.name = "Wellington City Council"
         self.koordconn.layer.group.country = "NZ"
 
-        self.koordconn.layer.data = api.Data(datasources = [api.Datasource(144355)]) 
+        self.koordconn.layer.data = api.Data(datasources = [api.Datasource(144355)])
 
         self.koordconn.layer.create()
 
@@ -169,7 +169,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=401,
                       content_type='application/json')
 
-        with self.assertRaises(koordexceptions.KoordinatesNotAuthorised):
+        with self.assertRaises(exceptions.NotAuthorised):
             for layer in self.bad_koordconn.layer.get_list().execute_get_list():
                 pass
 
@@ -281,7 +281,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=504,
                       content_type='application/json')
 
-        with self.assertRaises(koordexceptions.KoordinatesServerTimeOut):
+        with self.assertRaises(exceptions.ServerTimeOut):
             self.koordconn.layer.get(id)
 
     @responses.activate
@@ -293,7 +293,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=429,
                       content_type='application/json')
 
-        with self.assertRaises(koordexceptions.KoordinatesRateLimitExceeded):
+        with self.assertRaises(exceptions.RateLimitExceeded):
             self.koordconn.layer.get(id)
 
     @responses.activate
@@ -368,7 +368,7 @@ class TestKoordinates(unittest.TestCase):
         filter_value = str(uuid.uuid1())
         order_by_key = str(uuid.uuid1())
 
-        with self.assertRaises(koordexceptions.KoordinatesNotAValidBasisForOrdering):
+        with self.assertRaises(exceptions.NotAValidBasisForOrdering):
             self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
 
     @responses.activate
@@ -450,7 +450,7 @@ class TestKoordinates(unittest.TestCase):
 #                     body=the_response, status=200,
 #                     content_type='application/json')
 #       import pdb;pdb.set_trace()
-#       with self.assertRaises(koordexceptions.KoordinatesAttributeNameIsReserved):
+#       with self.assertRaises(exceptions.AttributeNameIsReserved):
 #           self.koordconn.layer.get(id)
 
     @responses.activate
