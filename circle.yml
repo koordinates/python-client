@@ -7,6 +7,10 @@ dependencies:
     - pyenv install -s 3.4.2
     - pyenv global 2.7.6 3.4.2
 
+  post:
+    - make docs
+    - mv docs/build ${CIRCLE_ARTIFACTS}/docs
+
 test:
   pre:
     - mkdir -p ${CIRCLE_TEST_REPORTS}/junit ${CIRCLE_ARTIFACTS}/coverage
