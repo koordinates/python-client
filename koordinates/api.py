@@ -72,7 +72,7 @@ class KoordinatesURLMixin(object):
                 'multi': '/layers/{layer_id}/versions/',
             },
             'POST': {
-                'import': '/layers/{resource_id}/versions/{version_id}/import/',
+                'import': '/layers/{layer_id}/versions/{version_id}/import/',
                 'publish': '/layers/{layer_id}/versions/{version_id}/publish/',
             },
         },
@@ -804,7 +804,6 @@ class Connection(KoordinatesURLMixin):
         self.data = KData(self)
         self.publish = Publish(self)
 
-        parent = self
         super(self.__class__, self).__init__()
 
     def get_auth(self):
@@ -857,6 +856,14 @@ class Connection(KoordinatesURLMixin):
 
         return dic_out
 
+    def request(self, method, url, *args, **kwargs):
+        # headers = {
+        #     'Content-type': 'application/json',
+        #     'Accept': '*/*',
+        # }
+        r = requests.request(method, url, auth=self.get_auth(), *args, **kwargs)
+        return r
+
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
         """Publishes a set of items, potentially a mixture of Layers and Tables
 
@@ -882,20 +889,16 @@ class Connection(KoordinatesURLMixin):
             dic_args = {'api_version': pub_request.api_version}
 
         target_url = self.get_url('CONN', 'POST', 'publishmulti', dic_args)
-        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
-        self._raw_response = requests.post(target_url,
-                                           json=dic_body,
-                                           headers=json_headers,
-                                           auth=self.get_auth())
+        r = self.request('POST', target_url, json=dic_body)
 
-        if self._raw_response.status_code == 201:
+        if r.status_code == 201:
             # Success !
             pass
-        elif self._raw_response.status_code == 404:
+        elif r.status_code == 404:
             # The resource specificed in the URL could not be found
             raise exceptions.InvalidURL
-        elif self._raw_response.status_code == 409:
+        elif r.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
@@ -1487,24 +1490,20 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         else:
             raise exceptions.UnexpectedServerResponse
 
-    def import_version(self, resource_id, version_id):
+    def import_version(self, layer_id, version_id):
         """Reimport an existing layer from its previous datasources
         and create a new version
         """
-        target_url = self.get_url('VERSION', 'POST', 'import', {'resource_id': resource_id, 'version_id': version_id})
-        json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
-                                           #json={},
-                                           #headers=json_headers,
-        self._raw_response = requests.post(target_url,
-                                          auth=self._parent.get_auth())
-        if self._raw_response.status_code == 202:
+        target_url = self.get_url('VERSION', 'POST', 'import', {'layer_id': layer_id, 'version_id': version_id})
+        r = self._parent.request('POST', target_url)
+        if r.status_code == 202:
             # Success ! Update accepted for Processing but not
             # necesarily complete
             pass
-        elif self._raw_response.status_code == 404:
+        elif r.status_code == 404:
             # The resource specificed in the URL could not be found
             raise exceptions.InvalidURL
-        elif self._raw_response.status_code == 409:
+        elif r.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
@@ -2068,5 +2067,6 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('LAYER', 'POST', 'create')
         super(self.__class__, self).create(target_url)
 
-    def import_version(self):
+    def update(self):
         target_url = self.get_url('LAYER', 'POST', 'import')
+        self._parent.request()

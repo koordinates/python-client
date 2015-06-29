@@ -293,20 +293,17 @@ class TestKoordinates(unittest.TestCase):
     def test_layer_import(self):
 
         the_response = layers_single_good_simulated_response
-        #dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'resource_id': 999}, kwargs={'hostname':"test.koordinates.com"})
-                      #self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'resource_id': 999}, kwargs={'hostname':"test.koordinates.com"}),
-        resource_id = 999
+        #dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999}, kwargs={'hostname':"test.koordinates.com"})
+                      #self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999}, kwargs={'hostname':"test.koordinates.com"}),
+        layer_id = 999
         version_id = 998
-        dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'resource_id': resource_id, 'hostname':"test.koordinates.com"})
+        dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"})
         responses.add(responses.POST,
-                      self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'resource_id': resource_id, 'hostname':"test.koordinates.com"}),
+                      self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"}),
                       body=the_response, status=202,
                       content_type='application/json')
 
-        self.koordtestconn.version.import_version(resource_id, version_id)
-
-        self.assertEqual(self.koordtestconn.version._raw_response.status_code,
-                         202)
+        self.koordtestconn.version.import_version(layer_id, version_id)
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):
