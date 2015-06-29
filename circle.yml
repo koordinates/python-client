@@ -1,11 +1,3 @@
-#general:
-#    build_dir: koordinates
-#machine:
-#    python:
-#        version: 2.7.9
-#test:
-#    override:
-#        - python setup.py test
 machine:
   python:
     version: 3.4.2
