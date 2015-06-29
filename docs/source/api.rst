@@ -25,21 +25,78 @@ Available Methods
 Classes
 ~~~~~~~~~~~~~~~~~~~
 .. autoclass:: api.KoordinatesURLMixin
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.KoordinatesObjectMixin
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Connection
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Publish
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.PublishRequest
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.KData     
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Set       
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Version   
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Group     
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Data
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Datasource
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Category
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Autoupdate
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Createdby
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.License 
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Versioninstance 
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Metadata
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Field    
+    :members:
+    :private-members:
+    :undoc-members:
 .. autoclass:: api.Layer   
+    :members:
+    :private-members:
+    :undoc-members:
