@@ -8,14 +8,14 @@ Koordinates API Library
 '''
 
 __title__ = 'koordinates'
-__version__ = '0.3.0'
+__version__ = '0.0.1'
 __author__ = 'Richard Shea'
 __license__ = 'BSD'
-__copyright__ = 'Copyright 2015 Koordinates'
+__copyright__ = 'Copyright 2015 Koordinates Limited'
 
 
 import logging
-try: 
+try:
     from logging import NullHandler
 except ImportError:
     class NullHandler(logging.Handler):

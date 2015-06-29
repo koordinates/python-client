@@ -1,16 +1,11 @@
-.. Koordinates Python API Client documentation master file, created by
-   sphinx-quickstart on Tue May 12 16:49:06 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Koordinates Python API Client
 =========================================================
 
 Release v\ |version|. 
 
-Koordinates is an open source Python client library for a number of Koordinates APIs.
+An open source Python client library for a number of Koordinates APIs.
 
-The library provides easy access to the Koordinates webservices allowing the 
+The library provides easy access to Koordinates webservices allowing the 
 developer to consume and generate data provided through the Koordinates webservices.
 
 Feature Support
@@ -20,7 +15,12 @@ Feature Support
 - Feature 2
 - Feature 3
 - Feature 4
-- Python 2.6—3.4
+
+Compatibility
+-------------
+
+- Python 2.7
+- Python 3.3+
 
 User Guide
 ----------
@@ -30,8 +30,6 @@ User Guide
    user/intro
    user/install
    user/quickstart
-
-
 
 
 Contents:

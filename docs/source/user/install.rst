@@ -3,20 +3,16 @@
 Installation
 ============
 
-This part of the documentation covers the installation of Koordinates API Library.
+This part of the documentation covers the installation of the Koordinates API Library.
 
 
-Pip or easy_install
--------------------
+Pip
+---
 
 Installing Koordinates API Library is simple with `pip <https://pip.pypa.io>`_, just run
 this in your terminal::
 
     $ pip install python-client
-
-or, with `easy_install <http://pypi.python.org/pypi/setuptools>`_::
-
-    $ easy_install python-client
 
 
 Getting the Code
