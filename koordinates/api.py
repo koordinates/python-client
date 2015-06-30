@@ -29,9 +29,25 @@ import dateutil.parser
 import requests
 import six
 
-from koordinates import exceptions
-
-
+from .exceptions import (
+    KoordinatesException,
+    KoordinatesValueException,
+    InvalidAPIVersion,
+    InvalidURL,
+    NotAuthorised,
+    UnexpectedServerResponse,
+    OnlyOneFilterAllowed,
+    FilterMustNotBeSpaces,
+    NotAValidBasisForFiltration,
+    OnlyOneOrderingAllowed,
+    NotAValidBasisForOrdering,
+    AttributeNameIsReserved,
+    ServerTimeOut,
+    RateLimitExceeded,
+    ImportEncounteredUpdateConflict,
+    PublishAlreadyStarted,
+    InvalidPublicationResourceList
+)
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 
@@ -385,15 +401,15 @@ class KoordinatesObjectMixin(object):
             self.created_by = good_layer_dict['created_by']
             self.url = good_layer_dict['url']
         elif self._raw_response.status_code == 401:
-            raise exceptions.NotAuthorised
+            raise NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise exceptions.InvalidURL
+            raise InvalidURL
         elif self._raw_response.status_code == 429:
-            raise exceptions.RateLimitExceeded
+            raise RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise exceptions.ServerTimeOut
+            raise ServerTimeOut
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
 
     @abc.abstractmethod
@@ -450,27 +466,27 @@ class KoordinatesObjectMixin(object):
                 # hierarchy
                 return dic_json
         elif self._raw_response.status_code == 401:
-            raise exceptions.NotAuthorised
+            raise NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise exceptions.InvalidURL
+            raise InvalidURL(target_url)
         elif self._raw_response.status_code == 429:
-            raise exceptions.RateLimitExceeded
+            raise RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise exceptions.ServerTimeOut
+            raise ServerTimeOut
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
     def __specify_page(self, value):
         pass
 
     def filter(self, value):
         if self._filtering_applied:
-            raise exceptions.OnlyOneFilterAllowed
+            raise OnlyOneFilterAllowed
 
         # Eventually this check will be a good deal more sophisticated
         # so it's here in its current form to some degree as a placeholder
         if value.isspace():
-            raise exceptions.FilterMustNotBeSpaces()
+            raise FilterMustNotBeSpaces()
 
         self.add_query_component("q", value)
         self._filtering_applied = True
@@ -478,9 +494,9 @@ class KoordinatesObjectMixin(object):
 
     def order_by(self, sort_key):
         if self._ordering_applied:
-            raise exceptions.OnlyOneOrderingAllowed
+            raise OnlyOneOrderingAllowed
         if sort_key not in self._attribute_sort_candidates:
-            raise exceptions.NotAValidBasisForOrdering(sort_key)
+            raise NotAValidBasisForOrdering(sort_key)
 
         self.add_query_component("sort", sort_key)
         self._ordering_applied = True
@@ -562,15 +578,15 @@ class KoordinatesObjectMixin(object):
             else:
                 self._link_to_next_in_list = None
         elif self._raw_response.status_code == 401:
-            raise exceptions.NotAuthorised
+            raise NotAuthorised
         elif self._raw_response.status_code == 404:
-            raise exceptions.InvalidURL
+            raise InvalidURL
         elif self._raw_response.status_code == 429:
-            raise exceptions.RateLimitExceeded
+            raise RateLimitExceeded
         elif self._raw_response.status_code == 504:
-            raise exceptions.ServerTimeOut
+            raise ServerTimeOut
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
     def __create_attribute(self, att_name, att_value):
         if att_name in self._attribute_reserved_names:
@@ -578,7 +594,7 @@ class KoordinatesObjectMixin(object):
                      """an attribute name for the class '{classname}' """ \
                      """as it appears in the '_attribute_reserved_names' """ \
                      """list""".format(attname=att_name, classname=type(self).__name__)
-            raise exceptions.AttributeNameIsReserved(errmsg)
+            raise AttributeNameIsReserved(errmsg)
 
         if isinstance(att_value, list):
             att_value = [self.__make_date_if_possible(v) for v in att_value]
@@ -744,16 +760,16 @@ class PublishRequest(KoordinatesURLMixin):
                         if (resource_name + '_id') in resource_dict and 'version_id' in resource_dict:
                             pass
                         else:
-                            raise exceptions.InvalidPublicationResourceList(
+                            raise InvalidPublicationResourceList(
                                 "{resname} must be list of dicts. "
                                 "Each dict must have the keys "
                                 "{resname}_id and version_id".format(resname=resource_name))
                     else:
-                        raise exceptions.InvalidPublicationResourceList(
+                        raise InvalidPublicationResourceList(
                             "Each element of {resname} must be a dict. "
                             .format(resname=resource_name))
         else:
-            raise exceptions.InvalidPublicationResourceList(
+            raise InvalidPublicationResourceList(
                 "{resname} must be list of dicts. "
                 "Each dict must have the keys "
                 "{resname}_id and version_id".format(resname=resource_name))
@@ -786,7 +802,8 @@ class Connection(KoordinatesURLMixin):
         logger.debug('Initializing Connection object')
 
         if api_version not in SUPPORTED_API_VERSIONS:
-            raise exceptions.InvalidAPIVersion
+            #raise InvalidAPIVersion
+            raise InvalidAPIVersion
         else:
             self.api_version = api_version
 
@@ -897,14 +914,14 @@ class Connection(KoordinatesURLMixin):
             pass
         elif r.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise exceptions.InvalidURL
+            raise InvalidURL
         elif r.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise exceptions.ImportEncounteredUpdateConflict
+            raise ImportEncounteredUpdateConflict
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
 
 class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
@@ -1080,9 +1097,9 @@ class Publish(KoordinatesObjectMixin, KoordinatesURLMixin):
         elif self._raw_response.status_code == 409:
             # Indicates that the publish couldn't be cancelled as the
             # Publish process has already started
-            raise exceptions.PublishAlreadyStarted
+            raise PublishAlreadyStarted
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
 
 class KData(KoordinatesObjectMixin, KoordinatesURLMixin):
@@ -1481,14 +1498,14 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             pass
         elif self._raw_response.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise exceptions.InvalidURL
+            raise InvalidURL
         elif self._raw_response.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise exceptions.ImportEncounteredUpdateConflict
+            raise ImportEncounteredUpdateConflict
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
     def import_version(self, layer_id, version_id):
         """Reimport an existing layer from its previous datasources
@@ -1502,14 +1519,14 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             pass
         elif r.status_code == 404:
             # The resource specificed in the URL could not be found
-            raise exceptions.InvalidURL
+            raise InvalidURL
         elif r.status_code == 409:
             # Indicates that the request could not be processed because
             # of conflict in the request, such as an edit conflict in
             # the case of multiple updates
-            raise exceptions.ImportEncounteredUpdateConflict
+            raise ImportEncounteredUpdateConflict
         else:
-            raise exceptions.UnexpectedServerResponse
+            raise UnexpectedServerResponse
 
 
 class Group(object):

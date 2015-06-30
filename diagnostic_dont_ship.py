@@ -1,14 +1,18 @@
-import requests
-import sys
 import os
+import sys
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
+import requests
 import uuid
 
 import requests
 import logging
 
-import api
+import koordinates.api as api
 
-import chainclasstest
+import koordinates.chainclasstest as chainclasstest
 
 class TestClass(object):
     def __init__(self, v):
@@ -199,8 +203,11 @@ def main12(username, cmdargs):
     '''
     import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
-    conn.version.get(cmdargs['layerid'], cmdargs['versionid'])
-    conn.version.publish()
+    if (cmdargs['layerid'] == -1) or (cmdargs['versionid'] == -1):
+        print("Main 12 was not provided with command line arguments so skipping")
+    else:
+        conn.version.get(cmdargs['layerid'], cmdargs['versionid'])
+        conn.version.publish()
 
 def main11(username):
     '''

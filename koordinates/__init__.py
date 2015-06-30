@@ -23,3 +23,24 @@ except ImportError:
             pass
 
 logging.getLogger(__name__).addHandler(NullHandler())
+
+from .api import Layer
+from .exceptions import (
+    KoordinatesException,
+    KoordinatesValueException,
+    InvalidAPIVersion,
+    InvalidURL,
+    NotAuthorised,
+    UnexpectedServerResponse,
+    OnlyOneFilterAllowed,
+    FilterMustNotBeSpaces,
+    NotAValidBasisForFiltration,
+    OnlyOneOrderingAllowed,
+    NotAValidBasisForOrdering,
+    AttributeNameIsReserved,
+    ServerTimeOut,
+    RateLimitExceeded,
+    ImportEncounteredUpdateConflict,
+    PublishAlreadyStarted,
+    InvalidPublicationResourceList
+)
