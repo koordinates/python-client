@@ -25,37 +25,6 @@ except ImportError:
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-from .utils import (
-    remove_empty_from_dict,
-    dump_class_attributes_to_dict,
-    make_date_list_from_string_list,
-    make_date,
-    make_date_if_possible,
-    make_list_of_Datasources,
-    make_list_of_Fields,
-    make_list_of_Categories
-)
-
-#from .api import Layer
-
-from .layer import (
-    Version,
-    Group,
-    Data,
-    Datasource,
-    Category,
-    Autoupdate,
-    Createdby,
-    License,
-    Versioninstance,
-    Metadata,
-    Field,
-    Layer,
-)
-
-from .connection import Connection
-from .set import Set       
-
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -75,3 +44,37 @@ from .exceptions import (
     PublishAlreadyStarted,
     InvalidPublicationResourceList
 )
+
+from .utils import (
+    remove_empty_from_dict,
+    dump_class_attributes_to_dict,
+    make_date_list_from_string_list,
+    make_date,
+    make_date_if_possible,
+    make_list_of_Datasources,
+    make_list_of_Fields,
+    make_list_of_Categories
+)
+
+from .layer import (
+    Version,
+    Group,
+    Data,
+    Datasource,
+    Category,
+    Autoupdate,
+    Createdby,
+    License,
+    Versioninstance,
+    Metadata,
+    Field,
+    Layer,
+)
+
+from .publish import (
+    PublishRequest,
+    Publish,
+)
+from .set import Set       
+from .connection import Connection
+

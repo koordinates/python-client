@@ -17,6 +17,7 @@ import unittest
 import uuid
 
 from koordinates import api
+from koordinates import Publish
 from koordinates import utils
 from koordinates import exceptions
 from koordinates import Connection 

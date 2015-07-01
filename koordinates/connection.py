@@ -19,6 +19,9 @@ from .mixins import (
     KoordinatesURLMixin,
 )
 from koordinates import Layer
+from koordinates import Publish
+from koordinates import PublishRequest
+
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -90,7 +93,6 @@ class Connection(KoordinatesURLMixin):
         self.version = Version(self)
         from .api import KData #TODO consider removing after full refactor
         self.data = KData(self)
-        from .api import Publish #TODO consider removing after full refactor
         self.publish = Publish(self)
 
         super(self.__class__, self).__init__()
@@ -164,7 +166,6 @@ class Connection(KoordinatesURLMixin):
                 when doing a `Connection.multipublish` of resources.
 
         """
-        from .api import PublishRequest #TODO consider removing after full refactor
 
         assert type(pub_request) is PublishRequest,\
             "The 'pub_request' argument must be a PublishRequest instance"

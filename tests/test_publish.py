@@ -22,6 +22,7 @@ import responses
 from koordinates import api
 from koordinates import exceptions
 from koordinates import Connection
+from koordinates import PublishRequest
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
@@ -123,7 +124,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.koordtestconn.multi_publish("")
 
-        pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
+        pr = PublishRequest(kwargs={'hostname':"test.koordinates.com"})
         pr.add_layer_to_publish(100, 1000)
         pr.add_layer_to_publish(101, 1001)
         pr.add_layer_to_publish(102, 1002)
@@ -148,7 +149,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.koordtestconn.multi_publish("")
 
-        pr = api.PublishRequest([],[])
+        pr = PublishRequest([],[])
 
         with self.assertRaises(exceptions.UnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned

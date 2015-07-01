@@ -4,7 +4,7 @@
 koordinates.set   
 ~~~~~~~~~~~~~~
 
-This module provides mixin classes used in the Koordinates
+This module provides the `Set` class used in the Koordinates
 Client Library
 
 """
