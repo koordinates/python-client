@@ -84,7 +84,7 @@ class Connection(KoordinatesURLMixin):
             self.pwd = os.environ['KPWD']
 
         self.layer = Layer(self)
-        from .api import Set #TODO consider removing after full refactor
+        from . import Set #TODO consider removing after full refactor
         self.set = Set(self)
         from .api import Version #TODO consider removing after full refactor
         self.version = Version(self)

@@ -54,6 +54,7 @@ from .layer import (
 )
 
 from .connection import Connection
+from .set import Set       
 
 from .exceptions import (
     KoordinatesException,
