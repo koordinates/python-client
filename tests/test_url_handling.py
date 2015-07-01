@@ -19,6 +19,7 @@ import uuid
 from koordinates import api
 from koordinates import utils
 from koordinates import exceptions
+from koordinates import Connection 
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
@@ -35,13 +36,13 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = api.Connection('rshea@thecubagroup.com',
+        self.koordconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinatesURLHandling.pwd)
-        self.koordtestconn = api.Connection('rshea@thecubagroup.com',
+        self.koordtestconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinatesURLHandling.pwd,
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
+        self.bad_koordconn = Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
     def test_sets_url(self):
@@ -75,7 +76,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
     def test_api_version_in_url_when_valid(self):
         test_domain = str(uuid.uuid1()).replace("-", "")
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-        self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
+        self.koordconnaltapiversion = Connection('rshea@thecubagroup.com',
                                                      TestKoordinatesURLHandling.pwd,
                                                      test_host_name,
                                                      api_version='UNITTESTINGONLY')
@@ -88,7 +89,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         test_api_version = str(uuid.uuid1()).replace("-", "")
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         with self.assertRaises(exceptions.InvalidAPIVersion):
-            self.koordconnaltapiversion = api.Connection('rshea@thecubagroup.com',
+            self.koordconnaltapiversion = Connection('rshea@thecubagroup.com',
                                                          TestKoordinatesURLHandling.pwd,
                                                          test_host_name,
                                                          api_version=test_api_version)

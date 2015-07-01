@@ -25,9 +25,19 @@ except ImportError:
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-from . import utils
+from .utils import (
+    remove_empty_from_dict,
+    dump_class_attributes_to_dict,
+    make_date_list_from_string_list,
+    make_date,
+    make_date_if_possible,
+    make_list_of_Datasources,
+    make_list_of_Fields,
+    make_list_of_Categories
+)
 
 from .api import Layer
+from .connection import Connection
 
 
 from .exceptions import (

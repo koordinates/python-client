@@ -21,6 +21,7 @@ import responses
 
 from koordinates import api
 from koordinates import exceptions
+from koordinates import Connection
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
@@ -40,13 +41,13 @@ class TestKoordinatesPublishing(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = api.Connection('rshea@thecubagroup.com',
+        self.koordconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinatesPublishing.pwd)
-        self.koordtestconn = api.Connection('rshea@thecubagroup.com',
+        self.koordtestconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinatesPublishing.pwd,
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
+        self.bad_koordconn = Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
 #   @responses.activate

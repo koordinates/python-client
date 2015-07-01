@@ -11,6 +11,7 @@ import requests
 import logging
 
 import koordinates.api as api
+from koordinates import Connection
 
 import koordinates.chainclasstest as chainclasstest
 
@@ -75,7 +76,7 @@ def main6(username):
     '''
     print("main 6 START +++++++++++++++++++++++++++++++++++++++++++++")
     #import pdb;pdb.set_trace()
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     for version in conn.version.get_list(layer_id=1474).execute_get_list():
         print(version.id, " ", version.created_at, " " , version.created_by)
     print("main 6 STOPx +++++++++++++++++++++++++++++++++++++++++++++")
@@ -85,7 +86,7 @@ def main7(username):
     Insert a version
     '''
     print("main 7 START +++++++++++++++++++++++++++++++++++++++++++++")
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     conn.version.url="https://koordinates.com/services/api/v1/layers/1474/versions/4067/"
     conn.version.status = "ok"
     conn.version.created_at = "2012-05-09T02:11:27.020Z"
@@ -100,7 +101,7 @@ def main9(username):
     '''
     Import a Version
     '''
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     test=True
     conn.version.import_version(8098, 9850)
     test=False
@@ -109,7 +110,7 @@ def main8(username):
     Illustrating what was wrong with dynamic creation of classes/attributes
     '''
     print("main 8 START +++++++++++++++++++++++++++++++++++++++++++++")
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     conn.layer.name="Shea Test Layer 0"
     conn.layer.type = "layer"
     #... and so on
@@ -142,7 +143,7 @@ def main15(username):
     d=datetime.now()
     test_layer_name = "Test Layer {}".format(d.strftime('%Y%m%dT%H%M%S'))
 
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     conn.layer.name = api.Layer()
     conn.layer.name = test_layer_name
 
@@ -159,7 +160,7 @@ def main16(username):
     '''
     Iterate over a list of layers which are drafts
     '''
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     for layer in conn.layer.get_list_of_drafts().execute_get_list():
         print(layer.id)
 
@@ -167,7 +168,7 @@ def main13(username):
     '''
     Fetch a pre-existing Publish request
     '''
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     conn.publish.get(2054)
     conn.publish.id = 2054
     assert(conn.publish.id == 2054)
@@ -192,7 +193,7 @@ def main14(username):
     '''
     Find a pre-existing Publish request and then cancel it
     '''
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     import pdb;pdb.set_trace()
     conn.publish.get(2058)
     conn.publish.cancel()
@@ -202,7 +203,7 @@ def main12(username, cmdargs):
     Fetch a specific Version
     '''
     #import pdb;pdb.set_trace()
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     if (cmdargs['layerid'] == -1) or (cmdargs['versionid'] == -1):
         print("Main 12 was not provided with command line arguments so skipping")
     else:
@@ -215,7 +216,7 @@ def main11(username):
     '''
 
     import pdb;pdb.set_trace()
-    conn = api.Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(username, getpass(), host="test.koordinates.com")
     #pr = api.PublishRequest(hostname="test.koordinates.com")
     pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
     pr.add_layer_to_publish(8095, 9825)
@@ -226,7 +227,7 @@ def main10(username):
     '''
     Iterates over a set of `Data` items
     '''
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     dic_types = {}
     last_id = None
     row_count = 0
@@ -247,9 +248,9 @@ def main4(username):
     '''
     Iterate over a filtered, ordered, list of Layer objects
     '''
-    #conn = api.Connection(username, getpass())
-    #conn = api.Connection(username, getpass(), 'data.linz.govt.nz')
-    conn = api.Connection(username, getpass())
+    #conn = Connection(username, getpass())
+    #conn = Connection(username, getpass(), 'data.linz.govt.nz')
+    conn = Connection(username, getpass())
 
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
@@ -264,7 +265,7 @@ def main4A(username):
     Iterate over a filtered, ordered, list of Layer objects
     and examine the results in detail
     '''
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     bln_first_one = True
     for the_layer in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
         print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
@@ -327,7 +328,7 @@ def main4B(username):
     '''
     Fetch a single Layer object
     '''
-    conn = api.Connection(username, getpass())
+    conn = Connection(username, getpass())
     conn.layer.get(1474)
     print("")
     print(conn.layer.tags)
@@ -378,7 +379,7 @@ def main3():
     print(cct.order_by().filter_by())
     '''
 #def main2(username, url):
-#    conn = api.Connection(username, getpass())
+#    conn = Connection(username, getpass())
 #    conn.layer.get(9999)
 def main1(username, url, log):
     '''
@@ -388,7 +389,7 @@ def main1(username, url, log):
     my_config = {'verbose': sys.stderr}
 
     #print(dir())
-    #conn = api.Connection(username, getpass())
+    #conn = Connection(username, getpass())
     #conn.layer.get(1474)
 
 

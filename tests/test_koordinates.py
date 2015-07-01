@@ -23,6 +23,7 @@ import responses
 
 from koordinates import api
 from koordinates import exceptions
+from koordinates import Connection
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
@@ -43,13 +44,13 @@ class TestKoordinates(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = api.Connection('rshea@thecubagroup.com',
+        self.koordconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinates.pwd)
-        self.koordtestconn = api.Connection('rshea@thecubagroup.com',
+        self.koordtestconn = Connection('rshea@thecubagroup.com',
                                         TestKoordinates.pwd,
                                         host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = api.Connection('rshea@thecubagroup.com',
+        self.bad_koordconn = Connection('rshea@thecubagroup.com',
                                             invalid_password)
 
     def test_instantiate_group_class(self):
@@ -242,7 +243,7 @@ class TestKoordinates(unittest.TestCase):
 #       test_domain = str(uuid.uuid1()).replace("-", "")
 #       order_by_key = 'name'
 #       test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-#       self.koordconnalthost = api.Connection('rshea@thecubagroup.com',
+#       self.koordconnalthost = Connection('rshea@thecubagroup.com',
 #                                              TestKoordinates.pwd,
 #                                              test_host_name)
 
