@@ -15,14 +15,14 @@ from datetime import datetime
 
 import requests
 
-from .mixins import (
-    KoordinatesURLMixin,
-)
+from koordinates import KoordinatesURLMixin
 from koordinates import Layer
 from koordinates import Publish
 from koordinates import PublishRequest
+from koordinates import Set    
+from koordinates import Version
 
-from .exceptions import (
+from koordinates import (
     KoordinatesException,
     KoordinatesValueException,
     InvalidAPIVersion,
@@ -87,11 +87,9 @@ class Connection(KoordinatesURLMixin):
             self.pwd = os.environ['KPWD']
 
         self.layer = Layer(self)
-        from . import Set #TODO consider removing after full refactor
         self.set = Set(self)
-        from .api import Version #TODO consider removing after full refactor
         self.version = Version(self)
-        from .api import KData #TODO consider removing after full refactor
+        from .api import KData
         self.data = KData(self)
         self.publish = Publish(self)
 

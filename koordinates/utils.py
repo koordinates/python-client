@@ -10,6 +10,7 @@ Client Library
 """
 import dateutil.parser
 
+
 def is_empty_list(candidate_list):
     '''
     Determines if the list passed as an argumenent is either
@@ -175,9 +176,8 @@ def make_list_of_Datasources(list):
 
     :return: a list of `Datasource` objects or an empty list.
     '''
-    # Doing this here to avoid circular imports issue
-    # longer term it can probably be moved back to top
-    from .api import Datasource #TODO consider removing after full refactor
+
+    from koordinates import Datasource
 
     list_out = []
     if list:
@@ -201,9 +201,8 @@ def make_list_of_Fields(list):
 
     :return: a list of `Field` objects or an empty list.
     '''
-    # Doing this here to avoid circular imports issue
-    # longer term it can probably be moved back to top
-    from .api import Field  #TODO consider removing after full refactor
+
+    from koordinates import Field     
 
     list_out = []
     if list:
@@ -228,9 +227,8 @@ def make_list_of_Categories(list):
 
     :return: a list of `Category` objects or an empty list.
     '''
-    # Doing this here to avoid circular imports issue
-    # longer term it can probably be moved back to top
-    from .api import Category  #TODO consider removing after full refactor
+
+    from koordinates import Category  
 
     list_out = []
     if list:

@@ -24,11 +24,11 @@ except ImportError:
 import requests
 import dateutil.parser
 
-from .utils import (
+from koordinates import (
     dump_class_attributes_to_dict,
     remove_empty_from_dict,
 )
-from .exceptions import (
+from koordinates import (
     KoordinatesException,
     KoordinatesValueException,
     InvalidAPIVersion,

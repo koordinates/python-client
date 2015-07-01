@@ -11,14 +11,14 @@ Client Library
 
 import logging
 
-from .mixins import (
+from koordinates import (
     KoordinatesObjectMixin,
     KoordinatesURLMixin,
 )
 from koordinates import Group
 from koordinates import Metadata
 
-from .utils import (
+from koordinates import (
     make_list_of_Categories,
     make_date,
 )

@@ -19,7 +19,7 @@ import uuid
 
 import responses
 
-from koordinates import api
+#from koordinates import api
 from koordinates import exceptions
 from koordinates import Connection
 from koordinates import PublishRequest

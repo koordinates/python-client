@@ -14,10 +14,10 @@ import six
 import requests
 
 
-from .mixins import KoordinatesObjectMixin 
-from .mixins import KoordinatesURLMixin 
+from koordinates import KoordinatesObjectMixin 
+from koordinates import KoordinatesURLMixin 
 
-from .utils import (
+from koordinates import (
     make_date,
     make_list_of_Datasources,
     make_list_of_Fields,

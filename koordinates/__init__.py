@@ -56,6 +56,9 @@ from .utils import (
     make_list_of_Categories
 )
 
+from .mixins import KoordinatesObjectMixin 
+from .mixins import KoordinatesURLMixin 
+
 from .layer import (
     Version,
     Group,

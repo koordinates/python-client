@@ -21,6 +21,7 @@ from koordinates import Publish
 from koordinates import utils
 from koordinates import exceptions
 from koordinates import Connection 
+from koordinates import Datasource 
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response

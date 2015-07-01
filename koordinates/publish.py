@@ -11,15 +11,13 @@ the Koordinates Client Library
 
 import logging
 
-from .mixins import (
-    KoordinatesObjectMixin,
-    KoordinatesURLMixin,
-)
+from koordinates import KoordinatesObjectMixin
+from koordinates import KoordinatesURLMixin
 from koordinates import Group
 from koordinates import Metadata
 from koordinates import Createdby
 
-from .utils import (
+from koordinates import (
     remove_empty_from_dict,
     dump_class_attributes_to_dict,
     make_date_list_from_string_list,
