@@ -10,37 +10,100 @@ Some blurb around the interfaces available.
 Available Methods
 -----------------
 
-.. autofunction:: api.is_empty_list
-.. autofunction:: api.remove_empty_from_dict
-.. autofunction:: api.dump_class_attributes_to_dict
-.. autofunction:: api.make_date_list_from_string_list
-.. autofunction:: api.make_date
-.. autofunction:: api.make_date_if_possible
-.. autofunction:: api.make_list_of_Datasources
-.. autofunction:: api.make_list_of_Fields
-.. autofunction:: api.make_list_of_Categories
+.. autofunction:: utils.dump_class_attributes_to_dict
+.. autofunction:: utils.is_empty_list
+.. autofunction:: utils.make_date
+.. autofunction:: utils.make_date_if_possible
+.. autofunction:: utils.make_date_list_from_string_list
+.. autofunction:: utils.make_list_of_Categories
+.. autofunction:: utils.make_list_of_Datasources
+.. autofunction:: utils.make_list_of_Fields
+.. autofunction:: utils.remove_empty_from_dict
 
 
+Exceptions
+----------
+.. autoexception:: exceptions.AttributeNameIsReserved
+.. autoexception:: exceptions.FilterMustNotBeSpaces
+.. autoexception:: exceptions.ImportEncounteredUpdateConflict
+.. autoexception:: exceptions.InvalidAPIVersion
+.. autoexception:: exceptions.InvalidPublicationResourceList
+.. autoexception:: exceptions.InvalidURL
+.. autoexception:: exceptions.KoordinatesException
+.. autoexception:: exceptions.KoordinatesValueException
+.. autoexception:: exceptions.NotAValidBasisForFiltration
+.. autoexception:: exceptions.NotAValidBasisForOrdering
+.. autoexception:: exceptions.NotAuthorised
+.. autoexception:: exceptions.OnlyOneFilterAllowed
+.. autoexception:: exceptions.OnlyOneOrderingAllowed
+.. autoexception:: exceptions.PublishAlreadyStarted
+.. autoexception:: exceptions.RateLimitExceeded
+.. autoexception:: exceptions.ServerTimeOut
+.. autoexception:: exceptions.UnexpectedServerResponse
 
 Classes
-~~~~~~~~~~~~~~~~~~~
-.. autoclass:: api.KoordinatesURLMixin
+-------------------
+.. autoclass:: connection.Connection
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.KoordinatesObjectMixin
+.. autoclass:: layer.Version   
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.Connection
+.. autoclass:: layer.Group     
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.Publish
+.. autoclass:: layer.Data
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.PublishRequest
+.. autoclass:: layer.Datasource
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Category
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Autoupdate
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Createdby
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.License 
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Versioninstance 
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Metadata
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Field    
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: layer.Layer   
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: publish.Publish
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: publish.PublishRequest
+    :members:
+    :private-members:
+    :undoc-members:
+.. autoclass:: set.Set       
     :members:
     :private-members:
     :undoc-members:
@@ -48,55 +111,11 @@ Classes
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.Set       
+.. autoclass:: mixins.KoordinatesURLMixin
     :members:
     :private-members:
     :undoc-members:
-.. autoclass:: api.Version   
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Group     
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Data
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Datasource
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Category
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Autoupdate
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Createdby
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.License 
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Versioninstance 
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Metadata
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Field    
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.Layer   
+.. autoclass:: mixins.KoordinatesObjectMixin
     :members:
     :private-members:
     :undoc-members:

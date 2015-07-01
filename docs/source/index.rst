@@ -15,6 +15,7 @@ Feature Support
 - Feature 2
 - Feature 3
 - Feature 4
+- Feature 5
 
 Compatibility
 -------------
@@ -42,7 +43,7 @@ API Documentation
  this part of the documentation is for you.
 
  .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     api
 
