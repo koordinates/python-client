@@ -37,15 +37,15 @@ class TestKoordinatesURLHandling(unittest.TestCase):
                                             invalid_password)
 
     def test_sets_url(self):
-        self.assertEqual(self.koordconn.set.get_url('SET', 'GET', 'single', {'set_id':999}),
+        self.assertEqual(self.koordconn.get_url('SET', 'GET', 'single', {'set_id':999}),
                         '''https://koordinates.com/services/api/v1/sets/999/''')
 
     def test_sets_domain_url(self):
-        self.assertEqual(self.koordtestconn.set.get_url('SET', 'GET', 'single', {'set_id':999}),
+        self.assertEqual(self.koordtestconn.get_url('SET', 'GET', 'single', {'set_id':999}),
                         '''https://test.koordinates.com/services/api/v1/sets/999/''')
 
     def test_sets_multi_url(self):
-        self.assertEqual(self.koordconn.set.get_url('SET', 'GET', 'multi'),
+        self.assertEqual(self.koordconn.get_url('SET', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/sets/''')
 
     def test_layers_url(self):

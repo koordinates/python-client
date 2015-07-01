@@ -16,6 +16,23 @@ from .mixins import (
     KoordinatesObjectMixin
 )
 
+from .layer import (
+    Version,
+    Group,
+    Data,
+    Datasource,
+    Category,
+    Autoupdate,
+    Createdby,
+    License,
+    Versioninstance,
+    Metadata,
+    Field,
+    Layer,
+)
+from .set import (
+    Set,
+)
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 

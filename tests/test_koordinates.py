@@ -451,21 +451,22 @@ class TestKoordinates(unittest.TestCase):
 
 
         responses.add(responses.GET,
-                      self.koordconn.set.get_url('SET', 'GET', 'single', {'set_id':id}),
+                      self.koordconn.get_url('SET', 'GET', 'single', {'set_id':id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
         #import pdb;pdb.set_trace()
-        self.koordconn.set.get(id)
+        obj = self.koordconn.sets.get(id)
+        self.assert_(isinstance(obj, api.Set))
 
-        self.assertEqual(self.koordconn.set.title,
+        self.assertEqual(obj.title,
                          "Ultra Fast Broadband Initiative Coverage")
-        self.assertEqual(self.koordconn.set.group.name,
+        self.assertEqual(obj.group.name,
                          "New Zealand Broadband Map")
-        self.assertEqual(self.koordconn.set.url_html,
+        self.assertEqual(obj.url_html,
                          "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
-        self.assertEqual(self.koordconn.set._raw_response.status_code,
-                         200)
+        # self.assertEqual(obj._raw_response.status_code,
+        #                  200)
 
     @responses.activate
     def test_get_set_set_returns_all_rows(self):
@@ -478,7 +479,7 @@ class TestKoordinates(unittest.TestCase):
 
         cnt_of_sets_returned = 0
 
-        for layer in self.koordconn.set.get_list().execute_get_list():
+        for layer in self.koordconn.sets.list():
             cnt_of_sets_returned += 1
 
         self.assertEqual(cnt_of_sets_returned, 2)

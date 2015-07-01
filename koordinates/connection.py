@@ -84,8 +84,10 @@ class Connection(KoordinatesURLMixin):
         else:
             self.pwd = os.environ['KPWD']
 
+        self.sets = Set._meta.manager
+        self.sets.set_connection(self)
+
         self.layer = Layer(self)
-        self.set = Set(self)
         self.version = Version(self)
         from .api import KData
         self.data = KData(self)
