@@ -36,9 +36,24 @@ from .utils import (
     make_list_of_Categories
 )
 
-from .api import Layer
-from .connection import Connection
+#from .api import Layer
 
+from .layer import (
+    Version,
+    Group,
+    Data,
+    Datasource,
+    Category,
+    Autoupdate,
+    Createdby,
+    License,
+    Versioninstance,
+    Metadata,
+    Field,
+    Layer,
+)
+
+from .connection import Connection
 
 from .exceptions import (
     KoordinatesException,
