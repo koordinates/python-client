@@ -201,7 +201,7 @@ def main12(username, cmdargs):
     '''
     Fetch a specific Version
     '''
-    import pdb;pdb.set_trace()
+    #import pdb;pdb.set_trace()
     conn = api.Connection(username, getpass(), host="test.koordinates.com")
     if (cmdargs['layerid'] == -1) or (cmdargs['versionid'] == -1):
         print("Main 12 was not provided with command line arguments so skipping")
@@ -450,11 +450,9 @@ def main(cmdargs):
         main2(username, url)
         main3()
         main4B(username)
-        main4(username)
         main4A(username)
         main5()
         logger_tester(log=do_some_logging)
-        main6(username)
         main7(username)
         main8(username)
         main10(username)
@@ -462,8 +460,10 @@ def main(cmdargs):
         main9(username)
         main13(username)
         main14(username)
+    #main6(username)
+    main4(username)
     main12(username, cmdargs)
-    main15(username)
+    #main15(username)
     main16(username)
 
 def getcommandlineargs():

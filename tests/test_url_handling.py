@@ -17,6 +17,7 @@ import unittest
 import uuid
 
 from koordinates import api
+from koordinates import utils
 from koordinates import exceptions
 
 from response_data.responses_1 import layers_multiple_good_simulated_response

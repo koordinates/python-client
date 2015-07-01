@@ -24,7 +24,12 @@ except ImportError:
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
+
+from . import utils
+
 from .api import Layer
+
+
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
