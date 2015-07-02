@@ -13,14 +13,14 @@ import logging
 
 from .layer import Group, Metadata
 from .utils import make_list_of_Categories, make_date
-from koordinates.base import BaseManager, BaseModel, Query
+from koordinates.base import Manager, Model, Query
 
 
 logger = logging.getLogger(__name__)
 
 
 
-class SetManager(BaseManager):
+class SetManager(Manager):
     def list(self, *args, **kwargs):
         """Fetches a set of sets
         """
@@ -39,7 +39,7 @@ class SetManager(BaseManager):
         return self.create_from_result(r.json())
 
 
-class Set(BaseModel):
+class Set(Model):
     '''A Set
 
     TODO: Description of what a `Set` is

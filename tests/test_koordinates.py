@@ -14,10 +14,7 @@ from __future__ import unicode_literals, absolute_import
 
 import unittest
 import uuid
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from six.moves import urllib
 
 import responses
 
@@ -249,7 +246,7 @@ class TestKoordinates(unittest.TestCase):
 
 #       self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-#       parsedurl = urlparse(self.koordconnalthost.layer.url)
+#       parsedurl = urllib.parse.urlparse(self.koordconnalthost.layer.url)
 
 #       self.assertTrue(self.contains_substring(parsedurl.hostname, test_host_name))
 #       self.assertEqual(parsedurl.hostname, test_host_name)
@@ -261,7 +258,7 @@ class TestKoordinates(unittest.TestCase):
         order_by_key = 'name'
         self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-        parsedurl = urlparse(self.koordconn.layer._url)
+        parsedurl = urllib.parse.urlparse(self.koordconn.layer._url)
 
         self.assertTrue(self.contains_substring(parsedurl.query, filter_value))
         self.assertTrue(self.contains_substring(parsedurl.query, order_by_key))
@@ -457,7 +454,7 @@ class TestKoordinates(unittest.TestCase):
 
         #import pdb;pdb.set_trace()
         obj = self.koordconn.sets.get(id)
-        self.assert_(isinstance(obj, api.Set))
+        self.assert_(isinstance(obj, koordinates.Set))
 
         self.assertEqual(obj.title,
                          "Ultra Fast Broadband Initiative Coverage")

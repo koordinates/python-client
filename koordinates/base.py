@@ -1,7 +1,9 @@
 import collections
 import copy
 import re
-import urllib
+
+import six
+from six.moves import urllib
 
 from koordinates.exceptions import NotAValidBasisForOrdering
 from koordinates.mixins import (
@@ -9,9 +11,17 @@ from koordinates.mixins import (
     KoordinatesURLMixin,
 )
 
-class BaseManager(KoordinatesObjectMixin, KoordinatesURLMixin):
-    def __init__(self, model):
-        self.model = model
+
+class Manager(KoordinatesObjectMixin, KoordinatesURLMixin):
+    """
+    Base class for Model Manager classes.
+
+    Instantiated by the Model metaclass and attached to model._meta.manager.
+    The Connection object calls set_connection(), and this needs to be done
+    before it's used.
+    """
+    def __init__(self, model_class):
+        self.model = model_class
         self.connection = None
 
     def set_connection(self, connection):
@@ -27,6 +37,16 @@ class BaseManager(KoordinatesObjectMixin, KoordinatesURLMixin):
 
 
 class Query(object):
+    """
+    Chainable query class to manage GET requests for lists.
+    Supports filtering by multiple attributes and sorting, and deals
+    with pagination of resultsets into a single iterator.
+
+    Query objects are instantiated by methods on the Manager classes.
+    To actually execute the query, iterate over it. You can also call
+    len() to return the length - this will do the "first" page request
+    and examine the X-Resource-Range header to produce a count.
+    """
     def __init__(self, model, url):
         self._model = model
         self._target_url = url
@@ -44,6 +64,7 @@ class Query(object):
         return r
 
     def _update_range(self, response):
+        """ Update the query count property from the `X-Resource-Range` response header """
         header_value = response.headers.get('x-resource-range', '')
         m = re.match(r'\d+-\d+/(\d+)$', header_value)
         if m:
@@ -52,10 +73,11 @@ class Query(object):
             self._count = None
 
     def to_url(self):
+        """ Serializes this query into a request-able URL including parameters """
         params = self._filters.copy()
         if self._ordering is not None:
             params['sort'] = self._ordering
-        return self._target_url + "?" + urllib.urlencode(params, doseq=True)
+        return self._target_url + "?" + urllib.parse.urlencode(params, doseq=True)
 
     def __iter__(self):
         url = self.to_url()
@@ -70,6 +92,7 @@ class Query(object):
                 yield self._manager.create_from_result(raw_result)
 
             # Paginate via Link headers
+            # Link URLs will include the query parameters, so we can use it as an entire URL.
             url = r.links.get("next", None)
 
     def __len__(self):
@@ -103,13 +126,18 @@ class Query(object):
         return q
 
 
-class BaseModelMeta(type):
-    """ Sets up the special model characteristics based on the Meta: object """
+class ModelMeta(type):
+    """
+    Sets up the special model characteristics based on the `Meta:` object on the model
+    """
     def __new__(meta, name, bases, attrs):
-        klass = super(BaseModelMeta, meta).__new__(meta, name, bases, attrs)
-
-        if klass.__name__ != "BaseModel":
-            # Don't look for a Meta class on the BaseModel
+        klass = super(ModelMeta, meta).__new__(meta, name, bases, attrs)
+        try:
+            Model
+        except NameError:
+            # klass is Model, it doesn't have a `Meta:` object
+            pass
+        else:
             if not hasattr(klass, "Meta"):
                 raise AttributeError("Missing Meta object for %s" % klass)
 
@@ -122,8 +150,25 @@ class BaseModelMeta(type):
         return klass
 
 
-class BaseModel(object):
-    __metaclass__ = BaseModelMeta
+@six.add_metaclass(ModelMeta)
+class Model(object):
+    """
+    Base class for models with managers.
+
+    Model subclasses need a Meta class, which (in particular)
+    links to their Manager class:
+
+    class FooManager(Manager):
+        ...
+
+    class Foo(Model):
+        class Meta:
+            manager = FooManager
+            attribute_sort_candidates = []
+            attribute_filter_candidates = []
+            attribute_reserved_names = []
+        ...
+    """
 
     @property
     def _manager(self):
