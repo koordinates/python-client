@@ -1,6 +1,9 @@
+from __future__ import unicode_literals
+
 import abc
 import collections
 import copy
+import itertools
 import re
 
 import six
@@ -43,6 +46,14 @@ class Manager(object):
     def list(self, target_url):
         return Query(self.model, target_url)
 
+    # Query methods we delegate
+    def filter(self, *args, **kwargs):
+        return self.list().filter(*args, **kwargs)
+    def order_by(self, *args, **kwargs):
+        return self.list().order_by(*args, **kwargs)
+    def expand(self, *args, **kwargs):
+        return self.list().expand(*args, **kwargs)
+
 
 class Query(object):
     """
@@ -60,15 +71,22 @@ class Query(object):
         self._target_url = url
         self._count = None
         self._filters = collections.defaultdict(list)
-        self._ordering = None
+        self._order_by = None
         self._expand = None
+        self._extra = None
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self._model.__name__)
+
+    def __str__(self):
+        return self._to_url()
 
     @property
     def _manager(self):
         return self._model._meta.manager
 
-    def _request(self, url):
-        r = self._manager.connection.request('GET', url, headers=self._to_headers())
+    def _request(self, url, method='GET'):
+        r = self._manager.connection.request(method, url, headers=self._to_headers())
         r.raise_for_status()
         return r
 
@@ -83,12 +101,19 @@ class Query(object):
 
     def _to_url(self):
         """ Serializes this query into a request-able URL including parameters """
-        params = self._filters.copy()
+        url = self._target_url
 
-        if self._ordering is not None:
-            params['sort'] = self._ordering
+        params = collections.defaultdict(list, copy.deepcopy(self._filters.items()))
+        if self._order_by is not None:
+            params['sort'] = self._order_by
+        if self._extra is not None:
+            for k, v in self._extra.items():
+                params[k].append(v)
 
-        return self._target_url + "?" + urllib.parse.urlencode(params, doseq=True)
+        if params:
+            url += "?" + urllib.parse.urlencode(params, doseq=True)
+
+        return url
 
     def _to_headers(self):
         """ Serializes this query into a request-able set of headers """
@@ -113,33 +138,61 @@ class Query(object):
 
             # Paginate via Link headers
             # Link URLs will include the query parameters, so we can use it as an entire URL.
-            url = r.links.get("next", None)
+            url = r.links.get("page-next", {}).get('url', None)
 
     def __len__(self):
+        """
+        Get the count for the query results. If we've previously started iterating we use
+        that count, otherwise do a HEAD request and look at the X-Resource-Range header.
+        """
         if self._count is None:
-            r = self._request(self._to_url())
+            r = self._request(self._to_url(), method='HEAD')
             self._update_range(r)
         return self._count
+
+    def __getitem__(self, k):
+        """ Very limited slicing support ([:N] only) """
+        if not isinstance(k, slice) \
+                or k.start is not None \
+                or k.step is not None \
+                or k.stop is None \
+                or k.stop <= 0:
+            raise NotImplementedError("Only query[:N] slicing is supported.")
+
+        return list(itertools.islice(self.__iter__(), k.stop))
 
     def _clone(self):
         q = Query(self._model, self._target_url)
         q._filters = collections.defaultdict(list, copy.deepcopy(self._filters.items()))
-        q._ordering = self._ordering
+        q._order_by = self._order_by
         q._expand = self._expand
+        q._extra = self._extra
         return q
 
-    def filter(self, key, value):
+    def extra(self, **params):
+        """
+        Set extra query parameters (eg. filter expressions/attributes that don't validate).
+        Appends to any previous extras set.
+        """
+        q = self._clone()
+        for key, value in params.items():
+            q._extra[key].append(value)
+        return q
+
+    def filter(self, **filters):
         """
         Add a filter to this query.
         Appends to any previous filters set.
         """
+        # Validate the filters
         # Eventually this check will be a good deal more sophisticated
         # so it's here in its current form to some degree as a placeholder
         # if value.isspace():
         #     raise FilterMustNotBeSpaces()
 
         q = self._clone()
-        q._filters[key].append(value)
+        for key, value in filters.items():
+            q._filters[key].append(value)
         return q
 
     def order_by(self, sort_key=None):
@@ -151,11 +204,11 @@ class Query(object):
         """
         if sort_key is not None:
             sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
-            if sort_attr not in self.manager._meta_attribute('attribute_sort_candidates', []):
+            if sort_attr not in self._manager._meta_attribute('attribute_sort_candidates', []):
                 raise NotAValidBasisForOrdering(sort_key)
 
         q = self._clone()
-        q._ordering = sort_key
+        q._order_by = sort_key
         return q
 
     def expand(self):
@@ -211,6 +264,14 @@ class Model(object):
             attribute_reserved_names = []
         ...
     """
+    def __repr__(self):
+        return "<%s: %s>" % (self.__class__.__name__, self)
+
+    def __str__(self):
+        s = str(self.id)
+        if getattr(self, 'title', None):
+            s += " - %s" % self.title
+        return s
 
     @property
     def _manager(self):
