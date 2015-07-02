@@ -273,6 +273,11 @@ class Model(object):
             s += " - %s" % self.title
         return s
 
+    def __init__(self, **kwargs):
+        self.id = None
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
     @property
     def _manager(self):
         return self._meta.manager

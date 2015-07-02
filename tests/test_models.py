@@ -46,6 +46,49 @@ class ModelTests(unittest.TestCase):
     def test_relations(self):
         self.assert_(isinstance(FooModel._meta.manager, FooManager))
 
+        m = FooModel()
+        self.assert_(m._manager is FooModel._meta.manager)
+        self.assert_(m._connection is FooModel._meta.manager.connection)
+
+    def test_str(self):
+        m = FooModel(id=123)
+        self.assertEqual(str(m), '123')
+
+        # Incorporate title by default
+        m.title = 'jim'
+        self.assertEqual(str(m), '123 - jim')
+
+        self.assertEqual(str(FooModel()), 'None')
+
+    def test_repr(self):
+        m = FooModel(id=123)
+        self.assertEqual(repr(m), '<FooModel: 123>')
+
+        # Incorporate title by default
+        m.title = 'jim'
+        self.assertEqual(repr(m), '<FooModel: 123 - jim>')
+
+        self.assertEqual(repr(FooModel()), '<FooModel: None>')
+
+    def test_bad_model_class(self):
+        # Missing Meta
+        try:
+            class BadModel(base.Model):
+                pass
+        except AttributeError:
+            pass
+        else:
+            assert False, "Should have received an AttributeError for not having a Meta: object"
+
+        # Missing Meta.manager
+        try:
+            class BadModel2(base.Model):
+                class Meta:
+                    pass
+        except AttributeError as e:
+            pass
+        else:
+            assert False, "Should have received an AttributeError for not having Meta.manager set"
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
