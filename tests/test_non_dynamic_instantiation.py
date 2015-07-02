@@ -18,7 +18,6 @@ import uuid
 
 import responses
 
-from koordinates import api
 from koordinates import Connection
 
 from response_data.responses_1 import layers_multiple_good_simulated_response

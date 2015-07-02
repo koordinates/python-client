@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.set   
+koordinates.set
 ~~~~~~~~~~~~~~
 
 This module provides the `Set` class used in the Koordinates
@@ -11,19 +11,13 @@ Client Library
 
 import logging
 
-from koordinates import (
-    KoordinatesObjectMixin,
-    KoordinatesURLMixin,
-)
-from koordinates import Group
-from koordinates import Metadata
+from .mixins import KoordinatesObjectMixin, KoordinatesURLMixin
+from .layer import Group, Metadata
+from .utils import make_list_of_Categories, make_date
 
-from koordinates import (
-    make_list_of_Categories,
-    make_date,
-)
 
 logger = logging.getLogger(__name__)
+
 
 class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
     '''A Set

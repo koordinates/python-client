@@ -3,7 +3,7 @@
 """
 koordinates.connection
 ~~~~~~~~~~~~
-This module implements the Connection class for the Koordinates 
+This module implements the Connection class for the Koordinates
 Client Library.
 
 :copyright: (c) Koordinates .
@@ -11,18 +11,16 @@ Client Library.
 """
 
 import logging
+import os
 from datetime import datetime
 
 import requests
 
-from koordinates import KoordinatesURLMixin
-from koordinates import Layer
-from koordinates import Publish
-from koordinates import PublishRequest
-from koordinates import Set    
-from koordinates import Version
-
-from koordinates import (
+from .mixins import KoordinatesURLMixin
+from .layer import Layer, Version
+from .publish import Publish, PublishRequest
+from .set import Set
+from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
     InvalidAPIVersion,

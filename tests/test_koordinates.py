@@ -21,7 +21,7 @@ except ImportError:
 
 import responses
 
-from koordinates import api
+import koordinates
 from koordinates import exceptions
 from koordinates import Connection
 
@@ -54,31 +54,31 @@ class TestKoordinates(unittest.TestCase):
                                             invalid_password)
 
     def test_instantiate_group_class(self):
-        g = api.Group(99, "http//example.com", "Group Name", "NZ")
+        g = koordinates.Group(99, "http//example.com", "Group Name", "NZ")
         self.assertEqual(g.id, 99)
         self.assertTrue(self.contains_substring(g.url, "example"))
         self.assertEqual(g.name, "Group Name")
         self.assertEqual(g.country, "NZ")
 
     def test_instantiate_data_class(self):
-        d = api.Data(None, "EPSG:2193",[],[],"GEOMETRY", [])
+        d = koordinates.Data(None, "EPSG:2193",[],[],"GEOMETRY", [])
         self.assertEqual(d.encoding, None)
         self.assertEqual(d.crs, "EPSG:2193")
         self.assertEqual(d.geometry_field, "GEOMETRY")
 
 
     def test_instantiate_datasource_class(self):
-        ds = api.Datasource(99)
+        ds = koordinates.Datasource(99)
         self.assertEqual(ds.id, 99)
 
     def test_instantiate_category_class(self):
-        ca = api.Category("Category Name Test 0", "cadastral")
+        ca = koordinates.Category("Category Name Test 0", "cadastral")
         self.assertEqual(ca.name, "Category Name Test 0")
         self.assertEqual(ca.slug, "cadastral")
 
 
     def test_instantiate_licence_class(self):
-        li = api.License(99,
+        li = koordinates.License(99,
                         "Creative Commons Attribution 3.0 New Zealand",
                         "cc-by",
                         "nz",
@@ -94,7 +94,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
 
     def test_instantiate_metadata_class(self):
-        m = api.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
+        m = koordinates.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
 
@@ -103,7 +103,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(m.native, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
 
     def test_instantiate_field_class(self):
-        f = api.Field("Field Name", "integer")
+        f = koordinates.Field("Field Name", "integer")
         self.assertEqual(f.name, "Field Name")
         self.assertEqual(f.type, "integer")
 
@@ -134,7 +134,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=201,
                       content_type='application/json')
 
-        self.koordconn.layer.name = api.Layer()
+        self.koordconn.layer.name = koordinates.Layer()
         self.koordconn.layer.name = "A Test Layer Name for Unit Testing"
 
         self.koordconn.layer.group.id = 263
@@ -142,7 +142,7 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn.layer.group.name = "Wellington City Council"
         self.koordconn.layer.group.country = "NZ"
 
-        self.koordconn.layer.data = api.Data(datasources = [api.Datasource(144355)])
+        self.koordconn.layer.data = koordinates.Data(datasources = [koordinates.Datasource(144355)])
 
         self.koordconn.layer.create()
 
