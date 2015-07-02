@@ -144,11 +144,16 @@ class Connection(KoordinatesURLMixin):
         return dic_out
 
     def request(self, method, url, *args, **kwargs):
-        # headers = {
-        #     'Content-type': 'application/json',
-        #     'Accept': '*/*',
-        # }
-        r = requests.request(method, url, auth=self.get_auth(), *args, **kwargs)
+        headers = kwargs.pop("headers", {})
+        headers['Accept'] = 'application/json'
+        if 'Content-type' not in headers and method not in ('GET', 'HEAD'):
+            headers['Content-type'] = 'application/json'
+
+        logger.info('Request: %s %s', method, url)
+        r = requests.request(method, url, auth=self.get_auth(), headers=headers, *args, **kwargs)
+        logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
+        logger.debug('Response: headers=%s', r.headers)
+        r.raise_for_status()
         return r
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
