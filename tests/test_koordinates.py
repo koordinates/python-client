@@ -24,8 +24,6 @@ from koordinates import Connection
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
-from response_data.responses_3 import sets_single_good_simulated_response
-from response_data.responses_4 import sets_multiple_good_simulated_response
 from response_data.responses_5 import layers_version_single_good_simulated_response
 from response_data.responses_6 import layers_version_multiple_good_simulated_response
 from response_data.responses_8 import layer_create_good_simulated_response
@@ -441,45 +439,6 @@ class TestKoordinates(unittest.TestCase):
 #       with self.assertRaises(exceptions.AttributeNameIsReserved):
 #           self.koordconn.layer.get(id)
 
-    @responses.activate
-    def test_get_set_by_id(self, id=1474):
-
-        the_response = sets_single_good_simulated_response
-
-
-        responses.add(responses.GET,
-                      self.koordconn.get_url('SET', 'GET', 'single', {'set_id':id}),
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        #import pdb;pdb.set_trace()
-        obj = self.koordconn.sets.get(id)
-        self.assert_(isinstance(obj, koordinates.Set))
-
-        self.assertEqual(obj.title,
-                         "Ultra Fast Broadband Initiative Coverage")
-        self.assertEqual(obj.group.name,
-                         "New Zealand Broadband Map")
-        self.assertEqual(obj.url_html,
-                         "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
-        # self.assertEqual(obj._raw_response.status_code,
-        #                  200)
-
-    @responses.activate
-    def test_get_set_set_returns_all_rows(self):
-        the_response = sets_multiple_good_simulated_response
-
-        responses.add(responses.GET,
-                      self.koordconn.layer.get_url('SET', 'GET', 'multi'),
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        cnt_of_sets_returned = 0
-
-        for layer in self.koordconn.sets.list():
-            cnt_of_sets_returned += 1
-
-        self.assertEqual(cnt_of_sets_returned, 2)
 
     def tearDown(self):
         pass
