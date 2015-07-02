@@ -103,7 +103,7 @@ class Query(object):
         """ Serializes this query into a request-able URL including parameters """
         url = self._target_url
 
-        params = collections.defaultdict(list, copy.deepcopy(self._filters.items()))
+        params = collections.defaultdict(list, copy.deepcopy(self._filters))
         if self._order_by is not None:
             params['sort'] = self._order_by
         if self._extra is not None:
@@ -163,7 +163,7 @@ class Query(object):
 
     def _clone(self):
         q = Query(self._model, self._target_url)
-        q._filters = collections.defaultdict(list, copy.deepcopy(self._filters.items()))
+        q._filters = collections.defaultdict(list, copy.deepcopy(self._filters))
         q._order_by = self._order_by
         q._expand = self._expand
         q._extra = self._extra
