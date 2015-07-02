@@ -1,5 +1,7 @@
+import json
 import unittest
 
+import responses
 from six.moves.urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Connection
@@ -18,11 +20,14 @@ class FooManager(base.Manager):
         target_url = self.TEST_LIST_URL
         return super(FooManager, self).list(target_url)
 
-
 class FooModel(base.Model):
     class Meta:
         manager = FooManager
         attribute_sort_candidates = ['sortable']
+
+    def deserialize(self, data):
+        self.data = data
+        self.id = data.get('id', None)
 
 
 class ModelTests(unittest.TestCase):
@@ -44,7 +49,7 @@ class ModelTests(unittest.TestCase):
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test', 'test')
+        self.conn = Connection('test', 'test', activate_logging=True)
         self.foos = FooModel._meta.manager
         self.foos.connection = self.conn
 
@@ -113,3 +118,68 @@ class QueryTests(unittest.TestCase):
 
         q1 = self.foos.list().expand()
         self.assert_('Expand' in q1._to_headers())
+
+    @responses.activate
+    def test_count(self):
+        responses.add(responses.HEAD,
+                      FooManager.TEST_LIST_URL,
+                      body="{}",
+                      content_type='application/json',
+                      adding_headers={'X-Resource-Range': '0-10/28'})
+
+        q = self.foos.list()
+        count = len(q)
+        self.assertEqual(count, 28)
+
+        # Second hit shouldn't do another request
+        count = len(q)
+        self.assertEqual(count, 28)
+
+        self.assertEqual(len(responses.calls), 1)
+
+    @responses.activate
+    def test_pagination(self):
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL,
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(10)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '0-10/28',
+                'Link': '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            },
+        )
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL + '?page=2',
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(10, 20)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '10-20/28',
+                'Link': '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            },
+        )
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL + '?page=3',
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(20, 28)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '20-28/28',
+            },
+        )
+
+        q = self.foos.list()
+        for i, o in enumerate(q):
+            continue
+
+        self.assertEqual(i, 27)  # 0-index
+        self.assertEqual(len(responses.calls), 3)
+
+        # Second hit shouldn't do another request
+        count = len(q)
+        self.assertEqual(count, 28)
+        self.assertEqual(len(responses.calls), 3)
