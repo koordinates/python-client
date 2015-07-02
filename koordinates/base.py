@@ -15,15 +15,11 @@ class Manager(object):
     Base class for Model Manager classes.
 
     Instantiated by the Model metaclass and attached to model._meta.manager.
-    The Connection object calls set_connection(), and this needs to be done
-    before it's used.
+    The Connection object needs to set itself on the Manager instance before it's used.
     """
     def __init__(self, model_class):
         self.model = model_class
         self.connection = None
-
-    def set_connection(self, connection):
-        self.connection = connection
 
     def _meta_attribute(self, attribute, default=None):
         return getattr(self.model._meta, attribute, default)

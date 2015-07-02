@@ -83,7 +83,7 @@ class Connection(KoordinatesURLMixin):
             self.pwd = os.environ['KPWD']
 
         self.sets = Set._meta.manager
-        self.sets.set_connection(self)
+        self.sets.connection = self
 
         self.layer = Layer(self)
         self.version = Version(self)
