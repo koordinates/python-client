@@ -13,33 +13,30 @@ import logging
 
 from .layer import Group, Metadata
 from .utils import make_list_of_Categories, make_date
-from koordinates.base import Manager, Model, Query
+from . import base
 
 
 logger = logging.getLogger(__name__)
 
 
 
-class SetManager(Manager):
+class SetManager(base.Manager):
     def list(self, *args, **kwargs):
         """Fetches a set of sets
         """
         target_url = self.connection.get_url('SET', 'GET', 'multi')
-        return Query(self.model, target_url)
+        return super(SetManager, self).list(target_url)
 
-    def get(self, id):
+    def get(self, id, **kwargs):
         """Fetches a Set determined by the value of `id`.
 
         :param id: ID for the new :class:`Set`  object.
         """
-
         target_url = self.connection.get_url('SET', 'GET', 'single', {'set_id': id})
-        r = self.connection.request('GET', target_url)
-        r.raise_for_status()
-        return self.create_from_result(r.json())
+        return super(SetManager, self).get(target_url, id, **kwargs)
 
 
-class Set(Model):
+class Set(base.Model):
     '''A Set
 
     TODO: Description of what a `Set` is

@@ -1,3 +1,4 @@
+import abc
 import collections
 import copy
 import re
@@ -6,13 +7,10 @@ import six
 from six.moves import urllib
 
 from koordinates.exceptions import NotAValidBasisForOrdering
-from koordinates.mixins import (
-    KoordinatesObjectMixin,
-    KoordinatesURLMixin,
-)
 
 
-class Manager(KoordinatesObjectMixin, KoordinatesURLMixin):
+@six.add_metaclass(abc.ABCMeta)
+class Manager(object):
     """
     Base class for Model Manager classes.
 
@@ -35,6 +33,20 @@ class Manager(KoordinatesObjectMixin, KoordinatesURLMixin):
         obj.deserialize(result)
         return obj
 
+    @abc.abstractmethod
+    def get(self, target_url, id, expand=[]):
+        headers = {}
+        if expand:
+            headers['Expand'] = ','.join(expand)
+
+        r = self.connection.request('GET', target_url, headers=headers)
+        r.raise_for_status()
+        return self.create_from_result(r.json())
+
+    @abc.abstractmethod
+    def list(self, target_url):
+        return Query(self.model, target_url)
+
 
 class Query(object):
     """
@@ -53,13 +65,14 @@ class Query(object):
         self._count = None
         self._filters = collections.defaultdict(list)
         self._ordering = None
+        self._expand = None
 
     @property
     def _manager(self):
         return self._model._meta.manager
 
     def _request(self, url):
-        r = self._manager.connection.request('GET', url)
+        r = self._manager.connection.request('GET', url, headers=self._to_headers())
         r.raise_for_status()
         return r
 
@@ -72,15 +85,26 @@ class Query(object):
         else:
             self._count = None
 
-    def to_url(self):
+    def _to_url(self):
         """ Serializes this query into a request-able URL including parameters """
         params = self._filters.copy()
+
         if self._ordering is not None:
             params['sort'] = self._ordering
+
         return self._target_url + "?" + urllib.parse.urlencode(params, doseq=True)
 
+    def _to_headers(self):
+        """ Serializes this query into a request-able set of headers """
+        headers = {}
+        if self._expand:
+            headers['Expand'] = 'list'
+
+        return headers
+
     def __iter__(self):
-        url = self.to_url()
+        """ Execute this query and return the results (generally as Model objects) """
+        url = self._to_url()
         while url:
             r = self._request(url)
             page_results = r.json()
@@ -97,7 +121,7 @@ class Query(object):
 
     def __len__(self):
         if self._count is None:
-            r = self._request(self.to_url())
+            r = self._request(self._to_url())
             self._update_range(r)
         return self._count
 
@@ -105,9 +129,14 @@ class Query(object):
         q = Query(self._model, self._target_url)
         q._filters = collections.defaultdict(list, copy.deepcopy(self._filters.items()))
         q._ordering = self._ordering
+        q._expand = self._expand
         return q
 
     def filter(self, key, value):
+        """
+        Add a filter to this query.
+        Appends to any previous filters set.
+        """
         # Eventually this check will be a good deal more sophisticated
         # so it's here in its current form to some degree as a placeholder
         # if value.isspace():
@@ -117,12 +146,29 @@ class Query(object):
         q._filters[key].append(value)
         return q
 
-    def order_by(self, sort_key):
-        if sort_key not in self.manager._meta_attribute('attribute_sort_candidates', []):
-            raise NotAValidBasisForOrdering(sort_key)
+    def order_by(self, sort_key=None):
+        """
+        Set the sort for this query. Not all attributes are sorting candidates.
+        To sort in descending order, call `Query.order_by('-attribute')`.
+
+        Calling `Query.order_by()` replaces any previous ordering.
+        """
+        if sort_key is not None:
+            sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
+            if sort_attr not in self.manager._meta_attribute('attribute_sort_candidates', []):
+                raise NotAValidBasisForOrdering(sort_key)
 
         q = self._clone()
         q._ordering = sort_key
+        return q
+
+    def expand(self):
+        """
+        Expand list results in this query.
+        This can have a performance penalty for
+        """
+        q = self._clone()
+        q._expand = True
         return q
 
 
