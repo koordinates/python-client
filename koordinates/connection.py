@@ -12,7 +12,7 @@ Client Library.
 
 import logging
 import os
-from datetime import datetime
+import sys
 
 import requests
 
@@ -52,7 +52,7 @@ class Connection(KoordinatesURLMixin):
     """
 
     def __init__(self, username, pwd=None, host='koordinates.com',
-                 api_version='v1', activate_logging=True):
+                 api_version='v1', activate_logging=False):
         '''
         :param username: the username under which to make the connections
         :param pwd: the password under which to make the connections
@@ -62,9 +62,7 @@ class Connection(KoordinatesURLMixin):
 
         '''
         if activate_logging:
-            client_logfile_name = "koordinates-client-{}.log"\
-                                  .format(datetime.now().strftime('%Y%m%dT%H%M%S'))
-            logging.basicConfig(filename=client_logfile_name,
+            logging.basicConfig(stream=sys.stderr,
                                 level=logging.DEBUG,
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
