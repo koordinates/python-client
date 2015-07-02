@@ -157,7 +157,7 @@ class Query(object):
                 or k.step is not None \
                 or k.stop is None \
                 or k.stop <= 0:
-            raise NotImplementedError("Only query[:N] slicing is supported.")
+            raise ValueError("Only query[:N] slicing is supported.")
 
         return list(itertools.islice(self.__iter__(), k.stop))
 

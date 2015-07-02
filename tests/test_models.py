@@ -183,3 +183,61 @@ class QueryTests(unittest.TestCase):
         count = len(q)
         self.assertEqual(count, 28)
         self.assertEqual(len(responses.calls), 3)
+
+    @responses.activate
+    def test_slicing(self):
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL,
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(10)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '0-10/28',
+                'Link': '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            },
+        )
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL + '?page=2',
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(10, 20)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '10-20/28',
+                'Link': '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            },
+        )
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL + '?page=3',
+            match_querystring=True,
+            body=json.dumps([{'id': id} for id in range(20, 28)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '20-28/28',
+            },
+        )
+
+        q = self.foos.list()
+        for i, o in enumerate(q[:3]):
+            continue
+
+        self.assertEqual(i, 2)  # 0-index
+        self.assertEqual(len(responses.calls), 1)
+
+        # When the slice is bigger than the dataset
+        for i, o in enumerate(q[:50]):
+            continue
+
+        self.assertEqual(i, 27)  # 0-index
+        self.assertEqual(len(responses.calls), 4)
+
+        # Bad slices, we only support query[:N] where N>0
+        self.assertRaises(ValueError, lambda qq: qq[0], q)
+        self.assertRaises(ValueError, lambda qq: qq[0:10], q)
+        self.assertRaises(ValueError, lambda qq: qq[10:20], q)
+        self.assertRaises(ValueError, lambda qq: qq[:10:3], q)
+        self.assertRaises(ValueError, lambda qq: qq[:-5], q)
+        self.assertRaises(ValueError, lambda qq: qq[:0], q)
+        self.assertRaises(ValueError, lambda qq: qq[1:30:2], q)
