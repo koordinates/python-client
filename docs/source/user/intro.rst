@@ -4,12 +4,7 @@ Introduction
 ============
 
 
-The Koordinates Python Client Library is released under the terms of the `BSD License`_.
+Authentication
+--------------
 
-.. _`BSD License`: http://opensource.org/licenses/BSD-3-Clause
-
-
-Koordinates Python Client Library License
------------------------------------------
-
-    .. include:: ../../../LICENSE
+See the `Token API documentation <https://support.koordinates.com/hc/en-us/articles/204890044>`_ for details on creating API tokens for use with this library.

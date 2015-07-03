@@ -5,42 +5,36 @@ Quick Start
 Here's a very short overview of how the library may be used to achieve some
 common tasks.
 
+First off, you need to know the koordinates site you're accessing (eg. https://labs.koordinates.com), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See `Authentication`_ for more information. You also need permissions on the site to take the actions.
+
 Begin by importing the Koordinates module::
 
     >>> from koordinates import api
 
 Prepare to use the library by making a connection ::
 
-    >>> conn = api.Connection('auser', 'apassword')
+    >>> client = api.Client('labs.koordinates.com', 'MY_API_TOKEN')
 
-Fetch all the Layers objects via a Python generator and iterate over them ::
+Fetch all the Layer objects via the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API#layers-&-tables-api-layers-&-tables-list>`_ and iterate over them ::
 
-    >>> for the_layer in conn.layer.get_list().execute_get_list():
-    ...     print(the_layer.id)
+    >>> for layer in client.layers.list():
+    ...     print(layer.id)
     >>>
 
-Fetch a filtered set of Layer objects via a Python generator and iterate over them ::
+Fetch filtered and sorted Layer objects via the `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_ and iterate over them ::
 
-    >>> for the_layer in conn.layer.get_list().filter('Quattroshapes')\
-    ...                                       .execute_get_list():
-    ...     print(the_layer.name)
+    >>> for layer in client.data.list().filter(license__type='cc')\
+    ...                                    .filter(type='layer')\
+    ...                                    .order_by('created_at'):
+    ...     print(layer.title)
     >>>
 
-
-Fetch a filtered set of Layer objects and specify your own sortation for the returned
-objects. Iterate over them using a Python generator::
-
-    >>> for the_layer in conn.layer.get_list().filter('Quattroshapes')\
-    ...                                       .order_by('name')\
-    ...                                       .execute_get_list():
-    ...     print(the_layer.name)
-    >>>
 
 Fetch a single Layer object ::
 
     >>> # Fetch the Layer with id = 123
-    >>> the_layer = conn.layer.get(123)
-    >>> print(the_layer.name) 
+    >>> layer = client.layer.get(123)
+    >>> print(layer.title) 
     >>>
 
 Make use of the hierarchy of data within a single object exposed as Python 
@@ -48,40 +42,41 @@ class instances via the library ::
 
     >>> # Fetch the Layer with id = 123 and extract the 
     >>> # data.crs value
-    >>> conn.layer.get(123)
-    >>> print(conn.layer.data.crs) 
-    >>>'EPSG:2193'
+    >>> layer = client.layer.get(123)
+    >>> print(layer.data.crs) 
+    >>>EPSG:2193
 
-Create a Layer from new ::
+Create a new Layer from existing datasources::
 
-    >>> conn.layer.name = api.Layer()
-    >>> conn.layer.name = "A Test Layer" 
-    >>> conn.layer.group.id = 999
-    >>> conn.layer.group.url = "https://koordinates.com/services/api/v1/groups/{}/".format(conn.layer.group.id)
-    >>> conn.layer.group.name = "Foo City Council"
-    >>> conn.layer.group.country = "NZ"
-    >>> conn.layer.data = api.Data(datasources = [api.Datasource(123456)]) 
-    >>> conn.layer.create()
+    >>> layer = koordinates.Layer()
+    >>> layer.name = "A Test Layer" 
+    >>> layer.group = 999
+    >>> layer.data = koordinates.LayerData(datasources=[123456]) 
+    >>> layer = client.layers.create(layer)
+    >>> print(layer.url)
 
 Publish multiple objects of various types ::
 
     >>> # Publish a number of items, in this case one
     >>> # Table and one Layer 
-    >>> pr = api.PublishRequest()
-    >>> pr.add_layer_to_publish(1111, 9000)
-    >>> pr.add_table_to_publish(2222, 9000)
-    >>> conn.multi_publish(pr)
+    >>> publish = koordinates.publishing.Publish()
+    >>> publish.add_layer_version(1111)
+    >>> publish.add_table_version(2222)
+    >>> publish.strategy = publish.STRATEGY_TOGETHER
+    >>> publish = client.publishing.create(publish)
+    >>> print(publish.url)
 
 Reimport an existing Layer from its previous datasources and create a new version ::
 
     >>> # Take the version with id=9999 of the Layer 
     >>> # with id = 8888 and reimport it 
-    >>> conn.version.import_version(8888, 9999)
+    >>> layer = client.layers.get(9999)
+    >>> layer = layer.reimport()
 
 Publish a specific version of a Layer ::
 
     >>> # Fetch the version with id=9999 of the Layer
     >>> # with id = 8888 and publish it
-    conn.version.get(8888, 9999)
-    conn.version.publish()
+    >>> layer_version = client.layers.get(8888).get_version(9999)
+    >>> layer_version.publish()
 
