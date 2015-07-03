@@ -80,8 +80,10 @@ class Connection(KoordinatesURLMixin):
 
         if token:
             self.token = token
+        elif 'KOORDINATES_TOKEN' in os.environ:
+            self.token = os.environ['KOORDINATES_TOKEN']
         else:
-            self.token = os.environ['KPWDTOK']
+            raise KeyError('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
         self.sets = Set._meta.manager
         self.sets.connection = self
@@ -102,7 +104,7 @@ class Connection(KoordinatesURLMixin):
         are defined at a `Connection` level and then returns
         the result
 
-        :param user_headers: a `dict` containing headers defined at the 
+        :param user_headers: a `dict` containing headers defined at the
                              request level, optional.
 
         :return: a `dict` instance
@@ -117,19 +119,9 @@ class Connection(KoordinatesURLMixin):
         dic_out = copy.deepcopy(user_headers)
 
         if self.token:
-            dic_out['Authorization'] = 'key {user_token}'.format(user_token=self.token)
+            dic_out['Authorization'] = 'key {token}'.format(token=self.token)
 
         return dic_out
-
-    def get_auth(self):
-        """Creates an Authorisation object based on the
-        instance data of the `Connection` instance.
-
-
-        :return: a `requests.auth.HTTPBasicAuth` instance
-        """
-        return requests.auth.HTTPBasicAuth(self.username,
-                                           self.pwd)
 
     def build_multi_publish_json(self, pub_request, publish_strategy, error_strategy):
         '''
@@ -178,11 +170,10 @@ class Connection(KoordinatesURLMixin):
             headers['Content-type'] = 'application/json'
 
         logger.info('Request: %s %s', method, url)
-        #r = requests.request(method, url, auth=self.get_auth(), headers=headers, *args, **kwargs)
-        r = requests.request(method, 
-                             url, 
+        r = requests.request(method,
+                             url,
                              headers = self.assemble_headers(),
-                             *args, 
+                             *args,
                              **kwargs)
         logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
         logger.debug('Response: headers=%s', r.headers)

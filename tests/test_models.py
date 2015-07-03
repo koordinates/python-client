@@ -32,7 +32,7 @@ class FooModel(base.Model):
 
 class ModelTests(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test', 'test')
+        self.conn = Connection('test')
         FooModel._meta.manager.connection = self.conn
 
     def test_manager_init(self):
@@ -92,7 +92,7 @@ class ModelTests(unittest.TestCase):
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test', 'test', activate_logging=True)
+        self.conn = Connection('test', activate_logging=True)
         self.foos = FooModel._meta.manager
         self.foos.connection = self.conn
 

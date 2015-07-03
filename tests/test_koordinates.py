@@ -32,17 +32,13 @@ from response_data.responses_9 import good_multi_layers_drafts_response
 
 
 class TestKoordinates(unittest.TestCase):
-
-    pwd = 'password'
-
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection()
-        self.koordtestconn = Connection(token='', host="test.koordinates.com")
-        invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection(token='foo')
+        self.koordconn = Connection(token='test')
+        self.koordtestconn = Connection(token='test', host="test.koordinates.com")
+        self.bad_koordconn = Connection(token='bad')
 
     def test_instantiate_group_class(self):
         g = koordinates.Group(99, "http//example.com", "Group Name", "NZ")
@@ -234,9 +230,7 @@ class TestKoordinates(unittest.TestCase):
 #       test_domain = str(uuid.uuid1()).replace("-", "")
 #       order_by_key = 'name'
 #       test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-#       self.koordconnalthost = Connection('rshea@thecubagroup.com',
-#                                              TestKoordinates.pwd,
-#                                              test_host_name)
+#       self.koordconnalthost = Connection('test', test_host_name)
 
 #       self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
 

@@ -36,16 +36,13 @@ from response_data.responses_7 import publish_multiple_get_simulated_response
 
 class TestKoordinatesPublishing(unittest.TestCase):
 
-    pwd = 'password'
-
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection('rshea@thecubagroup.com')
-        self.koordtestconn = Connection(host="test.koordinates.com")
-        invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection()
+        self.koordconn = Connection('test')
+        self.koordtestconn = Connection('test', host="test.koordinates.com")
+        self.bad_koordconn = Connection('bad')
 
 #   @responses.activate
 #   def test_create_redaction(self):
@@ -91,7 +88,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         self.assertEqual(obj.state, "completed")
         self.assertEqual(obj.created_by.id, 18504)
         self.assertEqual(len(obj.items), 1)
-        self.assertEqual(obj.items[0], 
+        self.assertEqual(obj.items[0],
             'https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/')
         self.assertEqual(obj.created_at.year, 2015)
         self.assertEqual(obj.created_at.month,   6)

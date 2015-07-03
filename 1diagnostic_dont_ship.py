@@ -45,17 +45,10 @@ def main5():
     if isinstance(tc2, type(tc)):
         print("tc2 and tc are instances of the same thing")
 def gettoken(devenv=True):
-
-    if devenv:
-        if 'KPWDTOKDEV' in os.environ:
-            return os.environ['KPWDTOKDEV']
-        else:
-            raise Exception("The KPWDTOKDEV environmental variable must be defined")
+    if 'KOORDINATES_TOKEN' in os.environ:
+        return os.environ['KOORDINATES_TOKEN']
     else:
-        if 'KPWDTOK' in os.environ:
-            return os.environ['KPWDTOK']
-        else:
-            raise Exception("The KPWDTOK environmental variable must be defined")
+        raise Exception("The KOORDINATES_TOKEN environmental variable must be defined")
 
 def getpass():
     '''

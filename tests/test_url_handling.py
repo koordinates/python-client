@@ -21,17 +21,14 @@ from koordinates import Connection
 
 
 class TestKoordinatesURLHandling(unittest.TestCase):
-    pwd = 'password'
-
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection()
-        self.koordtestconn = Connection(host="test.koordinates.com")
-        invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection() 
-        
+        self.koordconn = Connection('test')
+        self.koordtestconn = Connection('test', host="test.koordinates.com")
+        self.bad_koordconn = Connection('bad')
+
     def test_sets_url(self):
         self.assertEqual(self.koordconn.get_url('SET', 'GET', 'single', {'set_id':999}),
                         '''https://koordinates.com/services/api/v1/sets/999/''')
@@ -63,8 +60,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
     def test_api_version_in_url_when_valid(self):
         test_domain = str(uuid.uuid1()).replace("-", "")
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-        self.koordconnaltapiversion = Connection(host=test_host_name,
-                                                     api_version='UNITTESTINGONLY')
+        self.koordconnaltapiversion = Connection('test', host=test_host_name, api_version='UNITTESTINGONLY')
 
         self.assertEqual(self.koordconnaltapiversion.layer.get_url('LAYER', 'GET', 'multi', {'hostname':test_host_name, 'api_version':'UNITTESTINGONLY'}),
                         '''https://''' + test_host_name + '''/services/api/UNITTESTINGONLY/layers/''')

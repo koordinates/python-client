@@ -26,16 +26,13 @@ from response_data.responses_2 import layers_single_good_simulated_response
 
 class TestKoordinatesURLHandling(unittest.TestCase):
 
-    pwd = 'password'
-
     def contains_substring(self, strtosearch, strtosearchfor):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection()
-        self.koordtestconn = Connection(host="test.koordinates.com")
-        invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection()
+        self.koordconn = Connection('test')
+        self.koordtestconn = Connection('test', host="test.koordinates.com")
+        self.bad_koordconn = Connection('bad')
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):
