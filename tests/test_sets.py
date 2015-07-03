@@ -10,7 +10,7 @@ from response_data.responses_4 import sets_multiple_good_simulated_response
 
 class TestSets(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test', 'test')
+        self.conn = Connection('test')
 
     @responses.activate
     def test_get_set_by_id(self, id=1474):
