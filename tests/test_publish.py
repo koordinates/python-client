@@ -82,24 +82,37 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
         publish_id = 2054
         responses.add(responses.GET,
-                      self.koordconn.publish.get_url('PUBLISH', 'GET', 'single', {'publish_id': publish_id}),
+                      self.koordconn.get_url('PUBLISH', 'GET', 'single', {'publish_id': publish_id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        self.koordconn.publish.get(publish_id)
+        obj = self.koordconn.publishes.get(publish_id)
+
+        self.assertEqual(obj.state, "completed")
+        self.assertEqual(obj.created_by.id, 18504)
+        self.assertEqual(len(obj.items), 1)
+        self.assertEqual(obj.items[0], 
+            'https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/')
+        self.assertEqual(obj.created_at.year, 2015)
+        self.assertEqual(obj.created_at.month,   6)
+        self.assertEqual(obj.created_at.day,     8)
+        self.assertEqual(obj.created_at.hour,    3)
+        self.assertEqual(obj.created_at.minute, 40)
+        self.assertEqual(obj.created_at.second, 40)
+        self.assertEqual(obj.created_by.id, 18504)
 
     @responses.activate
     def test_publish_get_all_rows(self):
         the_response = publish_multiple_get_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.publish.get_url('PUBLISH', 'GET', 'multi'),
+                      self.koordconn.get_url('PUBLISH', 'GET', 'multi'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_publish_records_returned = 0
 
-        for pub_record in self.koordconn.publish.get_list().execute_get_list():
+        for pub_record in self.koordconn.publishes.list():
             if cnt_of_publish_records_returned == 0:
                 self.assertEqual(pub_record.id, 2054)
                 self.assertEqual(pub_record.error_strategy, 'abort')

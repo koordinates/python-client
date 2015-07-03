@@ -20,7 +20,8 @@ import requests
 
 from .mixins import KoordinatesURLMixin
 from .layer import Layer, Version
-from .publish import Publish, PublishRequest
+from .publish import Publish
+from .publishrequest import PublishRequest
 from .set import Set
 from .exceptions import (
     KoordinatesException,
@@ -85,11 +86,14 @@ class Connection(KoordinatesURLMixin):
         self.sets = Set._meta.manager
         self.sets.connection = self
 
+        self.publishes = Publish._meta.manager
+        self.publishes.connection = self
+
         self.layer = Layer(self)
         self.version = Version(self)
         from .api import KData
         self.data = KData(self)
-        self.publish = Publish(self)
+        #self.publish = Publish(self)
 
         super(self.__class__, self).__init__()
 
