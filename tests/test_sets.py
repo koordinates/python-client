@@ -13,7 +13,7 @@ class TestSets(unittest.TestCase):
         self.conn = Connection('test', 'test')
 
     @responses.activate
-    def test_get_set_by_id(self):
+    def test_get_set_by_id(self, id=1474):
         the_response = sets_single_good_simulated_response
 
         responses.add(responses.GET,
