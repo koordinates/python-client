@@ -9,7 +9,7 @@ The library provides easy access to Koordinates web services, particularly the `
 
     import koordinates
 
-    client = koordinates.Client('MY_API_TOKEN', host='labs.koordinates.com')
+    client = koordinates.Client(host='labs.koordinates.com', token='MY_API_TOKEN')
 
     # print the 10 most recently created layers
     for layer in client.layers.order_by('created_at')[:10]:
@@ -58,11 +58,5 @@ API Documentation
 Support
 =======
 
-Please report bugs as `Github issues <https://github.com/koordinates/python-client/issues>`__, or see :ref:`user/contributing` below if you wish to suggest an improvement or make a change. For technical support for the library and APIs, please contact us via `support.koordinates.com <https://support.koordinates.com>`_.
+Please report bugs as `Github issues <https://github.com/koordinates/python-client/issues>`__, or see :ref:`user/contributing` below if you wish to suggest an improvement or make a change. For general technical support for the APIs and libraries, please contact us via `support.koordinates.com <https://support.koordinates.com>`_.
 
-License
-=======
-
-The Koordinates Python Client Library is released under the terms of the `BSD License`_.
-
-.. _`BSD License`: https://github.com/koordinates/python-client/blob/master/LICENSE
