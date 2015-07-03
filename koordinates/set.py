@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.set   
+koordinates.set
 ~~~~~~~~~~~~~~
 
 This module provides the `Set` class used in the Koordinates
@@ -11,89 +11,54 @@ Client Library
 
 import logging
 
-from koordinates import (
-    KoordinatesObjectMixin,
-    KoordinatesURLMixin,
-)
-from koordinates import Group
-from koordinates import Metadata
+from .layer import Group, Metadata
+from .utils import make_list_of_Categories, make_date
+from . import base
 
-from koordinates import (
-    make_list_of_Categories,
-    make_date,
-)
 
 logger = logging.getLogger(__name__)
 
-class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
+
+
+class SetManager(base.Manager):
+    def list(self, *args, **kwargs):
+        """Fetches a set of sets
+        """
+        target_url = self.connection.get_url('SET', 'GET', 'multi')
+        return super(SetManager, self).list(target_url)
+
+    def get(self, id, **kwargs):
+        """Fetches a Set determined by the value of `id`.
+
+        :param id: ID for the new :class:`Set`  object.
+        """
+        target_url = self.connection.get_url('SET', 'GET', 'single', {'set_id': id})
+        return super(SetManager, self).get(target_url, id, **kwargs)
+
+
+class Set(base.Model):
     '''A Set
 
     TODO: Description of what a `Set` is
 
     '''
-    def __init__(self,
-                 parent=None,
-                 id=None,
-                 title=None,
-                 description=None,
-                 description_html=None,
-                 categories=None,
-                 tags=None,
-                 group=None,
-                 items=None,
-                 url=None,
-                 url_html=None,
-                 metadata=None,
-                 created_at=None):
+    class Meta:
+        manager = SetManager
+        attribute_sort_candidates = ('name',)
+        attribute_filter_candidates = ('name',)
+        #attribute_reserved_names = []
 
-        logger.info('Initializing Set object')
-        self._parent = parent
+    def __init__(self, **kwargs):
         self._url = None
-        self._id = id
+        self._id = kwargs.get('id', None)
 
-        self._raw_response = None
-        self._list_of_response_dicts = []
-        self._link_to_next_in_list = ""
-        self._next_page_number = 1
-        self._attribute_sort_candidates = ['name']
-        self._attribute_filter_candidates = ['name']
-        # An attribute may not be created automatically
-        # due to JSON returned from the server with any
-        # names which appear in the list
-        # _attribute_reserved_names
-        self._attribute_reserved_names = []
-
-        self._initialize_named_attributes(id,
-                                          title,
-                                          description,
-                                          description_html,
-                                          categories,
-                                          tags,
-                                          group,
-                                          items,
-                                          url,
-                                          url_html,
-                                          metadata,
-                                          created_at)
+        self.deserialize(kwargs)
 
         super(self.__class__, self).__init__()
 
-
-    def _initialize_named_attributes(self,
-                                     id,
-                                     title,
-                                     description,
-                                     description_html,
-                                     categories,
-                                     tags,
-                                     group,
-                                     items,
-                                     url,
-                                     url_html,
-                                     metadata,
-                                     created_at):
+    def deserialize(self, data):
         '''
-        `_initialize_named_attributes` initializes those
+        `deserialize` initializes those
         attributes of `Set` which are not prefixed by an
         underbar. Such attributes are named so as to indicate
         that they are, in terms of the API, "real" attributes
@@ -117,48 +82,22 @@ class Set(KoordinatesObjectMixin, KoordinatesURLMixin):
         "metadata": null,
         "created_at": "2012-03-21T21:49:51.420Z"
         '''
-        self.id = id
-        self.title = title
-        self.description = description
-        self.description_html = description_html
-        self.categories = categories if categories else []
-        self.tags = tags if tags else []
-        self.group = group if group else Group()
-        self.items = items
-        self.url = url
-        self.url_html = url_html
-        self.metadata = metadata if metadata else Metadata()
-        self.created_at = created_at
+        self.id = data.get("id")
+        self.title = data.get("title")
+        self.description = data.get("description")
+        self.description_html = data.get("description_html")
+        self.categories = make_list_of_Categories(data.get("categories"))
+        self.tags = data.get("tags")
+        self.group = Group.from_dict(data.get("group"))
+        self.items = data.get("items", [])
+        self.url = data.get("url")
+        self.url_html = data.get("url_html")
+        self.metadata = Metadata.from_dict(data.get("metadata"))
+        self.created_at = make_date(data.get("created_at"))
 
-    def get_list(self):
-        """Fetches a set of sets
-        """
-        target_url = self.get_url('SET', 'GET', 'multi')
-        self._url = target_url
-        return self
-
-    def get(self, id):
-        """Fetches a Set determined by the value of `id`.
-
-        :param id: ID for the new :class:`Set` object.
-        """
-
-        target_url = self.get_url('SET', 'GET', 'single', {'set_id': id})
-
-        dic_set_as_json = super(self.__class__, self).get(id, target_url)
-
-        self._initialize_named_attributes(id = dic_set_as_json.get("id"),
-                                          title = dic_set_as_json.get("title"),
-                                          description = dic_set_as_json.get("description"),
-                                          description_html = dic_set_as_json.get("description_html"),
-                                          categories = make_list_of_Categories(dic_set_as_json.get("categories")),
-                                          tags = dic_set_as_json.get("tags"),
-                                          group = Group.from_dict(dic_set_as_json.get("group")),
-                                          items = dic_set_as_json.get("items", []),
-                                          url = dic_set_as_json.get("url"),
-                                          url_html = dic_set_as_json.get("url_html"),
-                                          metadata = Metadata.from_dict(dic_set_as_json.get("metadata")),
-                                          created_at = make_date(dic_set_as_json.get("created_at")))
-
+        # An attribute may not be created automatically
+        # due to JSON returned from the server with any
+        # names which appear in the list
+        # _attribute_reserved_names
 
 

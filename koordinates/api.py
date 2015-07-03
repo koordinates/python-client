@@ -10,51 +10,7 @@ This module implements the Koordinates API.
 """
 
 import logging
-import os
-import pprint
-import uuid
-from datetime import datetime
-try:
-    from urllib.parse import urlencode
-    from urllib.parse import urlsplit
-    from urllib.parse import parse_qs
-except ImportError:
-    from urllib import urlencode
-    from urlparse import urlsplit
-    from urlparse import parse_qs
 
-import six
-import requests
-
-from .utils import (
-    remove_empty_from_dict,
-    dump_class_attributes_to_dict,
-    make_date_list_from_string_list,
-    make_date,
-    make_date_if_possible,
-    make_list_of_Datasources,
-    make_list_of_Fields,
-    make_list_of_Categories
-)
-from .exceptions import (
-    KoordinatesException,
-    KoordinatesValueException,
-    InvalidAPIVersion,
-    InvalidURL,
-    NotAuthorised,
-    UnexpectedServerResponse,
-    OnlyOneFilterAllowed,
-    FilterMustNotBeSpaces,
-    NotAValidBasisForFiltration,
-    OnlyOneOrderingAllowed,
-    NotAValidBasisForOrdering,
-    AttributeNameIsReserved,
-    ServerTimeOut,
-    RateLimitExceeded,
-    ImportEncounteredUpdateConflict,
-    PublishAlreadyStarted,
-    InvalidPublicationResourceList
-)
 from .mixins import (
     KoordinatesURLMixin,
     KoordinatesObjectMixin
@@ -73,6 +29,9 @@ from .layer import (
     Metadata,
     Field,
     Layer,
+)
+from .set import (
+    Set,
 )
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 

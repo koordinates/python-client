@@ -14,21 +14,16 @@ from __future__ import unicode_literals, absolute_import
 
 import unittest
 import uuid
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from six.moves import urllib
 
 import responses
 
-from koordinates import api
+import koordinates
 from koordinates import exceptions
 from koordinates import Connection
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
-from response_data.responses_3 import sets_single_good_simulated_response
-from response_data.responses_4 import sets_multiple_good_simulated_response
 from response_data.responses_5 import layers_version_single_good_simulated_response
 from response_data.responses_6 import layers_version_multiple_good_simulated_response
 from response_data.responses_8 import layer_create_good_simulated_response
@@ -50,31 +45,31 @@ class TestKoordinates(unittest.TestCase):
         self.bad_koordconn = Connection(token='foo')
 
     def test_instantiate_group_class(self):
-        g = api.Group(99, "http//example.com", "Group Name", "NZ")
+        g = koordinates.Group(99, "http//example.com", "Group Name", "NZ")
         self.assertEqual(g.id, 99)
         self.assertTrue(self.contains_substring(g.url, "example"))
         self.assertEqual(g.name, "Group Name")
         self.assertEqual(g.country, "NZ")
 
     def test_instantiate_data_class(self):
-        d = api.Data(None, "EPSG:2193",[],[],"GEOMETRY", [])
+        d = koordinates.Data(None, "EPSG:2193",[],[],"GEOMETRY", [])
         self.assertEqual(d.encoding, None)
         self.assertEqual(d.crs, "EPSG:2193")
         self.assertEqual(d.geometry_field, "GEOMETRY")
 
 
     def test_instantiate_datasource_class(self):
-        ds = api.Datasource(99)
+        ds = koordinates.Datasource(99)
         self.assertEqual(ds.id, 99)
 
     def test_instantiate_category_class(self):
-        ca = api.Category("Category Name Test 0", "cadastral")
+        ca = koordinates.Category("Category Name Test 0", "cadastral")
         self.assertEqual(ca.name, "Category Name Test 0")
         self.assertEqual(ca.slug, "cadastral")
 
 
     def test_instantiate_licence_class(self):
-        li = api.License(99,
+        li = koordinates.License(99,
                         "Creative Commons Attribution 3.0 New Zealand",
                         "cc-by",
                         "nz",
@@ -90,7 +85,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
 
     def test_instantiate_metadata_class(self):
-        m = api.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
+        m = koordinates.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
                          "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
 
@@ -99,7 +94,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(m.native, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
 
     def test_instantiate_field_class(self):
-        f = api.Field("Field Name", "integer")
+        f = koordinates.Field("Field Name", "integer")
         self.assertEqual(f.name, "Field Name")
         self.assertEqual(f.type, "integer")
 
@@ -130,7 +125,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=201,
                       content_type='application/json')
 
-        self.koordconn.layer.name = api.Layer()
+        self.koordconn.layer.name = koordinates.Layer()
         self.koordconn.layer.name = "A Test Layer Name for Unit Testing"
 
         self.koordconn.layer.group.id = 263
@@ -138,7 +133,7 @@ class TestKoordinates(unittest.TestCase):
         self.koordconn.layer.group.name = "Wellington City Council"
         self.koordconn.layer.group.country = "NZ"
 
-        self.koordconn.layer.data = api.Data(datasources = [api.Datasource(144355)])
+        self.koordconn.layer.data = koordinates.Data(datasources = [koordinates.Datasource(144355)])
 
         self.koordconn.layer.create()
 
@@ -245,7 +240,7 @@ class TestKoordinates(unittest.TestCase):
 
 #       self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-#       parsedurl = urlparse(self.koordconnalthost.layer.url)
+#       parsedurl = urllib.parse.urlparse(self.koordconnalthost.layer.url)
 
 #       self.assertTrue(self.contains_substring(parsedurl.hostname, test_host_name))
 #       self.assertEqual(parsedurl.hostname, test_host_name)
@@ -257,7 +252,7 @@ class TestKoordinates(unittest.TestCase):
         order_by_key = 'name'
         self.koordconn.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-        parsedurl = urlparse(self.koordconn.layer._url)
+        parsedurl = urllib.parse.urlparse(self.koordconn.layer._url)
 
         self.assertTrue(self.contains_substring(parsedurl.query, filter_value))
         self.assertTrue(self.contains_substring(parsedurl.query, order_by_key))
@@ -440,44 +435,6 @@ class TestKoordinates(unittest.TestCase):
 #       with self.assertRaises(exceptions.AttributeNameIsReserved):
 #           self.koordconn.layer.get(id)
 
-    @responses.activate
-    def test_get_set_by_id(self, id=1474):
-
-        the_response = sets_single_good_simulated_response
-
-
-        responses.add(responses.GET,
-                      self.koordconn.set.get_url('SET', 'GET', 'single', {'set_id':id}),
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        #import pdb;pdb.set_trace()
-        self.koordconn.set.get(id)
-
-        self.assertEqual(self.koordconn.set.title,
-                         "Ultra Fast Broadband Initiative Coverage")
-        self.assertEqual(self.koordconn.set.group.name,
-                         "New Zealand Broadband Map")
-        self.assertEqual(self.koordconn.set.url_html,
-                         "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")
-        self.assertEqual(self.koordconn.set._raw_response.status_code,
-                         200)
-
-    @responses.activate
-    def test_get_set_set_returns_all_rows(self):
-        the_response = sets_multiple_good_simulated_response
-
-        responses.add(responses.GET,
-                      self.koordconn.layer.get_url('SET', 'GET', 'multi'),
-                      body=the_response, status=200,
-                      content_type='application/json')
-
-        cnt_of_sets_returned = 0
-
-        for layer in self.koordconn.set.get_list().execute_get_list():
-            cnt_of_sets_returned += 1
-
-        self.assertEqual(cnt_of_sets_returned, 2)
 
     def tearDown(self):
         pass

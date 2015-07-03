@@ -7,7 +7,6 @@ except ImportError:
     from distutils.core import setup
 
 import re
-import os
 from codecs import open
 
 
@@ -24,15 +23,27 @@ setup(
     name='koordinates',
     packages=['koordinates',],
     version=version,
-    description='koordinates is a Python client library for a number of Koordinates web APIs',
+    description='A Python client library for a number of Koordinates web APIs',
     long_description=readme + '\n\n' + history,
-    author='Richard Shea',
-    author_email='rshea@thecubagroup.com',
+    author='Koordinates Limited',
+    author_email='support@koordinates.com',
     url='https://github.com/koordinates/python-client',
     download_url = 'https://github.com/koordinates/python-client/tarball/0.1',
     keywords='koordinates api',
     license = 'BSD',
-    classifiers=[],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Scientific/Engineering :: GIS',
+    ],
     test_suite = 'nose.collector',
 )
 

@@ -12,23 +12,16 @@ import abc
 import logging
 import pprint
 import json
-try:
-    from urllib.parse import urlencode
-    from urllib.parse import urlsplit
-    from urllib.parse import parse_qs
-except ImportError:
-    from urllib import urlencode
-    from urlparse import urlsplit
-    from urlparse import parse_qs
 
 import requests
 import dateutil.parser
+from six.moves import urllib
 
-from koordinates import (
+from .utils import (
     dump_class_attributes_to_dict,
     remove_empty_from_dict,
 )
-from koordinates import (
+from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
     InvalidAPIVersion,
@@ -286,16 +279,16 @@ class KoordinatesObjectMixin(object):
     def add_query_component(self, argname, argvalue):
 
         # parse original string url
-        url_data = urlsplit(self._url)
+        url_data = urllib.parse.urlsplit(self._url)
 
         # parse original query-string
-        qs_data = parse_qs(url_data.query)
+        qs_data = urllib.parse.parse_qs(url_data.query)
 
         # manipulate the query-string
         qs_data[argname] = [argvalue]
 
         # get the url with modified query-string
-        self._url = url_data._replace(query=urlencode(qs_data, True)).geturl()
+        self._url = url_data._replace(query=urllib.parse.urlencode(qs_data, True)).geturl()
 
     def execute_get_list(self, dynamic_build = False):
         """Fetches zero, one or more objects .

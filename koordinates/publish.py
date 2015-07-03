@@ -4,20 +4,18 @@
 koordinates.publish
 ~~~~~~~~~~~~~~
 
-This module provides the `Publish` and associated classes used in 
+This module provides the `Publish` and associated classes used in
 the Koordinates Client Library
 
 """
 
 import logging
 
-from koordinates import KoordinatesObjectMixin
-from koordinates import KoordinatesURLMixin
-from koordinates import Group
-from koordinates import Metadata
-from koordinates import Createdby
+from .mixins import KoordinatesObjectMixin
+from .mixins import KoordinatesURLMixin
+from .layer import Group, Metadata, Createdby
 
-from koordinates import (
+from .utils import (
     remove_empty_from_dict,
     dump_class_attributes_to_dict,
     make_date_list_from_string_list,

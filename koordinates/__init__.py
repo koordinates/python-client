@@ -14,17 +14,6 @@ __license__ = 'BSD'
 __copyright__ = 'Copyright Koordinates Limited'
 
 
-import logging
-try:
-    from logging import NullHandler
-except ImportError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
-logging.getLogger(__name__).addHandler(NullHandler())
-
-
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -45,20 +34,6 @@ from .exceptions import (
     InvalidPublicationResourceList
 )
 
-from .utils import (
-    remove_empty_from_dict,
-    dump_class_attributes_to_dict,
-    make_date_list_from_string_list,
-    make_date,
-    make_date_if_possible,
-    make_list_of_Datasources,
-    make_list_of_Fields,
-    make_list_of_Categories
-)
-
-from .mixins import KoordinatesObjectMixin 
-from .mixins import KoordinatesURLMixin 
-
 from .layer import (
     Version,
     Group,
@@ -78,6 +53,6 @@ from .publish import (
     PublishRequest,
     Publish,
 )
-from .set import Set       
+from .set import Set
 from .connection import Connection
 

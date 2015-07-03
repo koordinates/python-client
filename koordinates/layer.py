@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.layer 
+koordinates.layer
 ~~~~~~~~~~~~~~
 
 This module provides the Layer, Version and classes on which they are
@@ -14,10 +14,9 @@ import six
 import requests
 
 
-from koordinates import KoordinatesObjectMixin 
-from koordinates import KoordinatesURLMixin 
+from .mixins import KoordinatesObjectMixin, KoordinatesURLMixin
 
-from koordinates import (
+from .utils import (
     make_date,
     make_list_of_Datasources,
     make_list_of_Fields,

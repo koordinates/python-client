@@ -3,7 +3,7 @@
 """
 koordinates.connection
 ~~~~~~~~~~~~
-This module implements the Connection class for the Koordinates 
+This module implements the Connection class for the Koordinates
 Client Library.
 
 :copyright: (c) Koordinates .
@@ -14,17 +14,15 @@ import logging
 from datetime import datetime
 import copy
 import os
+import sys
 
 import requests
 
-from koordinates import KoordinatesURLMixin
-from koordinates import Layer
-from koordinates import Publish
-from koordinates import PublishRequest
-from koordinates import Set    
-from koordinates import Version
-
-from koordinates import (
+from .mixins import KoordinatesURLMixin
+from .layer import Layer, Version
+from .publish import Publish, PublishRequest
+from .set import Set
+from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
     InvalidAPIVersion,
@@ -56,7 +54,7 @@ class Connection(KoordinatesURLMixin):
     """
 
     def __init__(self, token=None, host='koordinates.com',
-                 api_version='v1', activate_logging=True):
+                 api_version='v1', activate_logging=False):
         '''
         :param token: OAuth token under which to make the connections
         :param host: the host to connect to
@@ -65,9 +63,7 @@ class Connection(KoordinatesURLMixin):
 
         '''
         if activate_logging:
-            client_logfile_name = "koordinates-client-{}.log"\
-                                  .format(datetime.now().strftime('%Y%m%dT%H%M%S'))
-            logging.basicConfig(filename=client_logfile_name,
+            logging.basicConfig(stream=sys.stderr,
                                 level=logging.DEBUG,
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
@@ -86,8 +82,10 @@ class Connection(KoordinatesURLMixin):
         else:
             self.token = os.environ['KPWDTOK']
 
+        self.sets = Set._meta.manager
+        self.sets.connection = self
+
         self.layer = Layer(self)
-        self.set = Set(self)
         self.version = Version(self)
         from .api import KData
         self.data = KData(self)
@@ -170,15 +168,21 @@ class Connection(KoordinatesURLMixin):
         return dic_out
 
     def request(self, method, url, *args, **kwargs):
-        # headers = {
-        #     'Content-type': 'application/json',
-        #     'Accept': '*/*',
-        # }
+        headers = kwargs.pop("headers", {})
+        headers['Accept'] = 'application/json'
+        if 'Content-type' not in headers and method not in ('GET', 'HEAD'):
+            headers['Content-type'] = 'application/json'
+
+        logger.info('Request: %s %s', method, url)
+        #r = requests.request(method, url, auth=self.get_auth(), headers=headers, *args, **kwargs)
         r = requests.request(method, 
                              url, 
                              headers = self.assemble_headers(),
                              *args, 
                              **kwargs)
+        logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
+        logger.debug('Response: headers=%s', r.headers)
+        r.raise_for_status()
         return r
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
