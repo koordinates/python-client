@@ -44,14 +44,10 @@ class TestKoordinates(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinates.pwd)
-        self.koordtestconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinates.pwd,
-                                        host="test.koordinates.com")
+        self.koordconn = Connection()
+        self.koordtestconn = Connection(token='', host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection('rshea@thecubagroup.com',
-                                            invalid_password)
+        self.bad_koordconn = Connection(token='foo')
 
     def test_instantiate_group_class(self):
         g = api.Group(99, "http//example.com", "Group Name", "NZ")
@@ -298,9 +294,9 @@ class TestKoordinates(unittest.TestCase):
                       #self.koordtestconn.version.get_url('VERSION', 'POST', 'import', {'layer_id': 999}, kwargs={'hostname':"test.koordinates.com"}),
         layer_id = 999
         version_id = 998
-        dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"})
+        dbgvalue = self.koordtestconn.version.get_url('VERSION', 'POST', 'import', optargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"})
         responses.add(responses.POST,
-                      self.koordtestconn.version.get_url('VERSION', 'POST', 'import', kwargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"}),
+                      self.koordtestconn.version.get_url('VERSION', 'POST', 'import', optargs={'version_id': version_id,'layer_id': layer_id, 'hostname':"test.koordinates.com"}),
                       body=the_response, status=202,
                       content_type='application/json')
 

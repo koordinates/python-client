@@ -12,6 +12,8 @@ Client Library.
 
 import logging
 from datetime import datetime
+import copy
+import os
 
 import requests
 
@@ -53,11 +55,10 @@ class Connection(KoordinatesURLMixin):
     is instantiated.
     """
 
-    def __init__(self, username, pwd=None, host='koordinates.com',
+    def __init__(self, token=None, host='koordinates.com',
                  api_version='v1', activate_logging=True):
         '''
-        :param username: the username under which to make the connections
-        :param pwd: the password under which to make the connections
+        :param token: OAuth token under which to make the connections
         :param host: the host to connect to
         :param api_version: the version of teh api to connect to
         :param activate_logging: When True then logging to timestamped log files is activated
@@ -80,11 +81,10 @@ class Connection(KoordinatesURLMixin):
 
         self.host = host
 
-        self.username = username
-        if pwd:
-            self.pwd = pwd
+        if token:
+            self.token = token
         else:
-            self.pwd = os.environ['KPWD']
+            self.token = os.environ['KPWDTOK']
 
         self.layer = Layer(self)
         self.set = Set(self)
@@ -94,6 +94,30 @@ class Connection(KoordinatesURLMixin):
         self.publish = Publish(self)
 
         super(self.__class__, self).__init__()
+
+    def assemble_headers(self, user_headers={}):
+        """Takes the supplied headers and adds in any which
+        are defined at a `Connection` level and then returns
+        the result
+
+        :param user_headers: a `dict` containing headers defined at the 
+                             request level, optional.
+
+        :return: a `dict` instance
+        """
+
+        """
+        Currently this only deals with one connection oriented header
+        but the intent is to allow this expand to deal with future
+        situations
+        """
+
+        dic_out = copy.deepcopy(user_headers)
+
+        if self.token:
+            dic_out['Authorization'] = 'key {user_token}'.format(user_token=self.token)
+
+        return dic_out
 
     def get_auth(self):
         """Creates an Authorisation object based on the
@@ -150,7 +174,11 @@ class Connection(KoordinatesURLMixin):
         #     'Content-type': 'application/json',
         #     'Accept': '*/*',
         # }
-        r = requests.request(method, url, auth=self.get_auth(), *args, **kwargs)
+        r = requests.request(method, 
+                             url, 
+                             headers = self.assemble_headers(),
+                             *args, 
+                             **kwargs)
         return r
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):

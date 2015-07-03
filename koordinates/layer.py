@@ -236,8 +236,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': self.version_instance.id})
         json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         self._raw_response = requests.post(target_url,
-                                           headers=json_headers,
-                                           auth=self._parent.get_auth())
+                                           headers=self._parent.assemble_headers(json_headers))
 
         if self._raw_response.status_code == 201:
             # Success !

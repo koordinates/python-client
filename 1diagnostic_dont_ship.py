@@ -13,7 +13,7 @@ import logging
 import koordinates.api as api
 from koordinates import Connection
 
-import koordinates.chainclasstest as chainclasstest
+#import koordinates.chainclasstest as chainclasstest
 
 class TestClass(object):
     def __init__(self, v):
@@ -44,6 +44,19 @@ def main5():
         print("tc and tc2 are instances of the same thing")
     if isinstance(tc2, type(tc)):
         print("tc2 and tc are instances of the same thing")
+def gettoken(devenv=True):
+
+    if devenv:
+        if 'KPWDTOKDEV' in os.environ:
+            return os.environ['KPWDTOKDEV']
+        else:
+            raise Exception("The KPWDTOKDEV environmental variable must be defined")
+    else:
+        if 'KPWDTOK' in os.environ:
+            return os.environ['KPWDTOK']
+        else:
+            raise Exception("The KPWDTOK environmental variable must be defined")
+
 def getpass():
     '''
     Prompt user for Password until there is a Connection object
@@ -76,7 +89,8 @@ def main6(username):
     '''
     print("main 6 START +++++++++++++++++++++++++++++++++++++++++++++")
     #import pdb;pdb.set_trace()
-    conn = Connection(username, getpass())
+    #conn = Connection(username, getpass())
+    conn = Connection()
     for version in conn.version.get_list(layer_id=1474).execute_get_list():
         print(version.id, " ", version.created_at, " " , version.created_by)
     print("main 6 STOPx +++++++++++++++++++++++++++++++++++++++++++++")
@@ -86,7 +100,8 @@ def main7(username):
     Insert a version
     '''
     print("main 7 START +++++++++++++++++++++++++++++++++++++++++++++")
-    conn = Connection(username, getpass())
+    #conn = Connection(username, getpass())
+    conn = Connection()
     conn.version.url="https://koordinates.com/services/api/v1/layers/1474/versions/4067/"
     conn.version.status = "ok"
     conn.version.created_at = "2012-05-09T02:11:27.020Z"
@@ -101,7 +116,7 @@ def main9(username):
     '''
     Import a Version
     '''
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
     test=True
     conn.version.import_version(8098, 9850)
     test=False
@@ -110,7 +125,7 @@ def main8(username):
     Illustrating what was wrong with dynamic creation of classes/attributes
     '''
     print("main 8 START +++++++++++++++++++++++++++++++++++++++++++++")
-    conn = Connection(username, getpass())
+    conn = Connection()
     conn.layer.name="Shea Test Layer 0"
     conn.layer.type = "layer"
     #... and so on
@@ -143,7 +158,7 @@ def main15(username):
     d=datetime.now()
     test_layer_name = "Test Layer {}".format(d.strftime('%Y%m%dT%H%M%S'))
 
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
     conn.layer.name = api.Layer()
     conn.layer.name = test_layer_name
 
@@ -160,7 +175,10 @@ def main16(username):
     '''
     Iterate over a list of layers which are drafts
     '''
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    print("Staring in main16")
+    import pdb;pdb.set_trace()
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
+
     for layer in conn.layer.get_list_of_drafts().execute_get_list():
         print(layer.id)
 
@@ -168,7 +186,7 @@ def main13(username):
     '''
     Fetch a pre-existing Publish request
     '''
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
     conn.publish.get(2054)
     conn.publish.id = 2054
     assert(conn.publish.id == 2054)
@@ -193,8 +211,8 @@ def main14(username):
     '''
     Find a pre-existing Publish request and then cancel it
     '''
-    conn = Connection(username, getpass(), host="test.koordinates.com")
-    import pdb;pdb.set_trace()
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
+    #import pdb;pdb.set_trace()
     conn.publish.get(2058)
     conn.publish.cancel()
 
@@ -203,7 +221,7 @@ def main12(username, cmdargs):
     Fetch a specific Version
     '''
     #import pdb;pdb.set_trace()
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
     if (cmdargs['layerid'] == -1) or (cmdargs['versionid'] == -1):
         print("Main 12 was not provided with command line arguments so skipping")
     else:
@@ -215,8 +233,8 @@ def main11(username):
     Do a multiple publish
     '''
 
-    import pdb;pdb.set_trace()
-    conn = Connection(username, getpass(), host="test.koordinates.com")
+    #import pdb;pdb.set_trace()
+    conn = Connection(token = gettoken(), host="test.koordinates.com")
     #pr = api.PublishRequest(hostname="test.koordinates.com")
     pr = api.PublishRequest(kwargs={'hostname':"test.koordinates.com"})
     pr.add_layer_to_publish(8095, 9825)
@@ -227,7 +245,7 @@ def main10(username):
     '''
     Iterates over a set of `Data` items
     '''
-    conn = Connection(username, getpass())
+    conn = Connection()
     dic_types = {}
     last_id = None
     row_count = 0
@@ -250,11 +268,11 @@ def main4(username):
     '''
     #conn = Connection(username, getpass())
     #conn = Connection(username, getpass(), 'data.linz.govt.nz')
-    conn = Connection(username, getpass())
+    conn = Connection()
 
     #for x in conn.layer.get_list().filter('Line of lowest astronomical tide for Australia').order_by('name').execute_get_list():
     # conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
-    import pdb;pdb.set_trace()
+    #import pdb;pdb.set_trace()
     for the_layer in conn.layer.get_list().filter('Quattroshapes').order_by('name').execute_get_list():
         print(the_layer.tags)
         print(the_layer.collected_at)
@@ -265,7 +283,7 @@ def main4A(username):
     Iterate over a filtered, ordered, list of Layer objects
     and examine the results in detail
     '''
-    conn = Connection(username, getpass())
+    conn = Connection()
     bln_first_one = True
     for the_layer in conn.layer.get_list().filter('Cadastral').order_by('name').execute_get_list():
         print(the_layer.id, " ", the_layer.name, " ", id(the_layer))
@@ -328,7 +346,7 @@ def main4B(username):
     '''
     Fetch a single Layer object
     '''
-    conn = Connection(username, getpass())
+    conn = Connection()
     conn.layer.get(1474)
     print("")
     print(conn.layer.tags)
@@ -343,41 +361,41 @@ def main4B(username):
     print(conn.layer.id, " ", conn.layer.name, " ", id(conn.layer), make_list_string(conn.layer.tags))
     print("")
 
-def main3():
-    '''
-    Not really a koordinates test, just some testing of system ideas
-    '''
-    #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
-    #print(cctold.order_by().filter_by())
-    #print(cctold.filter_by().order_by())
-    print()
-    cct = chainclasstest.ChainClassTest([1,20,3,40],
-                                        -999,
-                                        '''https://koordinates.com/services/api/v1/layers/''')
-    print("0" * 50)
-    print(cct.url)
-    print("1" * 50)
-    cct.outputparsedurl()
-    print("2" * 50)
-    #cct.filter_by(name__contains='Wellington')
-    print("3" * 50)
-    #cct.filter_by(name__contains='Wellington').order_by()
-    print("4" * 50)
-    #cct.order_by().filter_by(name__contains='Wellington')
-    cct.get_list().filter_by(name__contains='Wellington').order_by()
-    print("5" * 50)
-    cct.outputparsedurl()
-    print("6" * 50)
-    print(cct.url)
-    print("7" * 50)
-    '''
-    print(cct)
-    print(cct.order_by())
-    print(cct.filter_by())
-    '''
-    '''
-    print(cct.order_by().filter_by())
-    '''
+#def main3():
+#    '''
+#    Not really a koordinates test, just some testing of system ideas
+#    '''
+#    #cctold = chainclasstest.ChainClassTestOld([1,20,3,40])
+#    #print(cctold.order_by().filter_by())
+#    #print(cctold.filter_by().order_by())
+#    print()
+#    cct = chainclasstest.ChainClassTest([1,20,3,40],
+#                                        -999,
+#                                        '''https://koordinates.com/services/api/v1/layers/''')
+#    print("0" * 50)
+#    print(cct.url)
+#    print("1" * 50)
+#    cct.outputparsedurl()
+#    print("2" * 50)
+#    #cct.filter_by(name__contains='Wellington')
+#    print("3" * 50)
+#    #cct.filter_by(name__contains='Wellington').order_by()
+#    print("4" * 50)
+#    #cct.order_by().filter_by(name__contains='Wellington')
+#    cct.get_list().filter_by(name__contains='Wellington').order_by()
+#    print("5" * 50)
+#    cct.outputparsedurl()
+#    print("6" * 50)
+#    print(cct.url)
+#    print("7" * 50)
+#    '''
+#    print(cct)
+#    print(cct.order_by())
+#    print(cct.filter_by())
+#    '''
+#    '''
+#    print(cct.order_by().filter_by())
+#    '''
 #def main2(username, url):
 #    conn = Connection(username, getpass())
 #    conn.layer.get(9999)

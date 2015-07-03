@@ -33,14 +33,10 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinatesURLHandling.pwd)
-        self.koordtestconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinatesURLHandling.pwd,
-                                        host="test.koordinates.com")
+        self.koordconn = Connection()
+        self.koordtestconn = Connection(host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection('rshea@thecubagroup.com',
-                                            invalid_password)
+        self.bad_koordconn = Connection()
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):

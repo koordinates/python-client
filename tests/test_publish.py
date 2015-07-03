@@ -42,14 +42,10 @@ class TestKoordinatesPublishing(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinatesPublishing.pwd)
-        self.koordtestconn = Connection('rshea@thecubagroup.com',
-                                        TestKoordinatesPublishing.pwd,
-                                        host="test.koordinates.com")
+        self.koordconn = Connection('rshea@thecubagroup.com')
+        self.koordtestconn = Connection(host="test.koordinates.com")
         invalid_password = str(uuid.uuid1())
-        self.bad_koordconn = Connection('rshea@thecubagroup.com',
-                                            invalid_password)
+        self.bad_koordconn = Connection()
 
 #   @responses.activate
 #   def test_create_redaction(self):
@@ -116,7 +112,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
     def test_multipublish_resource_specification(self):
         the_response = '''{}'''
         responses.add(responses.POST,
-                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', kwargs={'hostname':"test.koordinates.com"}),
+                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
                       body=the_response, status=999,
                       content_type='application/json')
 
@@ -141,7 +137,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         the_response = '''{}'''
 
         responses.add(responses.POST,
-                      self.koordtestconn.layer.get_url('CONN', 'POST', 'publishmulti', kwargs={'hostname':"test.koordinates.com"}),
+                      self.koordtestconn.layer.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
                       body=the_response, status=999,
                       content_type='application/json')
 

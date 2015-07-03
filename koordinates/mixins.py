@@ -110,36 +110,42 @@ class KoordinatesURLMixin(object):
         },
     }
 
-    def get_url(self, datatype, verb, urltype, kwargs={}):
+    def get_url(self, datatype, verb, urltype, optargs=None ):
         """Returns a fully formed url
 
         :param datatype: a string identifying the data the url will access .
         :param verb: the HTTP verb needed for use with the url .
         :param urltype: an adjective used to the nature of the request .
-        :param \*\*kwargs: Optional arguments that allows override of the hostname or api version to be embedded in teh resulting url.
+        :param \*\*optargs: Optional arguments that allows override of the hostname or api version to be embedded in teh resulting url.
         :return: string
         :rtype: A fully formed url.
         """
-        if "hostname" not in kwargs:
+        if optargs is None:
+            optargs = {}
+
+        if "hostname" not in optargs:
             try:
-                kwargs['hostname'] = self._parent.host
+                optargs['hostname'] = self._parent.host
             except AttributeError:
                 # We need to cater for when `get_url` is
                 # invoked from a method on the `Connection`
                 # object itself
-                kwargs['hostname'] = self.host
-        if "api_version" not in kwargs:
+                optargs['hostname'] = self.host
+        if "api_version" not in optargs:
             try:
-                kwargs['api_version'] = self._parent.api_version
+                optargs['api_version'] = self._parent.api_version
             except AttributeError:
                 # We need to cater for when `get_url` is
                 # invoked from a method on the `Connection`
                 # object itself
-                kwargs['api_version'] = self.api_version
+                optargs['api_version'] = self.api_version
 
         url = "https://{hostname}/services/api/{api_version}"
         url += self.URL_TEMPLATES[datatype][verb][urltype]
-        return url.format(**kwargs)
+        return url.format(**optargs)
+
+
+
 
 class KoordinatesObjectMixin(object):
     '''
@@ -164,8 +170,7 @@ class KoordinatesObjectMixin(object):
 
         self._raw_response = requests.post(target_url,
                                            json=json_body,
-                                           headers=json_headers,
-                                           auth=self._parent.get_auth())
+                                           headers = self._parent.assemble_headers(json_headers))
 
         if self._raw_response.status_code == 201:
             logger.debug('Return value from successful instance create follows')
@@ -212,7 +217,7 @@ class KoordinatesObjectMixin(object):
         """
 
         self._raw_response = requests.get(target_url,
-                                          auth=self._parent.get_auth())
+                                          headers = self._parent.assemble_headers())
 
         if self._raw_response.status_code == 200:
             # convert JSON to dict
@@ -336,7 +341,7 @@ class KoordinatesObjectMixin(object):
         self._ordering_applied = False
         self._filtering_applied = False
         self._raw_response = requests.get(target_url,
-                                          auth=self._parent.get_auth())
+                                          headers = self._parent.assemble_headers())
 
         if self._raw_response.status_code == 200:
             # If only row is returned the JSON corresponds to a single dict,
