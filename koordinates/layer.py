@@ -590,15 +590,21 @@ class Field(object):
 
 class LayerManager(base.Manager):
     def list(self, *args, **kwargs):
-        """Fetches a set of sets
+        """Fetches a set of layers
         """
         target_url = self.connection.get_url('LAYER', 'GET', 'multi')
         return super(LayerManager, self).list(target_url)
 
-    def get(self, id, **kwargs):
-        """Fetches a Set determined by the value of `id`.
+    def list_drafts(self):
+        """Fetches a set of layers
+        """
+        target_url = self.connection.get_url('LAYER', 'GET', 'multidraft')
+        return super(LayerManager, self).list(target_url)
 
-        :param id: ID for the new :class:`Set`  object.
+    def get(self, id, **kwargs):
+        """Fetches a Layer determined by the value of `id`.
+
+        :param id: ID for the new :class:`Layer`  object.
         """
         target_url = self.connection.get_url('LAYER', 'GET', 'single', {'layer_id': id})
         return super(LayerManager, self).get(target_url, id, **kwargs)
@@ -832,12 +838,12 @@ class Layer(base.Model):
         self._url = target_url
         return self
 
-    def get_list_of_drafts(self):
-        """Fetches a set of layers
-        """
-        target_url = self.get_url('LAYER', 'GET', 'multidraft')
-        self._url = target_url
-        return self
+#   def get_list_of_drafts(self):
+#       """Fetches a set of layers
+#       """
+#       target_url = self.get_url('LAYER', 'GET', 'multidraft')
+#       self._url = target_url
+#       return self
 
     def execute_get_list(self):
         """Fetches zero, one or more Layers .
