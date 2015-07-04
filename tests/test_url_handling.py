@@ -45,19 +45,19 @@ class TestKoordinatesURLHandling(unittest.TestCase):
                         '''https://koordinates.com/services/api/v1/sets/''')
 
     def test_layers_url(self):
-        self.assertEqual(self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id':999}),
+        self.assertEqual(self.koordconn.get_url('LAYER', 'GET', 'single', {'layer_id':999}),
                         '''https://koordinates.com/services/api/v1/layers/999/''')
 
     def test_layers_multi_url(self):
-        self.assertEqual(self.koordconn.layer.get_url('LAYER', 'GET', 'multi'),
+        self.assertEqual(self.koordconn.get_url('LAYER', 'GET', 'multi'),
                         '''https://koordinates.com/services/api/v1/layers/''')
 
     def test_layer_versions_url(self, layer_id=1494, version_id=4067):
-        self.assertEqual(self.koordconn.layer.get_url('VERSION', 'GET', 'single', {'layer_id':layer_id, 'version_id':version_id}),
+        self.assertEqual(self.koordconn.get_url('VERSION', 'GET', 'single', {'layer_id':layer_id, 'version_id':version_id}),
                         '''https://koordinates.com/services/api/v1/layers/1494/versions/4067/''')
 
     def test_layer_versions_multi_url(self, layer_id=1494, version_id=4067):
-        self.assertEqual(self.koordconn.layer.get_url('VERSION', 'GET', 'multi', {'layer_id':layer_id}),
+        self.assertEqual(self.koordconn.get_url('VERSION', 'GET', 'multi', {'layer_id':layer_id}),
                         '''https://koordinates.com/services/api/v1/layers/1494/versions/''')
 
     def test_api_version_in_url_when_valid(self):
@@ -66,7 +66,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         self.koordconnaltapiversion = Connection(host=test_host_name,
                                                      api_version='UNITTESTINGONLY')
 
-        self.assertEqual(self.koordconnaltapiversion.layer.get_url('LAYER', 'GET', 'multi', {'hostname':test_host_name, 'api_version':'UNITTESTINGONLY'}),
+        self.assertEqual(self.koordconnaltapiversion.get_url('LAYER', 'GET', 'multi', {'hostname':test_host_name, 'api_version':'UNITTESTINGONLY'}),
                         '''https://''' + test_host_name + '''/services/api/UNITTESTINGONLY/layers/''')
 
     def test_api_version_in_url_when_invalid(self):

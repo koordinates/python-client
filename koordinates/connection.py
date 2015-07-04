@@ -89,7 +89,10 @@ class Connection(KoordinatesURLMixin):
         self.publishes = Publish._meta.manager
         self.publishes.connection = self
 
-        self.layer = Layer(self)
+        self.layers = Layer._meta.manager
+        self.layers.connection = self
+
+        #self.layer = Layer(self)
         self.version = Version(self)
         from .api import KData
         self.data = KData(self)
