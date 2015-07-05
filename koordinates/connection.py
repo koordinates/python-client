@@ -19,11 +19,11 @@ import sys
 import requests
 
 from .mixins import KoordinatesURLMixin
-from .layer import Layer, Version
-from .publish import Publish
+from .layer import LayerManager, Version
+from .publish import PublishManager
 from .publishrequest import PublishRequest
-from .set import Set
-from .tokens import Token
+from .set import SetManager
+from .tokens import TokenManager
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -86,17 +86,10 @@ class Connection(KoordinatesURLMixin):
         else:
             raise KeyError('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
-        self.sets = Set._meta.manager
-        self.sets.connection = self
-
-        self.publishes = Publish._meta.manager
-        self.publishes.connection = self
-
-        self.tokens = Token._meta.manager
-        self.tokens.connection = self
-
-        self.layers = Layer._meta.manager
-        self.layers.connection = self
+        self.sets = SetManager(self)
+        self.publishes = PublishManager(self)
+        self.tokens = TokenManager(self)
+        self.layers = LayerManager(self)
 
         self.version = Version(self)
         from .api import KData

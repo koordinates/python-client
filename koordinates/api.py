@@ -18,12 +18,10 @@ from .mixins import (
 
 from .layer import (
     Version,
-    Group,
     Data,
     Datasource,
     Category,
     Autoupdate,
-    Createdby,
     License,
     Versioninstance,
     Metadata,
@@ -32,6 +30,10 @@ from .layer import (
 )
 from .set import (
     Set,
+)
+from .users import (
+    Group,
+    User,
 )
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 

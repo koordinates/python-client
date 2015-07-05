@@ -21,20 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class TokenManager(base.Manager):
-    def list(self, *args, **kwargs):
-        """
-        Fetches a set of Tokens
-        """
-        target_url = self.connection.get_url('TOKEN', 'GET', 'multi')
-        return super(TokenManager, self).list(target_url)
-
-    def get(self, id, **kwargs):
-        """Fetches a Token determined by the value of `id`.
-
-        :param id: ID for the new :class:`Token`  object.
-        """
-        target_url = self.connection.get_url('TOKEN', 'GET', 'single', {'token_id': id})
-        return super(TokenManager, self).get(target_url, id, **kwargs)
+    URL_KEY = 'TOKEN'
 
     def create(self, token, email, password):
         target_url = self.connection.get_url('TOKEN', 'POST', 'create')
@@ -50,34 +37,14 @@ class TokenManager(base.Manager):
             post_data['expires_at'] = token.expires_at
 
         r = self.connection._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
-        return Token().deserialize(r.json())
+        return Token().deserialize(r.json(), self)
 
 
 class Token(base.Model):
     ''' An API Token '''
     class Meta:
         manager = TokenManager
-
-    def __init__(self, **kwargs):
-        self._url = None
-        self._id = kwargs.get('id', None)
-
-        self.deserialize(kwargs)
-
-        super(self.__class__, self).__init__()
-
-    def deserialize(self, data):
-        self.id = data.get("id")
-        self.url = data.get("url")
-        self.name = data.get("name")
-        # key will only be set the first time a token is created
-        self.key = data.get("key")
-        self.key_hint = data.get("key_hint")
-        self.scope = data.get("scope")
-        self.referrers = data.get("referrers")
-        self.created_at = make_date(data.get("created_at"))
-        self.expires_at = make_date(data.get("expires_at"))
-        return self
+        serialize_skip = ('id', 'key', 'url', 'created_at',)
 
     @property
     def scopes(self):

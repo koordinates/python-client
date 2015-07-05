@@ -5,50 +5,94 @@ import responses
 from six.moves.urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Connection
-from koordinates.exceptions import NotAValidBasisForOrdering
+from koordinates.exceptions import NotAValidBasisForOrdering, NotAValidBasisForFiltration
 
 
 class FooManager(base.Manager):
     TEST_LIST_URL = 'https://test.koordinates.com/services/v1/api/foo/'
     TEST_GET_URL = 'https://test.koordinates.com/services/v1/api/foo/%s'
 
-    def get(self, foo_id):
-        target_url = self.TEST_GET_URL % foo_id
-        return super(FooManager, self).get(target_url, foo_id)
+    def list(self, *args, **kwargs):
+        """
+        Fetches a set of Tokens
+        """
+        return base.Query(self, self.TEST_LIST_URL)
 
-    def list(self):
-        target_url = self.TEST_LIST_URL
-        return super(FooManager, self).list(target_url)
+    def get(self, id, expand=[]):
+        """Fetches a Token determined by the value of `id`.
+
+        :param id: ID for the new :class:`Token`  object.
+        """
+        target_url = self.TEST_GET_URL % id
+        return self._get(target_url, id, expand=expand)
+
 
 class FooModel(base.Model):
     class Meta:
         manager = FooManager
-        attribute_sort_candidates = ['sortable']
-
-    def deserialize(self, data):
-        self.data = data
-        self.id = data.get('id', None)
+        ordering_attributes = ['sortable']
+        filter_attributes = ['filterable', 'thing', 'other', 'b1']
 
 
 class ModelTests(unittest.TestCase):
     def setUp(self):
         self.conn = Connection('test')
-        FooModel._meta.manager.connection = self.conn
+        self.mgr = FooManager(self.conn)
 
     def test_manager_init(self):
         self.assert_(hasattr(FooModel, "_meta"))
         self.assert_(not hasattr(FooModel, "Meta"))
-        self.assert_(isinstance(FooModel._meta.manager, FooManager))
-
-        mgr = FooModel._meta.manager
-        self.assertEqual(mgr.model, FooModel)
+        self.assert_(FooModel._meta.manager is FooManager)
+        self.assert_(FooManager.model is FooModel)
 
     def test_relations(self):
-        self.assert_(isinstance(FooModel._meta.manager, FooManager))
-
         m = FooModel()
-        self.assert_(m._manager is FooModel._meta.manager)
-        self.assert_(m._connection is FooModel._meta.manager.connection)
+        self.assert_(m._manager is None)
+        self.assertRaises(AttributeError, lambda: m._connection)
+
+    @responses.activate
+    def test_manager_from_query(self):
+        responses.add(responses.GET,
+                      FooManager.TEST_GET_URL % 12345,
+                      body='{"id": 12345}',
+                      content_type='application/json')
+        o = self.mgr.get(12345)
+        self.assert_(isinstance(o, FooModel))
+        self.assert_(o._manager is self.mgr)
+
+    def test_deserialize(self):
+        o = FooModel().deserialize({'id': '12345'}, self.mgr)
+        self.assert_(isinstance(o, FooModel))
+        self.assert_(o._manager is self.mgr)
+
+        o = FooModel(id=1234, attr='test1')
+        o2 = o.deserialize({'attr': 'test2', 'attr2': 'test3'}, self.mgr)
+        self.assert_(o2 is o)
+        self.assertEqual(o2.attr, 'test2')
+        self.assertEqual(o2.id, 1234)
+        self.assertEqual(o2.attr2, 'test3')
+
+        mgr2 = FooManager(self.conn)
+        o = FooModel(id=1234)
+        o._manager = self.mgr
+        o2 = o.deserialize({}, mgr2)
+        self.assert_(o2 is o)
+        self.assertEqual(o2._manager, mgr2)
+
+    def test_serialize(self):
+        o = FooModel(id=1234, attr='test')
+        self.assertEqual(o.serialize(), {
+            'attr': 'test',
+        })
+
+    def test_init(self):
+        o = FooModel()
+        self.assert_(hasattr(o, 'id'))
+        self.assertEqual(o.id, None)
+
+        o = FooModel(id=123, bob='jim')
+        self.assertEqual(o.id, 123)
+        self.assertEqual(o.bob, 'jim')
 
     def test_str(self):
         m = FooModel(id=123)
@@ -90,11 +134,11 @@ class ModelTests(unittest.TestCase):
         else:
             assert False, "Should have received an AttributeError for not having Meta.manager set"
 
+
 class QueryTests(unittest.TestCase):
     def setUp(self):
         self.conn = Connection('test', activate_logging=True)
-        self.foos = FooModel._meta.manager
-        self.foos.connection = self.conn
+        self.foos = FooManager(self.conn)
 
     def test_list(self):
         q = self.foos.list()
@@ -108,7 +152,6 @@ class QueryTests(unittest.TestCase):
 
     def test_order_by(self):
         base_q = self.foos.list()
-        self.assertRaises(NotAValidBasisForOrdering, base_q.order_by, 'invalid')
 
         q = base_q.order_by('-sortable')
         self.assert_('sort=-sortable' in q._to_url())
@@ -121,27 +164,32 @@ class QueryTests(unittest.TestCase):
         self.assert_('sort=-sortable' in q._to_url())
         self.assert_('sort=sortable' not in q._to_url())
 
+    def test_order_by_invalud(self):
+        base_q = self.foos.list()
+        self.assertRaises(NotAValidBasisForOrdering, base_q.order_by, 'invalid')
+
     def test_clone(self):
-        q0 = self.foos.list().filter(wiz='bang')
-        self.assertEqual(dict(q0._filters), {'wiz': ['bang']})
+        q0 = self.foos.list().filter(thing='bang')
+        self.assertEqual(dict(q0._filters), {'thing': ['bang']})
         self.assertEqual(q0._order_by, None)
 
         q1 = q0.order_by('sortable')
         self.assertEqual(q1._order_by, 'sortable')
         self.assertEqual(q0._order_by, None)
 
-        q1 = q0.filter(jim='bob', wiz='fred')
-        self.assertEqual(dict(q0._filters), {'wiz': ['bang']})
-        self.assertEqual(dict(q1._filters), {'wiz': ['bang', 'fred'], 'jim': ['bob']})
+        q1 = q0.filter(other='bob', thing='fred')
+        self.assertEqual(dict(q0._filters), {'thing': ['bang']})
+        self.assertEqual(dict(q1._filters), {'thing': ['bang', 'fred'], 'other': ['bob']})
 
-    def test_filters(self):
+    def test_filter(self):
         base_q = self.foos.list()
+
         q = base_q.filter(thing=1).filter(thing=2).filter(other='3', other__op=4).filter(b1='b2')
 
-        self.assertEqual(q._filters, {
+        self.assertEqual(dict(q._filters), {
             'thing': [1, 2],
             'other': ['3'],
-            'other__op': [4],
+            'other.op': [4],
             'b1': ['b2'],
         })
 
@@ -151,8 +199,25 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(params, {
             'thing': ['1', '2'],
             'other': ['3'],
-            'other__op': ['4'],
+            'other.op': ['4'],
             'b1': ['b2'],
+        })
+
+    def test_filter_invalid(self):
+        base_q = self.foos.list()
+        self.assertRaises(NotAValidBasisForFiltration, base_q.filter, invalid='test')
+
+    def test_extra(self):
+        base_q = self.foos.list().filter(thing='value')
+
+        q = base_q.extra(some_key='some_value')
+        self.assert_('some_key=some_value' in q._to_url())
+
+        q = base_q.extra(thing='something_extra')
+        url = q._to_url()
+        params = parse_qs(urlparse(url).query, keep_blank_values=True)
+        self.assertEqual(params, {
+            'thing': ['value', 'something_extra'],
         })
 
     def test_expand(self):
@@ -264,7 +329,7 @@ class QueryTests(unittest.TestCase):
 
         q = self.foos.list()
         for i, o in enumerate(q[:3]):
-            continue
+            self.assert_(isinstance(o, FooModel))
 
         self.assertEqual(i, 2)  # 0-index
         self.assertEqual(len(responses.calls), 1)

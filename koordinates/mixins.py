@@ -56,7 +56,7 @@ class KoordinatesURLMixin(object):
         'LAYER': {
             'GET': {
                 'singleversion': '/layers/{layer_id}/versions/{version_id}/',
-                'single': '/layers/{layer_id}/',
+                'single': '/layers/{id}/',
                 'multi': '/layers/',
                 'multidraft': '/layers/drafts/',
             },
@@ -67,7 +67,7 @@ class KoordinatesURLMixin(object):
         },
         'SET': {
             'GET': {
-                'single': '/sets/{set_id}/',
+                'single': '/sets/{id}/',
                 'multi': '/sets/',
             },
         },
@@ -84,7 +84,6 @@ class KoordinatesURLMixin(object):
         'DATA': {
             'GET': {
                 'multi': '/data/',
-                'single': '/data/{data_id}',
             },
         },
         'TABLE': {
@@ -94,26 +93,26 @@ class KoordinatesURLMixin(object):
         },
         'PUBLISH': {
             'GET': {
-                'single': '/publish/{publish_id}/',
+                'single': '/publish/{id}/',
                 'multi': '/publish/',
             },
             'DELETE': {
-                'single': '/publish/{publish_id}/',
+                'single': '/publish/{id}/',
             }
         },
         'TOKEN': {
             'GET': {
-                'single': '/tokens/{token_id}/',
+                'single': '/tokens/{id}/',
                 'multi': '/tokens/',
             },
             'POST': {
                 'create': '/tokens/',
             },
             'PUT': {
-                'update': '/tokens/{token_id}/',
+                'update': '/tokens/{id}/',
             },
             'DELETE': {
-                'single': '/tokens/{token_id}/',
+                'single': '/tokens/{id}/',
             },
         },
     }

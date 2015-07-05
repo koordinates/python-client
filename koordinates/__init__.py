@@ -36,12 +36,10 @@ from .exceptions import (
 
 from .layer import (
     Version,
-    Group,
     Data,
     Datasource,
     Category,
     Autoupdate,
-    Createdby,
     License,
     Versioninstance,
     Metadata,
@@ -54,4 +52,5 @@ from .publishrequest import PublishRequest
 from .set import Set
 from .connection import Connection
 from .tokens import Token
+from .users import Group, User
 

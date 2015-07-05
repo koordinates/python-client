@@ -24,6 +24,7 @@ from .utils import (
     make_date_list_from_string_list,
 )
 from . import base
+from .users import Group, User
 
 
 logger = logging.getLogger(__name__)
@@ -274,37 +275,6 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
             raise UnexpectedServerResponse
 
 
-class Group(object):
-    '''A Group
-    TODO: Explanation of what a `Group` is from Koordinates
-
-    NB: Currently this Class is only used as a component of `Layer`
-    '''
-    def __init__(self, id=None, url=None, name=None, country=None):
-        self.id = id
-        self.url = url
-        self.name = name
-        self.country = country
-
-    @classmethod
-    def from_dict(cls, dict_group):
-        '''Initialize Group from a dict.
-
-        la = Group.from_dict(a_dict)
-
-
-        '''
-        if dict_group:
-            the_group = cls(dict_group.get("id", None),
-                            dict_group.get("url", None),
-                            dict_group.get("name", None),
-                            dict_group.get("country", None))
-        else:
-            the_group = cls()
-
-        return the_group
-
-
 class Data(object):
     '''A Data
     TODO: Explanation of what a `Data` is from Koordinates
@@ -425,37 +395,6 @@ class Autoupdate(object):
 
         return the_autoupdate
 
-class Createdby(object):
-    '''A Createdby
-    A basket of information identifying the creator
-    '''
-    def __init__(self,
-                 id=None,
-                 url=None,
-                 first_name=None,
-                 last_name=None,
-                 country=None):
-
-        self.id = id
-        self.url = url
-        self.first_name = first_name
-        self.last_name = last_name
-        self.country = country
-
-    @classmethod
-    def from_dict(cls, dict_createdby):
-        '''Initialize Createdby from a dict.
-        '''
-        if dict_createdby:
-            the_createdby = cls(dict_createdby.get("id"),
-                              dict_createdby.get("url"),
-                              dict_createdby.get("first_name"),
-                              dict_createdby.get("last_name"),
-                              dict_createdby.get("country"))
-        else:
-            the_createdby = cls()
-
-        return the_createdby
 
 class License(object):
     '''A License
@@ -589,25 +528,19 @@ class Field(object):
 
 
 class LayerManager(base.Manager):
-    def list(self, *args, **kwargs):
-        """Fetches a set of layers
-        """
-        target_url = self.connection.get_url('LAYER', 'GET', 'multi')
-        return super(LayerManager, self).list(target_url)
+    URL_KEY = 'LAYER'
 
     def list_drafts(self):
         """Fetches a set of layers
         """
         target_url = self.connection.get_url('LAYER', 'GET', 'multidraft')
-        return super(LayerManager, self).list(target_url)
+        return base.Query(self, target_url)
 
-    def get(self, id, **kwargs):
-        """Fetches a Layer determined by the value of `id`.
+    def create(self, layer):
+        target_url = self.connection.get_url('LAYER', 'POST', 'create')
+        r = self.connection.request('POST', target_url, json=layer.serialize())
+        return layer.deserialize(r.json(), self)
 
-        :param id: ID for the new :class:`Layer`  object.
-        """
-        target_url = self.connection.get_url('LAYER', 'GET', 'single', {'layer_id': id})
-        return super(LayerManager, self).get(target_url, id, **kwargs)
 
 class Layer(base.Model):
     '''A Layer
@@ -619,16 +552,12 @@ class Layer(base.Model):
     '''
     class Meta:
         manager = LayerManager
-        attribute_sort_candidates = ('name',)
-        attribute_filter_candidates = ('name',)
-
-    def __init__(self, **kwargs):
-        self._url = None
-        self._id = kwargs.get('id', None)
-
-        self.deserialize(kwargs)
-
-        super(self.__class__, self).__init__()
+        serialize_skip = ('permissions', 'published_at', 'first_published_at')
+        filter_attributes = (
+            'kind', 'public', 'group', 'license', 'category',
+            'geotag', 'tag', 'q', 'created_at', 'updated_at',
+        )
+        ordering_attributes = ('name', 'created_at', 'updated_at', 'popularity',)
 
 #   def __init__(self,
 #                parent=None,
@@ -759,84 +688,56 @@ class Layer(base.Model):
 #       self.metadata = metadata if metadata else Metadata()
 #       self.elevation_field = elevation_field
 
-    def deserialize(self, data):
-        '''
-        `deserialize` initializes those
-        attributes of `Layer` which are not prefixed by an
-        underbar. Such attributes are named so as to indicate
-        that they are, in terms of the API, "real" attributes
-        of a `Layer`. That is to say an attribute which is returned
-        from the server when a given `Layer` is requested. Other
-        attributes, such as `_attribute_reserved_names` have leading
-        underbar to indicate they are not derived from data returned
-        from the server
-
-        '''
-
-        self.id = data.get("id")
-        self.url = data.get("url")
-        self.type = data.get("type")
-        self.name = data.get("name")
-        self.first_published_at = make_date(data.get("first_published_at"))
-        self.published_at = data.get("published_at")
-        self.description = data.get("description")
-        self.description_html = data.get("description_html")
-        self.group = Group.from_dict(data.get("group")) if data.get("group") else Group()
-        self.data = Data.from_dict(data.get("data")) if data.get("data") else Data()
-        self.url_html = data.get("url_html")
-        self.published_version = data.get("published_version")
-        self.latest_version = data.get("latest_version")
-        self.this_version = data.get("this_version")
-        self.kind = data.get("kind")
+    def deserialize(self, data, manager):
+        super(Layer, self).deserialize(data, manager)
+        self.group = Group().deserialize(data["group"], manager) if data.get("group") else None
+        #self.data = Data.from_dict(data.get("data")) if data.get("data") else Data()
         self.categories = make_list_of_Categories(data.get("categories"))
-        self.tags = data.get("tags") if data.get("tags") else []
-        self.collected_at = [make_date(str_date) for str_date in data.get("collected_at", [])]
-        self.created_at = data.get("created_at")
-        self.license = License.from_dict(data.get("license")) if data.get("license") else License()
-        self.metadata = Metadata.from_dict(data.get("metadata")) if data.get("metadata") else Metadata()
-        self.elevation_field = data.get("elevation_field")
-
-
-    @classmethod
-    def from_dict(cls, dict_layer):
-        '''Initialize Layer from a dict.
-        '''
-        if dict_layer:
-            the_layer = cls(None,
-                            dict_layer.get("id", None),
-                            dict_layer.get("url", None),
-                            dict_layer.get("type", None),
-                            dict_layer.get("name", None),
-                            make_date(dict_layer.get("first_published_at", None)),
-                            make_date(dict_layer.get("published_at", None)),
-                            dict_layer.get("description", None),
-                            dict_layer.get("description_html", None),
-                            Group.from_dict(dict_layer.get("group", None)),
-                            Data.from_dict(dict_layer.get("data", None)),
-                            dict_layer.get("url_html", None),
-                            dict_layer.get("published_version", None),
-                            dict_layer.get("latest_version", None),
-                            dict_layer.get("this_version", None),
-                            dict_layer.get("kind", None),
-                            make_list_of_Categories(dict_layer.get("categories", None)),
-                            dict_layer.get("tags", None),
-                            [make_date(str_date) for str_date in dict_layer.get("collected_at", [])],
-                            make_date(dict_layer.get("created_at", None)),
-                            License.from_dict(dict_layer.get("license", None)),
-                            Metadata.from_dict(dict_layer.get("metadata", None)),
-                            dict_layer.get("elevation_field", None))
-        else:
-            the_layer = cls()
-
-        return the_layer
-
-
-    def get_list(self):
-        """Fetches a set of layers
-        """
-        target_url = self.get_url('LAYER', 'GET', 'multi')
-        self._url = target_url
+        self.collected_at = [make_date(str_date) for str_date in data.get("collected_at", [])],
+        #self.license = License.from_dict(data.get("license")) if data.get("license") else License()
+        #self.metadata = Metadata.from_dict(data.get("metadata")) if data.get("metadata") else Metadata()
         return self
+
+    # @classmethod
+    # def from_dict(cls, dict_layer):
+    #     '''Initialize Layer from a dict.
+    #     '''
+    #     if dict_layer:
+    #         the_layer = cls(None,
+    #                         dict_layer.get("id", None),
+    #                         dict_layer.get("url", None),
+    #                         dict_layer.get("type", None),
+    #                         dict_layer.get("name", None),
+    #                         make_date(dict_layer.get("first_published_at", None)),
+    #                         make_date(dict_layer.get("published_at", None)),
+    #                         dict_layer.get("description", None),
+    #                         dict_layer.get("description_html", None),
+    #                         Group.from_dict(dict_layer.get("group", None)),
+    #                         Data.from_dict(dict_layer.get("data", None)),
+    #                         dict_layer.get("url_html", None),
+    #                         dict_layer.get("published_version", None),
+    #                         dict_layer.get("latest_version", None),
+    #                         dict_layer.get("this_version", None),
+    #                         dict_layer.get("kind", None),
+    #                         make_list_of_Categories(dict_layer.get("categories", None)),
+    #                         dict_layer.get("tags", None),
+    #                         [make_date(str_date) for str_date in dict_layer.get("collected_at", [])],
+    #                         make_date(dict_layer.get("created_at", None)),
+    #                         License.from_dict(dict_layer.get("license", None)),
+    #                         Metadata.from_dict(dict_layer.get("metadata", None)),
+    #                         dict_layer.get("elevation_field", None))
+    #     else:
+    #         the_layer = cls()
+
+    #     return the_layer
+
+
+    # def get_list(self):
+    #     """Fetches a set of layers
+    #     """
+    #     target_url = self.get_url('LAYER', 'GET', 'multi')
+    #     self._url = target_url
+    #     return self
 
 #   def get_list_of_drafts(self):
 #       """Fetches a set of layers
@@ -845,72 +746,72 @@ class Layer(base.Model):
 #       self._url = target_url
 #       return self
 
-    def execute_get_list(self):
-        """Fetches zero, one or more Layers .
+    # def execute_get_list(self):
+    #     """Fetches zero, one or more Layers .
 
-        :param dynamic_build: When True the instance hierarchy arising from the
-                              JSON returned is automatically build. When False
-                              control is handed back to the calling subclass to
-                              build the instance hierarchy based on pre-defined
-                              classes.
+    #     :param dynamic_build: When True the instance hierarchy arising from the
+    #                           JSON returned is automatically build. When False
+    #                           control is handed back to the calling subclass to
+    #                           build the instance hierarchy based on pre-defined
+    #                           classes.
 
-                              An example of `dynamic_build` being False is that
-                              the `Layer` class will have the JSON arising from
-                              GET returned to it and will then follow processing
-                              defined in `Layer.get` to create an instance of
-                              `Layer` from the JSON returned.
+    #                           An example of `dynamic_build` being False is that
+    #                           the `Layer` class will have the JSON arising from
+    #                           GET returned to it and will then follow processing
+    #                           defined in `Layer.get` to create an instance of
+    #                           `Layer` from the JSON returned.
 
-                              NB: In later versions this flag will be withdrawn
-                              and all processing will be done as if `dynamic_build`
-                              was False.
-        """
-        for dic_layer_as_json in super(self.__class__, self).execute_get_list():
-            the_layer =  Layer.from_dict(dic_layer_as_json)
-            yield the_layer
+    #                           NB: In later versions this flag will be withdrawn
+    #                           and all processing will be done as if `dynamic_build`
+    #                           was False.
+    #     """
+    #     for dic_layer_as_json in super(self.__class__, self).execute_get_list():
+    #         the_layer =  Layer.from_dict(dic_layer_as_json)
+    #         yield the_layer
 
-    def get(self, id, dynamic_build = False):
-        """Fetches a layer determined by the value of `id`.
+    # def get(self, id, dynamic_build = False):
+    #     """Fetches a layer determined by the value of `id`.
 
-        :param id: ID for the new :class:`Layer` object.
-        """
+    #     :param id: ID for the new :class:`Layer` object.
+    #     """
 
-        target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
-        # Call the superclass `get` with dynamic_build set to False
-        dic_layer_as_json = super(self.__class__, self).get(id,
-                                                            target_url,
-                                                            dynamic_build)
-        # Clear all existing attributes
-        self._initialize_named_attributes(id = dic_layer_as_json.get("id"),
-                                          url = dic_layer_as_json.get("url"),
-                                          type = dic_layer_as_json.get("type"),
-                                          name = dic_layer_as_json.get("name"),
-                                          first_published_at = make_date(dic_layer_as_json.get("first_published_at")),
-                                          published_at = make_date(dic_layer_as_json.get("published_at")),
-                                          description = dic_layer_as_json.get("description"),
-                                          description_html = dic_layer_as_json.get("description_html"),
-                                          group = Group.from_dict(dic_layer_as_json.get("group")),
-                                          data = Data.from_dict(dic_layer_as_json.get("data")),
-                                          url_html = dic_layer_as_json.get("url_html"),
-                                          published_version = dic_layer_as_json.get("published_version"),
-                                          latest_version = dic_layer_as_json.get("latest_version"),
-                                          this_version = dic_layer_as_json.get("this_version"),
-                                          kind = dic_layer_as_json.get("kind"),
-                                          categories = make_list_of_Categories(dic_layer_as_json.get("categories")),
-                                          tags = dic_layer_as_json.get("tags"),
-                                          collected_at = make_date_list_from_string_list(dic_layer_as_json.get("collected_at", [])),
-                                          created_at = make_date(dic_layer_as_json.get("created_at")),
-                                          license = License.from_dict(dic_layer_as_json.get("license")),
-                                          metadata = Metadata.from_dict(dic_layer_as_json.get("metadata")),
-                                          elevation_field = dic_layer_as_json.get("elevation_field"))
+    #     target_url = self.get_url('LAYER', 'GET', 'single', {'layer_id': id})
+    #     # Call the superclass `get` with dynamic_build set to False
+    #     dic_layer_as_json = super(self.__class__, self).get(id,
+    #                                                         target_url,
+    #                                                         dynamic_build)
+    #     # Clear all existing attributes
+    #     self._initialize_named_attributes(id = dic_layer_as_json.get("id"),
+    #                                       url = dic_layer_as_json.get("url"),
+    #                                       type = dic_layer_as_json.get("type"),
+    #                                       name = dic_layer_as_json.get("name"),
+    #                                       first_published_at = make_date(dic_layer_as_json.get("first_published_at")),
+    #                                       published_at = make_date(dic_layer_as_json.get("published_at")),
+    #                                       description = dic_layer_as_json.get("description"),
+    #                                       description_html = dic_layer_as_json.get("description_html"),
+    #                                       group = Group.from_dict(dic_layer_as_json.get("group")),
+    #                                       data = Data.from_dict(dic_layer_as_json.get("data")),
+    #                                       url_html = dic_layer_as_json.get("url_html"),
+    #                                       published_version = dic_layer_as_json.get("published_version"),
+    #                                       latest_version = dic_layer_as_json.get("latest_version"),
+    #                                       this_version = dic_layer_as_json.get("this_version"),
+    #                                       kind = dic_layer_as_json.get("kind"),
+    #                                       categories = make_list_of_Categories(dic_layer_as_json.get("categories")),
+    #                                       tags = dic_layer_as_json.get("tags"),
+    #                                       collected_at = make_date_list_from_string_list(dic_layer_as_json.get("collected_at", [])),
+    #                                       created_at = make_date(dic_layer_as_json.get("created_at")),
+    #                                       license = License.from_dict(dic_layer_as_json.get("license")),
+    #                                       metadata = Metadata.from_dict(dic_layer_as_json.get("metadata")),
+    #                                       elevation_field = dic_layer_as_json.get("elevation_field"))
 
 
-    def create(self):
-        """Creates a layer based on the current attributes of the
-        `Layer` instance.
+    # def create(self):
+    #     """Creates a layer based on the current attributes of the
+    #     `Layer` instance.
 
-        """
-        target_url = self.get_url('LAYER', 'POST', 'create')
-        super(self.__class__, self).create(target_url)
+    #     """
+    #     target_url = self.get_url('LAYER', 'POST', 'create')
+    #     super(self.__class__, self).create(target_url)
 
     def update(self):
         target_url = self.get_url('LAYER', 'POST', 'import')
