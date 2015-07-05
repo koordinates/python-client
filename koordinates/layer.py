@@ -23,6 +23,7 @@ from .utils import (
     make_list_of_Categories,
     make_date_list_from_string_list,
 )
+from . import base
 
 
 logger = logging.getLogger(__name__)
@@ -235,7 +236,7 @@ class Version(KoordinatesObjectMixin, KoordinatesURLMixin):
         target_url = self.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': self.version_instance.id})
         json_headers = {'Content-type': 'application/json', 'Accept': '*/*'}
         self._raw_response = requests.post(target_url,
-                                           headers=self._parent.assemble_headers(json_headers))
+                                           headers=self._parent.assemble_headers('POST', json_headers))
 
         if self._raw_response.status_code == 201:
             # Success !
@@ -384,6 +385,18 @@ class Category(object):
     def __init__(self, name, slug):
         self.name = name
         self.slug = slug
+
+    @classmethod
+    def from_dict(cls, dict_category):
+        '''Initialize Category from a dict.
+        '''
+        if dict_category:
+            the_category = cls(dict_category.get("name"),
+                                 dict_category.get("slug"))
+        else:
+            the_category = cls()
+
+        return the_category
 
 
 class Autoupdate(object):
@@ -575,7 +588,28 @@ class Field(object):
         self.type = type
 
 
-class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
+class LayerManager(base.Manager):
+    def list(self, *args, **kwargs):
+        """Fetches a set of layers
+        """
+        target_url = self.connection.get_url('LAYER', 'GET', 'multi')
+        return super(LayerManager, self).list(target_url)
+
+    def list_drafts(self):
+        """Fetches a set of layers
+        """
+        target_url = self.connection.get_url('LAYER', 'GET', 'multidraft')
+        return super(LayerManager, self).list(target_url)
+
+    def get(self, id, **kwargs):
+        """Fetches a Layer determined by the value of `id`.
+
+        :param id: ID for the new :class:`Layer`  object.
+        """
+        target_url = self.connection.get_url('LAYER', 'GET', 'single', {'layer_id': id})
+        return super(LayerManager, self).get(target_url, id, **kwargs)
+
+class Layer(base.Model):
     '''A Layer
 
     Layers are objects on the map that consist of one or more separate items,
@@ -583,101 +617,151 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
     of objects that you add on top of the map to designate a common
     association.
     '''
-    def __init__(self,
-                 parent=None,
-                 id=None,
-                 url=None,
-                 type=None,
-                 name=None,
-                 first_published_at=None,
-                 published_at=None,
-                 description=None,
-                 description_html=None,
-                 group=None,
-                 data=None,
-                 url_html=None,
-                 published_version=None,
-                 latest_version=None,
-                 this_version=None,
-                 kind=None,
-                 categories=None,
-                 tags=None,
-                 collected_at=None,
-                 created_at=None,
-                 license=None,
-                 metadata=None,
-                 elevation_field=None):
+    class Meta:
+        manager = LayerManager
+        attribute_sort_candidates = ('name',)
+        attribute_filter_candidates = ('name',)
 
-        self._parent = parent
+    def __init__(self, **kwargs):
         self._url = None
-        self._id = id
-        self._ordering_applied = False
-        self._filtering_applied = False
+        self._id = kwargs.get('id', None)
 
-        self._raw_response = None
-        self._list_of_response_dicts = []
-        self._link_to_next_in_list = ""
-        self._next_page_number = 1
-
-        self._attribute_sort_candidates = ['name']
-        self._attribute_filter_candidates = ['name']
-
-        # An attribute may not be created automatically
-        # due to JSON returned from the server with any
-        # names which appear in the list
-        # _attribute_reserved_names
-        self._attribute_reserved_names = ['version']
-
-        self._initialize_named_attributes(id,
-                                         url,
-                                         type,
-                                         name,
-                                         first_published_at,
-                                         published_at,
-                                         description,
-                                         description_html,
-                                         group,
-                                         data,
-                                         url_html,
-                                         published_version,
-                                         latest_version,
-                                         this_version,
-                                         kind,
-                                         categories,
-                                         tags,
-                                         collected_at,
-                                         created_at,
-                                         license,
-                                         metadata,
-                                         elevation_field)
+        self.deserialize(kwargs)
 
         super(self.__class__, self).__init__()
 
-    def _initialize_named_attributes(self,
-                                     id,
-                                     url,
-                                     type,
-                                     name,
-                                     first_published_at,
-                                     published_at,
-                                     description,
-                                     description_html,
-                                     group,
-                                     data,
-                                     url_html,
-                                     published_version,
-                                     latest_version,
-                                     this_version,
-                                     kind,
-                                     categories,
-                                     tags,
-                                     collected_at,
-                                     created_at,
-                                     license,
-                                     metadata,
-                                     elevation_field):
+#   def __init__(self,
+#                parent=None,
+#                id=None,
+#                url=None,
+#                type=None,
+#                name=None,
+#                first_published_at=None,
+#                published_at=None,
+#                description=None,
+#                description_html=None,
+#                group=None,
+#                data=None,
+#                url_html=None,
+#                published_version=None,
+#                latest_version=None,
+#                this_version=None,
+#                kind=None,
+#                categories=None,
+#                tags=None,
+#                collected_at=None,
+#                created_at=None,
+#                license=None,
+#                metadata=None,
+#                elevation_field=None):
+
+#       self._parent = parent
+#       self._url = None
+#       self._id = id
+#       self._ordering_applied = False
+#       self._filtering_applied = False
+
+#       self._raw_response = None
+#       self._list_of_response_dicts = []
+#       self._link_to_next_in_list = ""
+#       self._next_page_number = 1
+
+#       self._attribute_sort_candidates = ['name']
+#       self._attribute_filter_candidates = ['name']
+
+#       # An attribute may not be created automatically
+#       # due to JSON returned from the server with any
+#       # names which appear in the list
+#       # _attribute_reserved_names
+#       self._attribute_reserved_names = ['version']
+
+#       self._initialize_named_attributes(id,
+#                                        url,
+#                                        type,
+#                                        name,
+#                                        first_published_at,
+#                                        published_at,
+#                                        description,
+#                                        description_html,
+#                                        group,
+#                                        data,
+#                                        url_html,
+#                                        published_version,
+#                                        latest_version,
+#                                        this_version,
+#                                        kind,
+#                                        categories,
+#                                        tags,
+#                                        collected_at,
+#                                        created_at,
+#                                        license,
+#                                        metadata,
+#                                        elevation_field)
+
+#       super(self.__class__, self).__init__()
+
+#   def _initialize_named_attributes(self,
+#                                    id,
+#                                    url,
+#                                    type,
+#                                    name,
+#                                    first_published_at,
+#                                    published_at,
+#                                    description,
+#                                    description_html,
+#                                    group,
+#                                    data,
+#                                    url_html,
+#                                    published_version,
+#                                    latest_version,
+#                                    this_version,
+#                                    kind,
+#                                    categories,
+#                                    tags,
+#                                    collected_at,
+#                                    created_at,
+#                                    license,
+#                                    metadata,
+#                                    elevation_field):
+#       '''
+#       `_initialize_named_attributes` initializes those
+#       attributes of `Layer` which are not prefixed by an
+#       underbar. Such attributes are named so as to indicate
+#       that they are, in terms of the API, "real" attributes
+#       of a `Layer`. That is to say an attribute which is returned
+#       from the server when a given `Layer` is requested. Other
+#       attributes, such as `_attribute_reserved_names` have leading
+#       underbar to indicate they are not derived from data returned
+#       from the server
+
+#       '''
+
+#       self.id = id
+#       self.url = url
+#       self.type = type
+#       self.name = name
+#       self.first_published_at = first_published_at
+#       self.published_at = published_at
+#       self.description = description
+#       self.description_html = description_html
+#       self.group = group if group else Group()
+#       self.data = data if data else Data()
+#       self.url_html = url_html
+#       self.published_version = published_version
+#       self.latest_version = latest_version
+#       self.this_version = this_version
+#       self.kind = kind
+#       self.categories = categories if categories else []
+#       self.tags = tags if tags else []
+#       self.collected_at = collected_at
+#       self.created_at = created_at
+#       self.license = license if license else License()
+#       self.metadata = metadata if metadata else Metadata()
+#       self.elevation_field = elevation_field
+
+    def deserialize(self, data):
         '''
-        `_initialize_named_attributes` initializes those
+        `deserialize` initializes those
         attributes of `Layer` which are not prefixed by an
         underbar. Such attributes are named so as to indicate
         that they are, in terms of the API, "real" attributes
@@ -689,28 +773,28 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
 
         '''
 
-        self.id = id
-        self.url = url
-        self.type = type
-        self.name = name
-        self.first_published_at = first_published_at
-        self.published_at = published_at
-        self.description = description
-        self.description_html = description_html
-        self.group = group if group else Group()
-        self.data = data if data else Data()
-        self.url_html = url_html
-        self.published_version = published_version
-        self.latest_version = latest_version
-        self.this_version = this_version
-        self.kind = kind
-        self.categories = categories if categories else []
-        self.tags = tags if tags else []
-        self.collected_at = collected_at
-        self.created_at = created_at
-        self.license = license if license else License()
-        self.metadata = metadata if metadata else Metadata()
-        self.elevation_field = elevation_field
+        self.id = data.get("id")
+        self.url = data.get("url")
+        self.type = data.get("type")
+        self.name = data.get("name")
+        self.first_published_at = make_date(data.get("first_published_at"))
+        self.published_at = data.get("published_at")
+        self.description = data.get("description")
+        self.description_html = data.get("description_html")
+        self.group = Group.from_dict(data.get("group")) if data.get("group") else Group()
+        self.data = Data.from_dict(data.get("data")) if data.get("data") else Data()
+        self.url_html = data.get("url_html")
+        self.published_version = data.get("published_version")
+        self.latest_version = data.get("latest_version")
+        self.this_version = data.get("this_version")
+        self.kind = data.get("kind")
+        self.categories = make_list_of_Categories(data.get("categories"))
+        self.tags = data.get("tags") if data.get("tags") else []
+        self.collected_at = [make_date(str_date) for str_date in data.get("collected_at", [])]
+        self.created_at = data.get("created_at")
+        self.license = License.from_dict(data.get("license")) if data.get("license") else License()
+        self.metadata = Metadata.from_dict(data.get("metadata")) if data.get("metadata") else Metadata()
+        self.elevation_field = data.get("elevation_field")
 
 
     @classmethod
@@ -754,12 +838,12 @@ class Layer(KoordinatesObjectMixin, KoordinatesURLMixin):
         self._url = target_url
         return self
 
-    def get_list_of_drafts(self):
-        """Fetches a set of layers
-        """
-        target_url = self.get_url('LAYER', 'GET', 'multidraft')
-        self._url = target_url
-        return self
+#   def get_list_of_drafts(self):
+#       """Fetches a set of layers
+#       """
+#       target_url = self.get_url('LAYER', 'GET', 'multidraft')
+#       self._url = target_url
+#       return self
 
     def execute_get_list(self):
         """Fetches zero, one or more Layers .

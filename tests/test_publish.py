@@ -147,7 +147,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         the_response = '''{}'''
 
         responses.add(responses.POST,
-                      self.koordtestconn.layer.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
+                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
                       body=the_response, status=999,
                       content_type='application/json')
 
@@ -182,7 +182,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
     def test_publish_single_layer_version(self, layer_id=1474, version_id=4067):
         the_response = layers_version_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.layer.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
+                      self.koordconn.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
                       body=the_response, status=200,
                       content_type='application/json')
 

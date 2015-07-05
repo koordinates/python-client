@@ -39,19 +39,19 @@ class TestKoordinatesURLHandling(unittest.TestCase):
 
         the_response = layers_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.layer.get_url('LAYER', 'GET', 'single', {'layer_id': 1474}),
+                      self.koordconn.get_url('LAYER', 'GET', 'single', {'layer_id': 1474}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        self.koordconn.layer.get(1474, dynamic_build = False)
-        self.assertEqual(self.koordconn.layer.categories[0].slug, "cadastral")
-        self.assertEqual(self.koordconn.layer.data.crs, "EPSG:2193")
-        self.assertEqual(self.koordconn.layer.data.fields[0].type, "geometry")
+        obj = self.koordconn.layers.get(1474)
+        self.assertEqual(obj.categories[0].slug, "cadastral")
+        self.assertEqual(obj.data.crs, "EPSG:2193")
+        self.assertEqual(obj.data.fields[0].type, "geometry")
         # The following test changes form between Python 2.x and 3.x
         try:
-            self.assertItemsEqual(self.koordconn.layer.tags, ['building', 'footprint', 'outline', 'structure'])
+            self.assertItemsEqual(obj.tags, ['building', 'footprint', 'outline', 'structure'])
         except AttributeError:
-            self.assertCountEqual(self.koordconn.layer.tags, ['building', 'footprint', 'outline', 'structure'])
+            self.assertCountEqual(obj.tags, ['building', 'footprint', 'outline', 'structure'])
 
 
     def tearDown(self):

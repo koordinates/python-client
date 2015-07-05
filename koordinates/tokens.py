@@ -144,7 +144,7 @@ def console_create():
     if expires_at:
         token.expires_at = expires_at
 
-    print "\nRequesting token..."
+    print("\nRequesting token...")
     # need a dummy token here for initialisation
     client = Connection(host=args.site, token='-dummy-')
     try:

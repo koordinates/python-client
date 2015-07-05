@@ -178,7 +178,7 @@ class KoordinatesObjectMixin(object):
 
         self._raw_response = requests.post(target_url,
                                            json=json_body,
-                                           headers = self._parent.assemble_headers(json_headers))
+                                           headers = self._parent.assemble_headers('POST', json_headers))
 
         if self._raw_response.status_code == 201:
             logger.debug('Return value from successful instance create follows')
@@ -225,7 +225,7 @@ class KoordinatesObjectMixin(object):
         """
 
         self._raw_response = requests.get(target_url,
-                                          headers = self._parent.assemble_headers())
+                                          headers = self._parent.assemble_headers('GET'))
 
         if self._raw_response.status_code == 200:
             # convert JSON to dict
@@ -349,7 +349,7 @@ class KoordinatesObjectMixin(object):
         self._ordering_applied = False
         self._filtering_applied = False
         self._raw_response = requests.get(target_url,
-                                          headers = self._parent.assemble_headers())
+                                          headers = self._parent.assemble_headers('GET'))
 
         if self._raw_response.status_code == 200:
             # If only row is returned the JSON corresponds to a single dict,

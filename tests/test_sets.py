@@ -36,7 +36,7 @@ class TestSets(unittest.TestCase):
         the_response = sets_multiple_good_simulated_response
 
         responses.add(responses.GET,
-                      self.conn.layer.get_url('SET', 'GET', 'multi'),
+                      self.conn.get_url('SET', 'GET', 'multi'),
                       body=the_response, status=200,
                       content_type='application/json')
 

@@ -95,7 +95,9 @@ class Connection(KoordinatesURLMixin):
         self.tokens = Token._meta.manager
         self.tokens.connection = self
 
-        self.layer = Layer(self)
+        self.layers = Layer._meta.manager
+        self.layers.connection = self
+
         self.version = Version(self)
         from .api import KData
         self.data = KData(self)
@@ -173,7 +175,7 @@ class Connection(KoordinatesURLMixin):
         return dic_out
 
     def request(self, method, url, *args, **kwargs):
-        headers = self.assemble_headers(method, headers=kwargs.pop("headers", {}))
+        headers = self.assemble_headers(method, kwargs.pop("headers", {}))
         return self._raw_request(method, url, headers, *args, **kwargs)
 
     def _raw_request(self, method, url, headers, *args, **kwargs):
