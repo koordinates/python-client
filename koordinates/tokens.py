@@ -88,9 +88,13 @@ class Token(base.Model):
     def scopes(self, value):
         self.scope = ' '.join(value or [])
 
+    def __str__(self):
+        s = "%s (%s): %s" % (self.id, self.name, self.key_hint)
+        return s
+
 
 def console_create():
-    """ Commandline tool to create an API token """
+    """ Command line tool to create an API token """
     import argparse
     import getpass
     import re
@@ -99,7 +103,7 @@ def console_create():
     from six.moves import input
     from koordinates.connection import Connection
 
-    parser = argparse.ArgumentParser(description="Console tool to create a Koordinates API Token.")
+    parser = argparse.ArgumentParser(description="Command line tool to create a Koordinates API Token.")
     parser.add_argument('site', help="Domain (eg. labs.koordinates.com) for the Koordinates site.", metavar="DOMAIN")
     parser.add_argument('email', help="User account email address")
     parser.add_argument('name', help="Description/name for the key")
@@ -108,9 +112,11 @@ def console_create():
     parser.add_argument('--expires', help="Expiry time (ISO 8601 format)", metavar="TIMESTAMP")
     args = parser.parse_args()
 
+    # check we have a valid-ish looking domain name
     if not re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)', args.site):
         parser.error("'%s' doesn't look like a valid domain name." % args.site)
 
+    # check we have a valid-ish looking email address
     if not re.match(r'[^@]+@[^@]+\.[^@]+$', args.email):
         parser.error("'%s' doesn't look like a valid email address." % args.email)
 
@@ -138,8 +144,9 @@ def console_create():
     if expires_at:
         token.expires_at = expires_at
 
-    print "\nRequesting key..."
-    client = Connection(host=args.site, token='-')
+    print "\nRequesting token..."
+    # need a dummy token here for initialisation
+    client = Connection(host=args.site, token='-dummy-')
     try:
         token = client.tokens.create(token, args.email, password)
     except requests.HTTPError as e:
@@ -151,4 +158,4 @@ def console_create():
 
         sys.exit(1)
 
-    print("Created successfully.\n  API key: %s\n  Scopes: %s" % (token.key, token.scope))
+    print("Token created successfully.\n  Key: %s\n  Scopes: %s" % (token.key, token.scope))
