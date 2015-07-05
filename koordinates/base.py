@@ -306,7 +306,13 @@ class Model(object):
             setattr(self, k, v)
 
     @property
+    def _is_bound(self):
+        return self.id and self._manager
+
+    @property
     def _connection(self):
+        if not self._manager:
+            raise ValueError("%r must be bound to access a Connection" % self)
         return self._manager.connection
 
     def deserialize(self, data, manager):

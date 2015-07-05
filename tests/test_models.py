@@ -48,7 +48,7 @@ class ModelTests(unittest.TestCase):
     def test_relations(self):
         m = FooModel()
         self.assert_(m._manager is None)
-        self.assertRaises(AttributeError, lambda: m._connection)
+        self.assertRaises(ValueError, lambda: m._connection)
 
     @responses.activate
     def test_manager_from_query(self):
