@@ -23,6 +23,7 @@ from .layer import Layer, Version
 from .publish import Publish
 from .publishrequest import PublishRequest
 from .set import Set
+from .tokens import Token
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -91,6 +92,9 @@ class Connection(KoordinatesURLMixin):
         self.publishes = Publish._meta.manager
         self.publishes.connection = self
 
+        self.tokens = Token._meta.manager
+        self.tokens.connection = self
+
         self.layer = Layer(self)
         self.version = Version(self)
         from .api import KData
@@ -99,7 +103,7 @@ class Connection(KoordinatesURLMixin):
 
         super(self.__class__, self).__init__()
 
-    def assemble_headers(self, user_headers={}):
+    def assemble_headers(self, method, user_headers=None):
         """Takes the supplied headers and adds in any which
         are defined at a `Connection` level and then returns
         the result
@@ -116,12 +120,17 @@ class Connection(KoordinatesURLMixin):
         situations
         """
 
-        dic_out = copy.deepcopy(user_headers)
+        headers = copy.deepcopy(user_headers or {})
 
         if self.token:
-            dic_out['Authorization'] = 'key {token}'.format(token=self.token)
+            headers['Authorization'] = 'key {token}'.format(token=self.token)
 
-        return dic_out
+        headers.setdefault('Accept', 'application/json')
+
+        if method not in ('GET', 'HEAD'):
+            headers.setdefault('Content-type', 'application/json')
+
+        return headers
 
     def build_multi_publish_json(self, pub_request, publish_strategy, error_strategy):
         '''
@@ -164,20 +173,24 @@ class Connection(KoordinatesURLMixin):
         return dic_out
 
     def request(self, method, url, *args, **kwargs):
-        headers = kwargs.pop("headers", {})
-        headers['Accept'] = 'application/json'
-        if 'Content-type' not in headers and method not in ('GET', 'HEAD'):
-            headers['Content-type'] = 'application/json'
+        headers = self.assemble_headers(method, headers=kwargs.pop("headers", {}))
+        return self._raw_request(method, url, headers, *args, **kwargs)
 
-        logger.info('Request: %s %s', method, url)
-        r = requests.request(method,
-                             url,
-                             headers = self.assemble_headers(),
-                             *args,
-                             **kwargs)
-        logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
-        logger.debug('Response: headers=%s', r.headers)
-        r.raise_for_status()
+    def _raw_request(self, method, url, headers, *args, **kwargs):
+        logger.info('Request: %s %s %s', method, url, headers)
+        try:
+            r = requests.request(method,
+                                 url,
+                                 headers=headers,
+                                 *args,
+                                 **kwargs)
+            logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
+            logger.debug('Response: headers=%s', r.headers)
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            logger.warn('Response: %s: %s', e, r.text)
+            raise
+
         return r
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):

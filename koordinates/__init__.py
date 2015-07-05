@@ -53,4 +53,5 @@ from .publish import Publish
 from .publishrequest import PublishRequest
 from .set import Set
 from .connection import Connection
+from .tokens import Token
 

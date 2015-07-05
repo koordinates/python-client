@@ -44,6 +44,11 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Scientific/Engineering :: GIS',
     ],
+    entry_points = {
+        'console_scripts': [
+            'koordinates-create-token = koordinates.tokens:console_create',
+        ],
+    },
     test_suite = 'nose.collector',
 )
 

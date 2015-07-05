@@ -101,6 +101,21 @@ class KoordinatesURLMixin(object):
                 'single': '/publish/{publish_id}/',
             }
         },
+        'TOKEN': {
+            'GET': {
+                'single': '/tokens/{token_id}/',
+                'multi': '/tokens/',
+            },
+            'POST': {
+                'create': '/tokens/',
+            },
+            'PUT': {
+                'update': '/tokens/{token_id}/',
+            },
+            'DELETE': {
+                'single': '/tokens/{token_id}/',
+            },
+        },
     }
 
     def get_url(self, datatype, verb, urltype, optargs=None ):
