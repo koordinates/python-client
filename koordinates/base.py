@@ -36,7 +36,7 @@ class BaseManager(object):
         obj = self.model()
         return obj.deserialize(result, self)
 
-    def _get(self, target_url, id, expand):
+    def _get(self, target_url, expand=[]):
         headers = {}
         if expand:
             headers['Expand'] = ','.join(expand)
@@ -65,7 +65,7 @@ class Manager(BaseManager):
         :param id: ID for the new :class:`Token`  object.
         """
         target_url = self.connection.get_url(self.URL_KEY, 'GET', 'single', {'id': id})
-        return self._get(target_url, id, expand=expand)
+        return self._get(target_url, expand=expand)
 
     # Query methods we delegate
     def filter(self, *args, **kwargs):
@@ -358,11 +358,6 @@ class Model(object):
         * attribute values that are ``None`` (unless ``skip_empty`` is ``False``)
         * attribute values that are empty lists/tuples/dicts (unless ``skip_empty`` is ``False``)
         * attribute names in ``Meta.serialize_skip``
-        * a default set of attribute names (overrideable via ``Meta.serialize_skip_base=[]``):
-            - ``id``
-            - ``url``
-            - ``created_at``, ``deleted_at``
-            - ``created_by``, ``deleted_by``
 
         Inner :py:class:`Model` instances get :py:meth:`serialize` called on them.
         Date and datetime objects are converted into ISO 8601 strings.
@@ -370,16 +365,7 @@ class Model(object):
         :param bool skip_empty: whether to skip attributes where the value is ``None``
         :rtype: dict
         """
-        SERIALIZE_SKIP_DEFAULT = (
-            'id',
-            'url',
-            'created_at',
-            'created_by',
-            'deleted_at',
-            'deleted_by',
-        )
-        skip_base = set(getattr(self._meta, 'serialize_skip_base', SERIALIZE_SKIP_DEFAULT))
-        skip = set(getattr(self._meta, 'serialize_skip', [])) | skip_base
+        skip = set(getattr(self._meta, 'serialize_skip', []))
 
         r = {}
         for k, v in self.__dict__.items():

@@ -25,7 +25,7 @@ class FooManager(base.Manager):
         :param id: ID for the new :class:`Token`  object.
         """
         target_url = self.TEST_GET_URL % id
-        return self._get(target_url, id, expand=expand)
+        return self._get(target_url, expand=expand)
 
 
 class FooModel(base.Model):
@@ -92,6 +92,7 @@ class ModelTests(unittest.TestCase):
         o = FooModel(id=1234, attr='test')
         self.assertEqual(o.serialize(), {
             'attr': 'test',
+            'id': 1234,
         })
 
     def test_init(self):
