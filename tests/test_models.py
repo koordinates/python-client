@@ -1,4 +1,3 @@
-import datetime
 import json
 import unittest
 
@@ -6,7 +5,7 @@ import responses
 from six.moves.urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Client
-from koordinates.exceptions import NotAValidBasisForOrdering, NotAValidBasisForFiltration
+from koordinates.exceptions import ClientValidationError
 
 
 class FooManager(base.Manager):
@@ -176,7 +175,7 @@ class QueryTests(unittest.TestCase):
 
     def test_order_by_invalud(self):
         base_q = self.foos.list()
-        self.assertRaises(NotAValidBasisForOrdering, base_q.order_by, 'invalid')
+        self.assertRaises(ClientValidationError, base_q.order_by, 'invalid')
 
     def test_clone(self):
         q0 = self.foos.list().filter(thing='bang')
@@ -215,7 +214,7 @@ class QueryTests(unittest.TestCase):
 
     def test_filter_invalid(self):
         base_q = self.foos.list()
-        self.assertRaises(NotAValidBasisForFiltration, base_q.filter, invalid='test')
+        self.assertRaises(ClientValidationError, base_q.filter, invalid='test')
 
     def test_extra(self):
         base_q = self.foos.list().filter(thing='value')

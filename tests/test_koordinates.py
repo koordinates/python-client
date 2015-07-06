@@ -103,12 +103,7 @@ class TestKoordinates(unittest.TestCase):
                       content_type='application/json')
 
 
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        #self.assertTrue(self.bad_client.layers._raw_response.status_code,
-        #                401)
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        import requests
-        with self.assertRaises(requests.exceptions.HTTPError):
+        with self.assertRaises(exceptions.AuthenticationError):
             for layer in self.bad_client.layers.list():
                 pass
 
@@ -152,10 +147,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=401,
                       content_type='application/json')
 
-        #with self.assertRaises(exceptions.NotAuthorised):
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        import requests
-        with self.assertRaises(requests.exceptions.HTTPError):
+        with self.assertRaises(exceptions.AuthenticationError):
             for layer in self.bad_client.layers.list():
                 pass
 
@@ -265,10 +257,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=504,
                       content_type='application/json')
 
-        #with self.assertRaises(exceptions.ServerTimeOut):
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        import requests
-        with self.assertRaises(requests.exceptions.HTTPError):
+        with self.assertRaises(exceptions.ServiceUnvailable):
             obj = self.client.layers.get(id)
 
     @responses.activate
@@ -280,10 +269,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=429,
                       content_type='application/json')
 
-        #with self.assertRaises(exceptions.RateLimitExceeded):
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        import requests
-        with self.assertRaises(requests.exceptions.HTTPError):
+        with self.assertRaises(exceptions.RateLimitExceeded):
             obj = self.client.layers.get(id)
 
     @responses.activate
@@ -349,12 +335,12 @@ class TestKoordinates(unittest.TestCase):
 
     @responses.activate
     def test_get_layerset_bad_filter_and_sort(self):
-        with self.assertRaises(exceptions.NotAValidBasisForFiltration):
+        with self.assertRaises(exceptions.ClientValidationError):
             self.client.layers.list().filter(bad_attribute=True)
 
     @responses.activate
     def test_get_layerset_bad_sort(self):
-        with self.assertRaises(exceptions.NotAValidBasisForOrdering):
+        with self.assertRaises(exceptions.ClientValidationError):
             self.client.layers.list().order_by('bad_attribute')
 
     @responses.activate
@@ -371,12 +357,8 @@ class TestKoordinates(unittest.TestCase):
         except:
             pass
 
-        #TODO ideally we would drill down into exception and test actual HTTP return
-        import requests
-        with self.assertRaises(requests.exceptions.HTTPError):
+        with self.assertRaises(exceptions.AuthenticationError):
             layer_obj = self.bad_client.layers.get(id)
-        #self.assertEqual(self.bad_client.layer._raw_response.status_code,
-        #                 401)
 
     @responses.activate
     def test_get_layer_by_id(self, id=1474):
@@ -398,56 +380,25 @@ class TestKoordinates(unittest.TestCase):
         #                 200)
 
     @responses.activate
-    def test_get_all_layer_version_by_layer_id(self, layer_id=1474, version_id=4067):
+    def test_get_all_layer_version_by_layer_id(self):
 
         the_response = single_layer_all_versions_good_response
 
         responses.add(responses.GET,
-                      self.client.get_url('VERSION','GET', 'multi', {'layer_id':layer_id}),
+                      self.client.get_url('VERSION','GET', 'multi', {'layer_id':1474}),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_versions_returned = 0
 
-        for version in self.client.layers.versions.list(layer_id=layer_id):
+        for version in self.client.layers.versions.list(layer_id=1474):
             cnt_of_versions_returned += 1
 
         self.assertEqual(cnt_of_versions_returned, 2)
 
-
-#       '''
-#       self.assertEqual(self.client.layer.id, layer_id)
-#       self.assertEqual(self.client.layer.version.id, version_id)
-#       self.assertEqual(self.client.layer.version.status, "ok")
-#       self.assertEqual(self.client.layer.version.created_by, 2879)
-#       self.assertEqual(self.client.layer.version._raw_response.status_code, 200)
-#       '''
-
-#   '''
-#   The following test is redundant since we started to use "non-dynamic" instance
-#   create by default. I'm just going to leave it here until the corresponding
-#   "dynamic" instance creation code is removed entirely (as oposed to just branched
-#   around) in api.py then the test can be removed entirely
-#   @responses.activate
-#   def test_get_layer_by_id_and_create_attribute_with_reserved_name(self, id=1474):
-#       '''
-#       Tests to see whether an attribute name which is reserved
-#       causes the KoordinatesAttributeNameIsReserved exception
-#       to be raised
-#       '''
-
-#       the_response = '''{"id":1474, "version":"foobar"}'''
-#       responses.add(responses.GET,
-#                     self.client.get_url('LAYER', 'GET', 'single', {'layer_id':id}),
-#                     body=the_response, status=200,
-#                     content_type='application/json')
-#       import pdb;pdb.set_trace()
-#       with self.assertRaises(exceptions.AttributeNameIsReserved):
-#           self.client.layer.get(id)
-
-
-    def tearDown(self):
-        pass
+        self.assertEqual(version.id, 32)
+        self.assertEqual(version.status, "ok")
+        self.assertEqual(version.created_by, 2879)
 
 
 if __name__ == '__main__':

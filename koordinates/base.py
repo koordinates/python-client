@@ -10,7 +10,7 @@ import re
 import six
 from six.moves import urllib
 
-from .exceptions import NotAValidBasisForOrdering, NotAValidBasisForFiltration
+from .exceptions import ClientValidationError
 from .utils import make_date
 
 
@@ -210,7 +210,7 @@ class Query(object):
             filter_key = re.split('__', key)
             filter_attr = filter_key[0]
             if filter_attr not in self._manager._meta_attribute('filter_attributes', []):
-                raise NotAValidBasisForFiltration(key)
+                raise ClientValidationError("Invalid filter attribute: %s" % key)
 
             # we use __ as a separator in the Python library, the APIs use '.'
             q._filters['.'.join(filter_key)].append(value)
@@ -226,7 +226,7 @@ class Query(object):
         if sort_key is not None:
             sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
             if sort_attr not in self._manager._meta_attribute('ordering_attributes', []):
-                raise NotAValidBasisForOrdering(sort_key)
+                raise ClientValidationError("Invalid ordering attribute: %s" % sort_key)
 
         q = self._clone()
         q._order_by = sort_key

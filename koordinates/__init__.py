@@ -16,22 +16,19 @@ __copyright__ = 'Copyright Koordinates Limited'
 
 from .exceptions import (
     KoordinatesException,
-    KoordinatesValueException,
+    ClientError,
+    ClientValidationError,
     InvalidAPIVersion,
-    InvalidURL,
-    NotAuthorised,
-    UnexpectedServerResponse,
-    OnlyOneFilterAllowed,
-    FilterMustNotBeSpaces,
-    NotAValidBasisForFiltration,
-    OnlyOneOrderingAllowed,
-    NotAValidBasisForOrdering,
-    AttributeNameIsReserved,
-    ServerTimeOut,
+    ServerError,
+    BadRequest,
+    AuthenticationError,
+    Forbidden,
+    NotFound,
+    NotAllowed,
+    Conflict,
     RateLimitExceeded,
-    ImportEncounteredUpdateConflict,
-    PublishAlreadyStarted,
-    InvalidPublicationResourceList
+    InternalServerError,
+    ServiceUnvailable,
 )
 
 from .client import Client

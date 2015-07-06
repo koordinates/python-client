@@ -6,7 +6,6 @@ koordinates.client
 """
 
 import logging
-from datetime import datetime
 import copy
 import os
 import sys
@@ -14,37 +13,16 @@ import sys
 import requests
 
 from .mixins import KoordinatesURLMixin
-from .layers import LayerManager, TableManager
-from .licenses import LicenseManager
-from .metadata import MetadataManager
-from .publishing import PublishManager
+from . import layers, licenses, metadata, publishing, sets, tokens, users
 from .publishrequest import PublishRequest
-from .sets import SetManager
-from .tokens import TokenManager
-from .users import UserManager, GroupManager
-from .exceptions import (
-    KoordinatesException,
-    KoordinatesValueException,
-    InvalidAPIVersion,
-    InvalidURL,
-    NotAuthorised,
-    UnexpectedServerResponse,
-    OnlyOneFilterAllowed,
-    FilterMustNotBeSpaces,
-    NotAValidBasisForFiltration,
-    OnlyOneOrderingAllowed,
-    NotAValidBasisForOrdering,
-    AttributeNameIsReserved,
-    ServerTimeOut,
-    RateLimitExceeded,
-    ImportEncounteredUpdateConflict,
-    PublishAlreadyStarted,
-    InvalidPublicationResourceList
-)
+from . import exceptions
+
 
 logger = logging.getLogger(__name__)
 
+
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
+
 
 class Client(KoordinatesURLMixin):
     """
@@ -68,7 +46,7 @@ class Client(KoordinatesURLMixin):
         logger.debug('Initializing Client object for %s', host)
 
         if api_version not in SUPPORTED_API_VERSIONS:
-            raise InvalidAPIVersion(api_version)
+            raise exceptions.InvalidAPIVersion(api_version)
         else:
             self.api_version = api_version
 
@@ -82,17 +60,17 @@ class Client(KoordinatesURLMixin):
             raise KeyError('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
         self._init_managers(public={
-                'sets': SetManager,
-                'publishing': PublishManager,
-                'tokens': TokenManager,
-                'layers': LayerManager,
-                'tables': TableManager,
-                'licenses': LicenseManager,
+                'sets': sets.SetManager,
+                'publishing': publishing.PublishManager,
+                'tokens': tokens.TokenManager,
+                'layers': layers.LayerManager,
+                'tables': layers.TableManager,
+                'licenses': licenses.LicenseManager,
             },
             private=(
-                GroupManager,
-                UserManager,
-                MetadataManager
+                users.GroupManager,
+                users.UserManager,
+                metadata.MetadataManager,
             )
         )
 
@@ -196,11 +174,12 @@ class Client(KoordinatesURLMixin):
             logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
             logger.debug('Response: headers=%s', r.headers)
             r.raise_for_status()
+            return r
         except requests.HTTPError as e:
             logger.warn('Response: %s: %s', e, r.text)
-            raise
-
-        return r
+            raise exceptions.ServerError.from_requests_error(e)
+        except requests.RequestException as e:
+            raise exceptions.ServerError.from_requests_error(e)
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
         """
@@ -231,19 +210,4 @@ class Client(KoordinatesURLMixin):
         target_url = self.get_url('CLIENT', 'POST', 'publishmulti', dic_args)
         dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
         r = self.request('POST', target_url, json=dic_body)
-
-        if r.status_code == 201:
-            # Success !
-            pass
-        elif r.status_code == 404:
-            # The resource specificed in the URL could not be found
-            raise InvalidURL
-        elif r.status_code == 409:
-            # Indicates that the request could not be processed because
-            # of conflict in the request, such as an edit conflict in
-            # the case of multiple updates
-            raise ImportEncounteredUpdateConflict
-        else:
-            raise UnexpectedServerResponse
-
-
+        return r

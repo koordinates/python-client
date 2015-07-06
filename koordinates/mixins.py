@@ -8,40 +8,6 @@ This module provides mixin classes used in the Koordinates
 Client Library
 
 """
-import abc
-import logging
-import pprint
-import json
-
-import requests
-import dateutil.parser
-from six.moves import urllib
-
-from .utils import (
-    dump_class_attributes_to_dict,
-    remove_empty_from_dict,
-)
-from .exceptions import (
-    KoordinatesException,
-    KoordinatesValueException,
-    InvalidAPIVersion,
-    InvalidURL,
-    NotAuthorised,
-    UnexpectedServerResponse,
-    OnlyOneFilterAllowed,
-    FilterMustNotBeSpaces,
-    NotAValidBasisForFiltration,
-    OnlyOneOrderingAllowed,
-    NotAValidBasisForOrdering,
-    AttributeNameIsReserved,
-    ServerTimeOut,
-    RateLimitExceeded,
-    ImportEncounteredUpdateConflict,
-    PublishAlreadyStarted,
-    InvalidPublicationResourceList
-)
-
-logger = logging.getLogger(__name__)
 
 class KoordinatesURLMixin(object):
     '''
