@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Koordinates Python API Client'
-copyright = u'2015, Koordinates Limited.'
+copyright = u'Koordinates Limited.'
 author = u'Koordinates'
 
 # The version info for the project you're documenting, acts as replacement for

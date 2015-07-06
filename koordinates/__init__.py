@@ -6,13 +6,7 @@ Koordinates API Library
 :license: BSD, see LICENSE for more details.
 
 '''
-
-__title__ = 'koordinates'
 __version__ = '0.0.1'
-__author__ = 'Richard Shea'
-__license__ = 'BSD'
-__copyright__ = 'Copyright Koordinates Limited'
-
 
 from .exceptions import (
     KoordinatesException,
