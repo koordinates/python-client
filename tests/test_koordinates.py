@@ -81,9 +81,9 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
 
     def test_instantiate_metadata_class(self):
-        m = koordinates.Metadata("https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
-                         "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
-                         "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
+        m = koordinates.Metadata(iso="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
+                                 dc="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
+                                 native="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
 
         self.assertEqual(m.iso, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/")
         self.assertEqual(m.dc, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/")
@@ -321,7 +321,6 @@ class TestKoordinates(unittest.TestCase):
         except AttributeError:
             self.assertCountEqual(obj.tags, ['building', 'footprint', 'outline', 'structure'])
 
-    @unittest.skip("FIXME")
     @responses.activate
     def test_layer_date_conversion(self, id=1474):
 
@@ -351,10 +350,9 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(obj.collected_at[1].minute,     0)
         self.assertEqual(obj.collected_at[1].second,     0)
 
-    @unittest.skip("FIXME")
     @responses.activate
     def test_get_layerset_bad_filter_and_sort(self):
-        with self.assertRaises(exceptions.NotAValidBasisForOrdering):
+        with self.assertRaises(exceptions.NotAValidBasisForFiltration):
             self.koordconn.layers.list().filter(bad_attribute=True)
 
     @responses.activate

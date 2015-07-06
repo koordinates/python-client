@@ -203,9 +203,19 @@ class TestKoordinatesPublishing(unittest.TestCase):
         self.koordconn.version.publish()
         self.assertTrue(self.contains_substring(self.koordconn.version._raw_response.text , "created_by"))
 
-    def tearDown(self):
-        pass
+    @responses.activate
+    def test_cancel(self):
+        publish_id = 2054
 
+        responses.add(responses.GET,
+                      self.koordconn.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
+                      body=publish_single_good_simulated_response, status=200,
+                      content_type='application/json')
 
-if __name__ == '__main__':
-    unittest.main()
+        responses.add(responses.DELETE,
+              self.koordconn.get_url('PUBLISH', 'DELETE', 'single', {'id': publish_id}),
+              body="", status=204,
+              content_type='application/json')
+
+        obj = self.koordconn.publishes.get(publish_id)
+        obj.cancel()

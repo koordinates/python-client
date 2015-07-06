@@ -11,13 +11,13 @@ Client Library
 
 import logging
 
-from .layer import Group, Metadata
+from .users import Group
+from .metadata import Metadata
 from .utils import make_list_of_Categories
 from . import base
 
 
 logger = logging.getLogger(__name__)
-
 
 
 class SetManager(base.Manager):
@@ -36,7 +36,7 @@ class Set(base.Model):
     def deserialize(self, data, manager):
         super(Set, self).deserialize(data, manager)
         self.categories = make_list_of_Categories(data.get("categories"))
-        #self.group = Group().deserialize(data['group']) if data.get("group") else None
+        self.group = Group().deserialize(data['group'], manager) if data.get("group") else None
         self.items = data.get("items", [])
-        #self.metadata = Metadata().deserialize(data['metadata']) if data.get("metadata") else None
+        self.metadata = Metadata().deserialize(data['metadata'], manager) if data.get("metadata") else None
         return self

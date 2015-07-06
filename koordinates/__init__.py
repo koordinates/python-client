@@ -42,15 +42,15 @@ from .layer import (
     Autoupdate,
     License,
     Versioninstance,
-    Metadata,
     Field,
     Layer,
 )
 
+from .connection import Connection
+from .metadata import Metadata
 from .publish import Publish
 from .publishrequest import PublishRequest
 from .set import Set
-from .connection import Connection
 from .tokens import Token
 from .users import Group, User
 

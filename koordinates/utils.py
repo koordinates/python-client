@@ -8,7 +8,21 @@ This module provides utility functions and classes used in the Koordinates
 Client Library
 
 """
+import functools
+
 import dateutil.parser
+
+
+def is_bound(method):
+    """
+    Decorator that asserts the model instance is bound (ie. has an ID and a manager set)
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if not self._is_bound:
+            raise ValueError("%r must be bound to call %s" % (self, method.__name__))
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 def is_empty_list(candidate_list):
@@ -202,7 +216,7 @@ def make_list_of_Fields(list):
     :return: a list of `Field` objects or an empty list.
     '''
 
-    from koordinates import Field     
+    from koordinates import Field
 
     list_out = []
     if list:
@@ -228,7 +242,7 @@ def make_list_of_Categories(list):
     :return: a list of `Category` objects or an empty list.
     '''
 
-    from koordinates import Category  
+    from koordinates import Category
 
     list_out = []
     if list:
