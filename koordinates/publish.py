@@ -5,10 +5,8 @@ koordinates.publish
 ===================
 
 The Group Publishing API allows for draft versions of versioned objects
-Documents, Layers and Tables) to be scheduled for publishing together.
+Documents, Layers, and Tables) to be scheduled for publishing together.
 """
-
-import six
 
 from . import base
 from .utils import is_bound
@@ -21,7 +19,7 @@ class PublishManager(base.Manager):
 class Publish(base.Model):
     """
     The Group Publishing API allows for draft versions of versioned objects
-    (Documents, Layers and Tables) to be scheduled for publishing together.
+    (Documents, Layers, and Tables) to be scheduled for publishing together.
 
     A Publish object describes an active publishing group.
     """

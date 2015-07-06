@@ -34,19 +34,11 @@ from .exceptions import (
     InvalidPublicationResourceList
 )
 
-from .layer import (
-    Version,
-    Data,
-    Datasource,
-    Category,
-    Autoupdate,
-    License,
-    Versioninstance,
-    Field,
-    Layer,
-)
+from .layer import Layer
+from .layer import Table
 
 from .connection import Connection
+from .licenses import License
 from .metadata import Metadata
 from .publish import Publish
 from .publishrequest import PublishRequest

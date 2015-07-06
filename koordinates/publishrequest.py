@@ -16,13 +16,8 @@ from .utils import (
     dump_class_attributes_to_dict,
     make_date_list_from_string_list,
     make_date,
-    make_date_if_possible,
-    make_list_of_Datasources,
-    make_list_of_Fields,
-    make_list_of_Categories
 )
 
-from .mixins import KoordinatesObjectMixin
 from .mixins import KoordinatesURLMixin
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,6 @@ import logging
 
 from .users import Group
 from .metadata import Metadata
-from .utils import make_list_of_Categories
 from . import base
 
 
@@ -35,8 +34,6 @@ class Set(base.Model):
 
     def deserialize(self, data, manager):
         super(Set, self).deserialize(data, manager)
-        self.categories = make_list_of_Categories(data.get("categories"))
-        self.group = Group().deserialize(data['group'], manager) if data.get("group") else None
-        self.items = data.get("items", [])
-        self.metadata = Metadata().deserialize(data['metadata'], manager) if data.get("metadata") else None
+        self.group = Group().deserialize(data['group'], manager.connection.get_manager(Group)) if data.get("group") else None
+        self.metadata = Metadata().deserialize(data['metadata'], manager.connection.get_manager(Metadata)) if data.get("metadata") else None
         return self

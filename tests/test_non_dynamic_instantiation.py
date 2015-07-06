@@ -34,7 +34,6 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         self.koordtestconn = Connection('test', host="test.koordinates.com")
         self.bad_koordconn = Connection('bad')
 
-    @unittest.skip("FIXME")
     @responses.activate
     def test_layer_hierarchy_of_classes(self):
 
@@ -45,9 +44,9 @@ class TestKoordinatesURLHandling(unittest.TestCase):
                       content_type='application/json')
 
         obj = self.koordconn.layers.get(1474)
-        self.assertEqual(obj.categories[0].slug, "cadastral")
+        self.assertEqual(obj.categories[0]['slug'], "cadastral")
         self.assertEqual(obj.data.crs, "EPSG:2193")
-        self.assertEqual(obj.data.fields[0].type, "geometry")
+        self.assertEqual(obj.data.fields[0]['type'], "geometry")
         # The following test changes form between Python 2.x and 3.x
         try:
             self.assertItemsEqual(obj.tags, ['building', 'footprint', 'outline', 'structure'])

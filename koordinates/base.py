@@ -337,14 +337,16 @@ class Model(object):
 
         if not isinstance(data, dict):
             raise ValueError("Need to deserialize from a dict")
+        if manager.model is not self.__class__:
+            raise TypeError("Manager %s is for %s, expecting %s" % (manager.__name__, manager.model.__name__, self.__class__.__name__))
 
         self._manager = manager
 
         for k, v in data.items():
             if k.endswith('_at') and isinstance(v, six.string_types):
                 v = make_date(v)
-            elif k.endswith('_by') and v:
-               v = User().deserialize(v, manager)
+            elif k.endswith('_by') and isinstance(v, dict):
+               v = User().deserialize(v, manager.connection.get_manager(User))
 
             setattr(self, k, v)
         return self
@@ -375,7 +377,7 @@ class Model(object):
                 continue
             elif v is None and skip_empty:
                 continue
-            elif isinstance(v, (dict, list, tuple)) and len(v) == 0 and skip_empty:
+            elif isinstance(v, (dict, list, tuple, set)) and len(v) == 0 and skip_empty:
                 continue
             else:
                 r[k] = self._serialize_value(v)
@@ -385,8 +387,8 @@ class Model(object):
         """
         Called by :py:meth:`serialize` to serialise an individual value.
         """
-        if isinstance(value, (list, tuple)):
-            return map(self._serialize_value, value)
+        if isinstance(value, (list, tuple, set)):
+            return [self._serialize_value(v) for v in value]
         elif isinstance(value, dict):
             return dict([(k, self._serialize_value(v)) for k, v in value.items()])
         elif isinstance(value, Model):
@@ -395,3 +397,4 @@ class Model(object):
             return value.isoformat()
         else:
             return value
+

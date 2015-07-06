@@ -34,7 +34,7 @@ Fetch filtered and sorted Layer objects via the `Data Catalog API <https://suppo
 Fetch a single Layer object ::
 
     >>> # Fetch the Layer with id = 123
-    >>> layer = client.layer.get(123)
+    >>> layer = client.layers.get(123)
     >>> print(layer.title) 
     >>>
 
@@ -43,7 +43,7 @@ class instances via the library ::
 
     >>> # Fetch the Layer with id = 123 and extract the 
     >>> # data.crs value
-    >>> layer = client.layer.get(123)
+    >>> layer = client.layers.get(123)
     >>> print(layer.data.crs) 
     >>>EPSG:2193
 
@@ -71,7 +71,7 @@ Reimport an existing Layer from its previous datasources and create a new versio
 
     >>> # Take the version with id=9999 of the Layer 
     >>> # with id = 8888 and reimport it 
-    >>> layer = client.layers.get(9999)
+    >>> layer = client.layers.get(8888)
     >>> layer = layer.reimport()
 
 Publish a specific version of a Layer ::
@@ -90,7 +90,7 @@ See the `Token API documentation <https://support.koordinates.com/hc/en-us/artic
 Once you have an API token, you can either pass it into the `koordinates.Client`_ object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable.::
 
     # Pass token explicitly
-    client = koordinates.Client(host='labs.koordinates.com', token='abcdef12345abcdef')
+    client = koordinates.Client(host='labs.koordinates.com', token='abcdef1234567890abcdef')
 
     # Token from environment variable KOORDINATES_TOKEN
     client = koordinates.Client(host='labs.koordinates.com')
@@ -103,7 +103,7 @@ If a required scope isn't associated with the token, you will receive a `Invalid
 
 In addition to the scopes, the user or group owner of the token needs appropriate permissions for the actions they're attempting to take. For example, viewing a particular Set.
 
-If required permissions aren't present, you will receive a `Forbidden`_ exception.
+If required permissions aren't present, you will receive a :py:class`Forbidden`_ exception.
 
 
 Pagination

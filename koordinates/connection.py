@@ -19,11 +19,14 @@ import sys
 import requests
 
 from .mixins import KoordinatesURLMixin
-from .layer import LayerManager, Version
+from .layer import LayerManager, TableManager
+from .licenses import LicenseManager
+from .metadata import MetadataManager
 from .publish import PublishManager
 from .publishrequest import PublishRequest
 from .set import SetManager
 from .tokens import TokenManager
+from .users import UserManager, GroupManager
 from .exceptions import (
     KoordinatesException,
     KoordinatesValueException,
@@ -54,7 +57,6 @@ class Connection(KoordinatesURLMixin):
     wants to connect to. The user identity is also defined when `Connection`
     is instantiated.
     """
-
     def __init__(self, token=None, host='koordinates.com',
                  api_version='v1', activate_logging=False):
         '''
@@ -86,17 +88,36 @@ class Connection(KoordinatesURLMixin):
         else:
             raise KeyError('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
-        self.sets = SetManager(self)
-        self.publishes = PublishManager(self)
-        self.tokens = TokenManager(self)
-        self.layers = LayerManager(self)
-
-        self.version = Version(self)
-        from .api import KData
-        self.data = KData(self)
-        #self.publish = Publish(self)
+        self._init_managers(public={
+                'sets': SetManager,
+                'publishes': PublishManager,
+                'tokens': TokenManager,
+                'layers': LayerManager,
+                'tables': TableManager,
+                'licenses': LicenseManager,
+            },
+            private=(
+                GroupManager,
+                UserManager,
+                MetadataManager
+            )
+        )
 
         super(self.__class__, self).__init__()
+
+    def _init_managers(self, public, private):
+        self._manager_map = {}
+        for alias, manager_class in public.items():
+            mgr = manager_class(self)
+            self._manager_map[mgr.model] = mgr
+            setattr(self, alias, mgr)
+
+        for manager_class in private:
+            mgr = manager_class(self)
+            self._manager_map[mgr.model] = mgr
+
+    def get_manager(self, model):
+        return self._manager_map[model]
 
     def assemble_headers(self, method, user_headers=None):
         """Takes the supplied headers and adds in any which
