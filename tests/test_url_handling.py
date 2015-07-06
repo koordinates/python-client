@@ -14,9 +14,7 @@ Tests for `koordinates` module.
 from __future__ import unicode_literals
 
 import unittest
-import uuid
 
-from koordinates import exceptions
 from koordinates import Client
 
 
@@ -55,22 +53,6 @@ class TestKoordinatesURLHandling(unittest.TestCase):
     def test_layer_versions_multi_url(self, layer_id=1494, version_id=4067):
         self.assertEqual(self.client.get_url('VERSION', 'GET', 'multi', {'layer_id':layer_id}),
                         '''https://koordinates.com/services/api/v1/layers/1494/versions/''')
-
-    def test_api_version_in_url_when_valid(self):
-        test_domain = str(uuid.uuid1()).replace("-", "")
-        test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-        client_altapiversion = Client(token='test', host=test_host_name, api_version='UNITTESTINGONLY')
-
-        self.assertEqual(client_altapiversion.get_url('LAYER', 'GET', 'multi', {'hostname':test_host_name, 'api_version':'UNITTESTINGONLY'}),
-                        '''https://''' + test_host_name + '''/services/api/UNITTESTINGONLY/layers/''')
-
-    def test_api_version_in_url_when_invalid(self):
-        test_domain = str(uuid.uuid1()).replace("-", "")
-        test_api_version = str(uuid.uuid1()).replace("-", "")
-        test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-        with self.assertRaises(exceptions.InvalidAPIVersion):
-            client_altapiversion = Client(host=test_host_name, api_version=test_api_version)
-            client_altapiversion.layers.get(1)
 
 
 if __name__ == '__main__':

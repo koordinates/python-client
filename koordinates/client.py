@@ -12,7 +12,6 @@ import sys
 
 import requests
 
-from .mixins import KoordinatesURLMixin
 from . import layers, licenses, metadata, publishing, sets, tokens, users
 from .publishrequest import PublishRequest
 from . import exceptions
@@ -21,21 +20,16 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
-
-
-class Client(KoordinatesURLMixin):
+class Client(object):
     """
     A `Client` is used to define the host and api-version which the user
     wants to connect to. The user identity is also defined when `Client`
     is instantiated.
     """
-    def __init__(self, host, token=None,
-                 api_version='v1', activate_logging=False):
+    def __init__(self, host, token=None, activate_logging=False):
         '''
         :param str host: the domain name of the Koordinates site to connect to (eg. ``labs.koordinates.com``)
         :param str token: Koordinates API token to use for authentication
-        :param str api_version: the version of the api to connect to
         :param bool activate_logging: if True then logging to stderr is activated
         '''
         if activate_logging:
@@ -44,11 +38,6 @@ class Client(KoordinatesURLMixin):
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
         logger.debug('Initializing Client object for %s', host)
-
-        if api_version not in SUPPORTED_API_VERSIONS:
-            raise exceptions.InvalidAPIVersion(api_version)
-        else:
-            self.api_version = api_version
 
         self.host = host
 
@@ -145,13 +134,11 @@ class Client(KoordinatesURLMixin):
 
         for table_resource_dict in pub_request.tables:
             table_resource_dict['hostname'] = self.host
-            table_resource_dict['api_version'] = self.api_version
             target_url = self.get_url('TABLE', 'GET', 'singleversion', table_resource_dict)
             lst_items.append(target_url)
 
         for layer_resource_dict in pub_request.layers:
             layer_resource_dict['hostname'] = self.host
-            layer_resource_dict['api_version'] = self.api_version
             target_url = self.get_url('LAYER', 'GET', 'singleversion', layer_resource_dict)
             lst_items.append(target_url)
 
@@ -204,10 +191,114 @@ class Client(KoordinatesURLMixin):
         dic_args = {}
         if pub_request.hostname:
             dic_args = {'hostname': pub_request.hostname}
-        if pub_request.api_version:
-            dic_args = {'api_version': pub_request.api_version}
 
         target_url = self.get_url('CLIENT', 'POST', 'publishmulti', dic_args)
         dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
         r = self.request('POST', target_url, json=dic_body)
         return r
+
+    def get_url(self, datatype, verb, urltype, params={}, api_host=None, api_version=None):
+        """Returns a fully formed url
+
+        :param datatype: a string identifying the data the url will access.
+        :param verb: the HTTP verb needed for use with the url.
+        :param urltype: an adjective used to the nature of the request.
+        :param \*\*params: substitution variables for the URL.
+        :return: string
+        :rtype: A fully formed url.
+        """
+        api_version = api_version or 'v1'
+        api_host = api_host or self.host
+
+        subst = params.copy()
+        subst['api_host'] = api_host
+        subst['api_version'] = api_version
+
+        templates = getattr(self, 'URL_TEMPLATES__%s' % api_version)
+
+        url = "https://{api_host}/services/api/{api_version}"
+        url += templates[datatype][verb][urltype]
+        return url.format(**subst)
+
+    URL_TEMPLATES__v1 = {
+        'CLIENT': {
+            'POST': {
+                'publishmulti': '/publish/',
+            },
+        },
+        'LAYER': {
+            'GET': {
+                'singleversion': '/layers/{layer_id}/versions/{version_id}/',
+                'single': '/layers/{id}/',
+                'multi': '/layers/',
+                'multidraft': '/layers/drafts/',
+            },
+            'POST': {
+                'create': '/layers/',
+                'update': '/layers/{layer_id}/import/',
+            },
+        },
+        'SET': {
+            'GET': {
+                'single': '/sets/{id}/',
+                'multi': '/sets/',
+            },
+        },
+        'VERSION': {
+            'GET': {
+                'single': '/layers/{layer_id}/versions/{version_id}/',
+                'multi': '/layers/{layer_id}/versions/',
+                'draft': '/layers/{layer_id}/versions/draft/',
+                'published': '/layers/{layer_id}/versions/published/',
+            },
+            'POST': {
+                'create': '/layers/{layer_id}/versions/',
+                'import': '/layers/{layer_id}/versions/{version_id}/import/',
+                'publish': '/layers/{layer_id}/versions/{version_id}/publish/',
+            },
+            'PUT': {
+                'update': '/layers/{layer_id}/versions/{version_id}/',
+            }
+        },
+        'DATA': {
+            'GET': {
+                'multi': '/data/',
+            },
+        },
+        'TABLE': {
+            'GET': {
+                'singleversion': '/tables/{table_id}/versions/{version_id}/',
+            },
+        },
+        'PUBLISH': {
+            'GET': {
+                'single': '/publish/{id}/',
+                'multi': '/publish/',
+            },
+            'DELETE': {
+                'single': '/publish/{id}/',
+            }
+        },
+        'TOKEN': {
+            'GET': {
+                'single': '/tokens/{id}/',
+                'multi': '/tokens/',
+            },
+            'POST': {
+                'create': '/tokens/',
+            },
+            'PUT': {
+                'update': '/tokens/{id}/',
+            },
+            'DELETE': {
+                'single': '/tokens/{id}/',
+            },
+        },
+        'LICENSE': {
+            'GET': {
+                'single': '/licenses/{id}/',
+                'multi': '/licenses/',
+                'cc': '/licenses/{slug}/{jurisdiction}/',
+            },
+        },
+    }

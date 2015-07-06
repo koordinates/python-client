@@ -18,11 +18,11 @@ from .utils import (
     make_date,
 )
 
-from .mixins import KoordinatesURLMixin
 
 logger = logging.getLogger(__name__)
 
-class PublishRequest(KoordinatesURLMixin):
+
+class PublishRequest(object):
     """
     Defines the nature of a multiple item Publish request
     """
@@ -43,10 +43,6 @@ class PublishRequest(KoordinatesURLMixin):
             self.hostname = kwargs['hostname']
         else:
             self.hostname = None
-        if "api_version" in kwargs:
-            self.api_version = kwargs['api_version']
-        else:
-            self.api_version = None
 
     def add_table_to_publish(self, table_id, version_id):
         self.tables.append({'table_id': table_id, 'version_id': version_id})

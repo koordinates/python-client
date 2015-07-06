@@ -279,7 +279,7 @@ class TestKoordinates(unittest.TestCase):
         layer_id = 999
         version_id = 998
         responses.add(responses.POST,
-                      self.test_client.get_url('VERSION', 'POST', 'import', optargs={'version_id': version_id,'layer_id': layer_id}),
+                      self.test_client.get_url('VERSION', 'POST', 'import', {'version_id': version_id,'layer_id': layer_id}),
                       body=the_response, status=202,
                       content_type='application/json')
 
