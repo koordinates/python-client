@@ -1,3 +1,4 @@
+import datetime
 import json
 import unittest
 
@@ -78,6 +79,14 @@ class ModelTests(unittest.TestCase):
         o2 = o.deserialize({}, mgr2)
         self.assert_(o2 is o)
         self.assertEqual(o2._manager, mgr2)
+
+    def test_deserialize_list(self):
+        o = FooModel().deserialize({
+                'mylist': [1, 2],
+                'created_at': ['2013-01-01', '2014-01-01'],
+            }, self.mgr)
+        self.assert_(isinstance(o.mylist, list))
+        self.assertEqual(o.mylist, [1, 2])
 
     def test_serialize(self):
         o = FooModel(id=1234, attr='test')

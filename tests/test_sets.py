@@ -26,8 +26,7 @@ class TestSets(unittest.TestCase):
 
         self.assertEqual(obj.title,
                          "Ultra Fast Broadband Initiative Coverage")
-        #FIXME: should be group.name as obj.group is a Group instance
-        self.assertEqual(obj.group['name'],
+        self.assertEqual(obj.group.name,
                          "New Zealand Broadband Map")
         self.assertEqual(obj.url_html,
                          "https://koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/")

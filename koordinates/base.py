@@ -15,7 +15,7 @@ from .utils import make_date
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Manager(object):
+class BaseManager(object):
     """
     Base class for Model Manager classes.
 
@@ -36,6 +36,22 @@ class Manager(object):
         obj = self.model()
         return obj.deserialize(result, self)
 
+    def _get(self, target_url, id, expand):
+        headers = {}
+        if expand:
+            headers['Expand'] = ','.join(expand)
+
+        r = self.connection.request('GET', target_url, headers=headers)
+        return self.create_from_result(r.json())
+
+
+@six.add_metaclass(abc.ABCMeta)
+class InnerManager(BaseManager):
+    pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class Manager(BaseManager):
     def list(self, *args, **kwargs):
         """
         Fetches a set of Tokens
@@ -50,14 +66,6 @@ class Manager(object):
         """
         target_url = self.connection.get_url(self.URL_KEY, 'GET', 'single', {'id': id})
         return self._get(target_url, id, expand=expand)
-
-    def _get(self, target_url, id, expand):
-        headers = {}
-        if expand:
-            headers['Expand'] = ','.join(expand)
-
-        r = self.connection.request('GET', target_url, headers=headers)
-        return self.create_from_result(r.json())
 
     # Query methods we delegate
     def filter(self, *args, **kwargs):

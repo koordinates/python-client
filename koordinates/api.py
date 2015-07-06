@@ -15,7 +15,6 @@ from .mixins import (
     KoordinatesURLMixin,
     KoordinatesObjectMixin
 )
-
 from .layer import (
     Version,
     Data,
@@ -24,17 +23,14 @@ from .layer import (
     Autoupdate,
     License,
     Versioninstance,
-    Metadata,
     Field,
     Layer,
 )
-from .set import (
-    Set,
-)
-from .users import (
-    Group,
-    User,
-)
+from .metadata import Metadata
+from .set import Set
+from .users import Group, User
+
+
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
 

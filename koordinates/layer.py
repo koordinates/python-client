@@ -25,6 +25,7 @@ from .utils import (
 )
 from . import base
 from .users import Group, User
+from .metadata import Metadata
 
 
 logger = logging.getLogger(__name__)
@@ -488,33 +489,6 @@ class Versioninstance(object):
 
         return the_version_instance
 
-class Metadata(object):
-    '''A Metadata
-    TODO: Explanation of what a `Metadata` is from Koordinates
-
-    NB: Currently `Metadata` is only used as a component of `Layer`
-    '''
-    def __init__(self, iso=None, dc=None, native=None):
-        self.iso = iso
-        self.dc = dc
-        self.native = native
-
-    @classmethod
-    def from_dict(cls, dict_mdata):
-        '''Initialize Metadata from a dict.
-
-        la = Metadata.from_dict(a_dict)
-
-
-        '''
-        if dict_mdata:
-            the_metadata = cls(dict_mdata.get("iso"),
-                            dict_mdata.get("dc"),
-                            dict_mdata.get("native"))
-        else:
-            the_metadata = cls()
-
-        return the_metadata
 
 class Field(object):
     '''A Field
@@ -693,9 +667,9 @@ class Layer(base.Model):
         self.group = Group().deserialize(data["group"], manager) if data.get("group") else None
         #self.data = Data.from_dict(data.get("data")) if data.get("data") else Data()
         self.categories = make_list_of_Categories(data.get("categories"))
-        self.collected_at = [make_date(str_date) for str_date in data.get("collected_at", [])],
+        self.collected_at = [make_date(str_date) for str_date in data.get("collected_at", [])]
         #self.license = License.from_dict(data.get("license")) if data.get("license") else License()
-        #self.metadata = Metadata.from_dict(data.get("metadata")) if data.get("metadata") else Metadata()
+        self.metadata = Metadata().deserialize(data["metadata"], manager) if data.get("metadata") else None
         return self
 
     # @classmethod
