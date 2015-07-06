@@ -26,7 +26,7 @@ class TokenManager(base.Manager):
     def delete(self, id ):
         target_url = self.connection.get_url('TOKEN', 'DELETE', 'single', {'id':id})
 
-        r = self.connection._raw_request('DELETE', target_url, headers={'Content-type': 'application/json'})
+        r = self.connection.request('DELETE', target_url, headers={'Content-type': 'application/json'})
         r.raise_for_status()
 
 

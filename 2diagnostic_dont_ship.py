@@ -30,6 +30,14 @@ class TestClassSubSub(TestClassSub):
         self.the_list = []
 
 
+def gettoken():
+    if 'KOORDINATES_TOKEN' in os.environ:
+        return os.environ['KOORDINATES_TOKEN']
+    else:
+        raise Exception('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
+
+
+
 def getpass():
     '''
     Prompt user for Password until there is a Connection object
@@ -55,7 +63,7 @@ def target_url(id=8093):
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
     return url_templates['GET']['single'].format(layer_id=id)
 def main_token_test():
-    username = 'rshea@thecubagroup.com'
+    username = input("What is your userid? ")
     pwd = getpass()
     def get_id(url):
         lst_path = os.path.split(url)
@@ -63,11 +71,12 @@ def main_token_test():
             lst_path = os.path.split(lst_path[0])
         return lst_path[1]
 
-    #Phase 1
-    obj_conn_a = Connection(host='test.koordinates.com', token='05adb7e80ad84d888f0c55df40b457e8')
-    print("List existing tokens")
-    for tok in obj_conn_a.tokens.list():
-        print(get_id(tok.url), " " , tok.name)
+    if False:
+        #Phase 1
+        obj_conn_a = Connection(host='test.koordinates.com', token=gettoken())
+        print("List existing tokens")
+        for tok in obj_conn_a.tokens.list():
+            print(get_id(tok.url), " " , tok.name)
 
     #Phase 2
     obj_conn_b = Connection(host='test.koordinates.com', token='-dummy-')
@@ -81,6 +90,7 @@ def main_token_test():
     print("About to create new token named : {}".format(my_name))
     print("-" * 40)
     obj_tok_new = obj_conn_b.tokens.create(obj_tok, 'rshea@thecubagroup.com', 'mercatorproj1000')
+    print("Created token with key : {}".format(obj_tok_new.key))
     obj_conn_c = Connection(host='test.koordinates.com', token=obj_tok_new.key)
     print("List existing tokens including new one")
     is_first = True
@@ -93,9 +103,9 @@ def main_token_test():
 
     #Phase 3
     print("-" * 40)
-    #print("About to delete a token with id : {}".format(target_id))
-    #obj_conn_c.tokens.delete(target_id)
-    #print("Deleted a token with id : {}".format(target_id))
+    print("About to delete a token with id : {}".format(target_id))
+    obj_conn_c.tokens.delete(target_id)
+    print("Deleted a token with id : {}".format(target_id))
 
 
 
@@ -134,7 +144,8 @@ def main(cmdargs):
     do_some_logging=True
     username = 'rshea@thecubagroup.com'
     url = target_url(id=8093)
-    main17(username)
+    if False:
+        main17(username)
     main_token_test()
 
 def getcommandlineargs():
