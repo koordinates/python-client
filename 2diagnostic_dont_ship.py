@@ -10,7 +10,6 @@ import uuid
 import requests
 import logging
 
-import koordinates.api as api
 from koordinates import Connection
 
 #import koordinates.chainclasstest as chainclasstest
@@ -48,7 +47,7 @@ def get_auth(u, p):
 def make_list_string(lst):
     return "| ".join(lst)
 
-def target_url(id=1474):
+def target_url(id=8093):
     url_templates = {}
     url_templates['GET'] = {}
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
@@ -57,19 +56,20 @@ def main17(username):
     '''
     Fetch a single Layer object
     '''
-    conn = Connection()
-    conn.layer.get(1474)
+    conn = Connection(host='test.koordinates.com')
+    obj_layer = conn.layers.get(8093)
     print("")
-    print(conn.layer.tags)
+    print(obj_layer.tags)
     print("")
-    print(conn.layer.data.crs)
+    print(obj_layer.data.crs)
     print("")
-    for f in conn.layer.data.fields:
-        print(f.name)
+    for f in obj_layer.data.fields:
+        print(f)
+        print(f['name'])
     print("")
-    print(conn.layer.collected_at)
+    print(obj_layer.collected_at)
     print("")
-    print(conn.layer.id, " ", conn.layer.name, " ", id(conn.layer), make_list_string(conn.layer.tags))
+    print(obj_layer.id, " ", obj_layer.title, " ", id(obj_layer), make_list_string(obj_layer.tags))
     print("")
 
 def logger_tester(log):
@@ -87,7 +87,7 @@ def logger_tester(log):
 def main(cmdargs):
     do_some_logging=True
     username = 'rshea@thecubagroup.com'
-    url = target_url(id=1474)
+    url = target_url(id=8093)
     main17(username)
 
 def getcommandlineargs():
