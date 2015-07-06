@@ -31,9 +31,9 @@ class TokenManager(base.Manager):
             'password': password,
             'name': token.name,
         }
-        if token.scope:
+        if getattr(token, 'scope', None):
             post_data['scope'] = token.scope
-        if token.expires_at:
+        if getattr(token, 'expires_at', None):
             post_data['expires_at'] = token.expires_at
 
         r = self.connection._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
@@ -44,7 +44,7 @@ class Token(base.Model):
     ''' An API Token '''
     class Meta:
         manager = TokenManager
-        serialize_skip = ('id', 'key', 'url', 'created_at',)
+        serialize_skip = ('key',)
 
     @property
     def scopes(self):
