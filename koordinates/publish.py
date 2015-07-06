@@ -30,5 +30,5 @@ class Publish(base.Model):
     @is_bound
     def cancel(self):
         """ Cancel a pending publish task """
-        target_url = self._connection.get_url('PUBLISH', 'DELETE', 'single', {'id': self.id})
-        self._connection.request('DELETE', target_url)
+        target_url = self._client.get_url('PUBLISH', 'DELETE', 'single', {'id': self.id})
+        self._client.request('DELETE', target_url)

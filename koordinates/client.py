@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.connection
-~~~~~~~~~~~~
-This module implements the Connection class for the Koordinates
-Client Library.
-
-:copyright: (c) Koordinates .
-:license: BSD, see LICENSE for more details.
+koordinates.client
+==================
 """
 
 import logging
@@ -51,31 +46,29 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_API_VERSIONS = ['v1', 'UNITTESTINGONLY']
 
-class Connection(KoordinatesURLMixin):
+class Client(KoordinatesURLMixin):
     """
-    A `Connection` is used to define the host and api-version which the user
-    wants to connect to. The user identity is also defined when `Connection`
+    A `Client` is used to define the host and api-version which the user
+    wants to connect to. The user identity is also defined when `Client`
     is instantiated.
     """
-    def __init__(self, token=None, host='koordinates.com',
+    def __init__(self, host, token=None,
                  api_version='v1', activate_logging=False):
         '''
-        :param token: OAuth token under which to make the connections
-        :param host: the host to connect to
-        :param api_version: the version of teh api to connect to
-        :param activate_logging: When True then logging to timestamped log files is activated
-
+        :param str host: the domain name of the Koordinates site to connect to (eg. ``labs.koordinates.com``)
+        :param str token: Koordinates API token to use for authentication
+        :param str api_version: the version of the api to connect to
+        :param bool activate_logging: if True then logging to stderr is activated
         '''
         if activate_logging:
             logging.basicConfig(stream=sys.stderr,
                                 level=logging.DEBUG,
                                 format='%(asctime)s %(levelname)s %(module)s %(message)s')
 
-        logger.debug('Initializing Connection object')
+        logger.debug('Initializing Client object for %s', host)
 
         if api_version not in SUPPORTED_API_VERSIONS:
-            #raise InvalidAPIVersion
-            raise InvalidAPIVersion
+            raise InvalidAPIVersion(api_version)
         else:
             self.api_version = api_version
 
@@ -117,23 +110,23 @@ class Connection(KoordinatesURLMixin):
             self._manager_map[mgr.model] = mgr
 
     def get_manager(self, model):
+        """
+        Return the active manager for the given model.
+        :param model: Model class to look up the manager instance for.
+        :return: Manager instance for the model associated with this client.
+        """
         return self._manager_map[model]
 
     def assemble_headers(self, method, user_headers=None):
-        """Takes the supplied headers and adds in any which
-        are defined at a `Connection` level and then returns
-        the result
+        """
+        Takes the supplied headers and adds in any which
+        are defined at a client level and then returns
+        the result.
 
         :param user_headers: a `dict` containing headers defined at the
                              request level, optional.
 
         :return: a `dict` instance
-        """
-
-        """
-        Currently this only deals with one connection oriented header
-        but the intent is to allow this expand to deal with future
-        situations
         """
 
         headers = copy.deepcopy(user_headers or {})
@@ -158,7 +151,7 @@ class Connection(KoordinatesURLMixin):
         :param error_strategy: a string defining the error_strategy.
 
         :return: a dictionary which corresponds to the body required\
-                when doing a `Connection.multipublish` of resources.
+                when doing a `Client.multipublish` of resources.
 
         '''
 
@@ -210,14 +203,15 @@ class Connection(KoordinatesURLMixin):
         return r
 
     def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
-        """Publishes a set of items, potentially a mixture of Layers and Tables
+        """
+        Publishes a set of items, potentially a mixture of Layers and Tables
 
         :param pub_request: A `PublishRequest' object specifying what resources are to be published
         :param pub_strategy: A string defining the publish_strategy. One of: `"individual"`, `"together"`. Default = `"together"`
         :param error_strategy: a string defining the error_strategy. One of: `"abort"`, `"ignore"`. Default = `"abort"`
 
         :return: a dictionary which corresponds to the body required\
-                when doing a `Connection.multipublish` of resources.
+                when doing a `Client.multipublish` of resources.
 
         """
 
@@ -234,7 +228,7 @@ class Connection(KoordinatesURLMixin):
         if pub_request.api_version:
             dic_args = {'api_version': pub_request.api_version}
 
-        target_url = self.get_url('CONN', 'POST', 'publishmulti', dic_args)
+        target_url = self.get_url('CLIENT', 'POST', 'publishmulti', dic_args)
         dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
         r = self.request('POST', target_url, json=dic_body)
 

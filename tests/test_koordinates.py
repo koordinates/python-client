@@ -20,7 +20,7 @@ import responses
 
 import koordinates
 from koordinates import exceptions
-from koordinates import Connection
+from koordinates import Client
 from koordinates import layer
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
@@ -37,9 +37,9 @@ class TestKoordinates(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection(token='test')
-        self.koordtestconn = Connection(token='test', host="test.koordinates.com")
-        self.bad_koordconn = Connection(token='bad')
+        self.client = Client(token='test', host='koordinates.com')
+        self.test_client = Client(token='test', host="test.koordinates.com")
+        self.bad_client = Client(token='bad', host='koordinates.com')
 
     def test_instantiate_group_class(self):
         g = koordinates.Group(id=99, url="http//example.com", name="Group Name", country="NZ")
@@ -98,18 +98,18 @@ class TestKoordinates(unittest.TestCase):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                      self.bad_koordconn.get_url('LAYER', 'GET', 'multi'),
+                      self.bad_client.get_url('LAYER', 'GET', 'multi'),
                       body=the_response, status=401,
                       content_type='application/json')
 
 
         #TODO ideally we would drill down into exception and test actual HTTP return
-        #self.assertTrue(self.bad_koordconn.layer._raw_response.status_code,
+        #self.assertTrue(self.bad_client.layer._raw_response.status_code,
         #                401)
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
         with self.assertRaises(requests.exceptions.HTTPError):
-            for layer in self.bad_koordconn.layers.list():
+            for layer in self.bad_client.layers.list():
                 pass
 
     @responses.activate
@@ -117,7 +117,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = layer_create_good_simulated_response
 
         responses.add(responses.POST,
-                      self.koordconn.get_url('LAYER', 'POST', 'create'),
+                      self.client.get_url('LAYER', 'POST', 'create'),
                       body=the_response, status=201,
                       content_type='application/json')
 
@@ -127,7 +127,7 @@ class TestKoordinates(unittest.TestCase):
         obj_lyr.group = 263
         obj_lyr.data = layer.LayerData(datasources = [144355])
 
-        result_layer = self.koordconn.layers.create(obj_lyr)
+        result_layer = self.client.layers.create(obj_lyr)
         self.assert_(result_layer is obj_lyr)
         self.assertEqual(obj_lyr.created_at.year, 2015)
         self.assertEqual(obj_lyr.created_at.month,   6)
@@ -148,7 +148,7 @@ class TestKoordinates(unittest.TestCase):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                      self.bad_koordconn.get_url('LAYER', 'GET', 'multi'),
+                      self.bad_client.get_url('LAYER', 'GET', 'multi'),
                       body=the_response, status=401,
                       content_type='application/json')
 
@@ -156,7 +156,7 @@ class TestKoordinates(unittest.TestCase):
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
         with self.assertRaises(requests.exceptions.HTTPError):
-            for layer in self.bad_koordconn.layers.list():
+            for layer in self.bad_client.layers.list():
                 pass
 
     @responses.activate
@@ -164,14 +164,14 @@ class TestKoordinates(unittest.TestCase):
         the_response = layers_multiple_good_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'multi'),
+                      self.client.get_url('LAYER', 'GET', 'multi'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_layers_returned = 0
 
         #import pdb;pdb.set_trace()
-        for layer in self.koordconn.layers.list():
+        for layer in self.client.layers.list():
             cnt_of_layers_returned += 1
 
         #import pdb;pdb.set_trace()
@@ -182,13 +182,13 @@ class TestKoordinates(unittest.TestCase):
         the_response = good_multi_layers_drafts_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'multidraft'),
+                      self.client.get_url('LAYER', 'GET', 'multidraft'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_draft_layers_returned = 0
 
-        for layer in self.koordconn.layers.list_drafts():
+        for layer in self.client.layers.list_drafts():
             cnt_of_draft_layers_returned += 1
 
         self.assertEqual(cnt_of_draft_layers_returned, 12)
@@ -198,14 +198,14 @@ class TestKoordinates(unittest.TestCase):
         the_response = good_multi_layers_drafts_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'multidraft'),
+                      self.client.get_url('LAYER', 'GET', 'multidraft'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_draft_layers_returned = 0
 
         #import pdb;pdb.set_trace()
-        for layer in self.koordconn.layers.list_drafts():
+        for layer in self.client.layers.list_drafts():
             if cnt_of_draft_layers_returned == 0:
                 self.assertEqual(layer.id, 7955)
                 self.assertEqual(layer.name, "Built-Up Area")
@@ -235,24 +235,24 @@ class TestKoordinates(unittest.TestCase):
 #       test_domain = str(uuid.uuid1()).replace("-", "")
 #       order_by_key = 'name'
 #       test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
-#       self.koordconnalthost = Connection('test', test_host_name)
+#       self.clientalthost = Client('test', test_host_name)
 
-#       self.koordconnalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
+#       self.clientalthost.layer.get_list().filter(filter_value).order_by(order_by_key)
 
-#       parsedurl = urllib.parse.urlparse(self.koordconnalthost.layer.url)
+#       parsedurl = urllib.parse.urlparse(self.clientalthost.layer.url)
 
 #       self.assertTrue(self.contains_substring(parsedurl.hostname, test_host_name))
 #       self.assertEqual(parsedurl.hostname, test_host_name)
 
     @responses.activate
     def test_get_layerset_filter(self):
-        q = self.koordconn.layers.list().filter(kind='vector')
+        q = self.client.layers.list().filter(kind='vector')
         parsedurl = urllib.parse.urlparse(q._to_url())
         self.assertTrue(self.contains_substring(parsedurl.query, 'kind=vector'))
 
     @responses.activate
     def test_get_layerset_sort(self):
-        q = self.koordconn.layers.list().order_by('name')
+        q = self.client.layers.list().order_by('name')
         parsedurl = urllib.parse.urlparse(q._to_url())
         self.assertTrue(self.contains_substring(parsedurl.query, 'sort=name'))
 
@@ -261,7 +261,7 @@ class TestKoordinates(unittest.TestCase):
 
         the_response = "{}"
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'single', {'id': id}),
+                      self.client.get_url('LAYER', 'GET', 'single', {'id': id}),
                       body=the_response, status=504,
                       content_type='application/json')
 
@@ -269,14 +269,14 @@ class TestKoordinates(unittest.TestCase):
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
         with self.assertRaises(requests.exceptions.HTTPError):
-            obj = self.koordconn.layers.get(id)
+            obj = self.client.layers.get(id)
 
     @responses.activate
     def test_get_layer_with_rate_limiting(self, id=1474):
 
         the_response = "{}"
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'single', {'id': id}),
+                      self.client.get_url('LAYER', 'GET', 'single', {'id': id}),
                       body=the_response, status=429,
                       content_type='application/json')
 
@@ -284,7 +284,7 @@ class TestKoordinates(unittest.TestCase):
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
         with self.assertRaises(requests.exceptions.HTTPError):
-            obj = self.koordconn.layers.get(id)
+            obj = self.client.layers.get(id)
 
     @responses.activate
     def test_layer_import(self):
@@ -293,22 +293,22 @@ class TestKoordinates(unittest.TestCase):
         layer_id = 999
         version_id = 998
         responses.add(responses.POST,
-                      self.koordtestconn.get_url('VERSION', 'POST', 'import', optargs={'version_id': version_id,'layer_id': layer_id}),
+                      self.test_client.get_url('VERSION', 'POST', 'import', optargs={'version_id': version_id,'layer_id': layer_id}),
                       body=the_response, status=202,
                       content_type='application/json')
 
-        self.koordtestconn.layers.versions.start_import(layer_id, version_id)
+        self.test_client.layers.versions.start_import(layer_id, version_id)
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):
 
         the_response = layers_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'single', {'id': 1474}),
+                      self.client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        obj = self.koordconn.layers.get(1474)
+        obj = self.client.layers.get(1474)
         self.assertEqual(obj.categories[0]['slug'], "cadastral")
         self.assertEqual(obj.data.crs, "EPSG:2193")
         self.assertEqual(obj.data.fields[0]['type'], "geometry")
@@ -323,12 +323,12 @@ class TestKoordinates(unittest.TestCase):
 
         the_response = layers_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'single', {'id':id}),
+                      self.client.get_url('LAYER', 'GET', 'single', {'id':id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
         #import pdb;pdb.set_trace()
-        obj = self.koordconn.layers.get(id)
+        obj = self.client.layers.get(id)
         self.assertEqual(obj.first_published_at.year, 2010)
         self.assertEqual(obj.first_published_at.month,   6)
         self.assertEqual(obj.first_published_at.day,    21)
@@ -350,32 +350,32 @@ class TestKoordinates(unittest.TestCase):
     @responses.activate
     def test_get_layerset_bad_filter_and_sort(self):
         with self.assertRaises(exceptions.NotAValidBasisForFiltration):
-            self.koordconn.layers.list().filter(bad_attribute=True)
+            self.client.layers.list().filter(bad_attribute=True)
 
     @responses.activate
     def test_get_layerset_bad_sort(self):
         with self.assertRaises(exceptions.NotAValidBasisForOrdering):
-            self.koordconn.layers.list().order_by('bad_attribute')
+            self.client.layers.list().order_by('bad_attribute')
 
     @responses.activate
     def test_get_layer_by_id_bad_auth(self, id=1474):
         the_response = '''{"detail": "Authentication credentials were not provided."}'''
 
         responses.add(responses.GET,
-                self.bad_koordconn.get_url('LAYER', 'GET', 'single', {'id':id}),
+                self.bad_client.get_url('LAYER', 'GET', 'single', {'id':id}),
                       body=the_response, status=401,
                       content_type='application/json')
 
         try:
-            layer_obj = self.bad_koordconn.layers.get(id)
+            layer_obj = self.bad_client.layers.get(id)
         except:
             pass
 
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
         with self.assertRaises(requests.exceptions.HTTPError):
-            layer_obj = self.bad_koordconn.layers.get(id)
-        #self.assertEqual(self.bad_koordconn.layer._raw_response.status_code,
+            layer_obj = self.bad_client.layers.get(id)
+        #self.assertEqual(self.bad_client.layer._raw_response.status_code,
         #                 401)
 
     @responses.activate
@@ -384,11 +384,11 @@ class TestKoordinates(unittest.TestCase):
         the_response = layers_single_good_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('LAYER', 'GET', 'single', {'id':id}),
+                      self.client.get_url('LAYER', 'GET', 'single', {'id':id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        obj = self.koordconn.layers.get(id)
+        obj = self.client.layers.get(id)
 
         self.assertEqual(obj.name,
                          "Wellington City Building Footprints")
@@ -403,24 +403,24 @@ class TestKoordinates(unittest.TestCase):
         the_response = single_layer_all_versions_good_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('VERSION','GET', 'multi', {'layer_id':layer_id}),
+                      self.client.get_url('VERSION','GET', 'multi', {'layer_id':layer_id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_versions_returned = 0
 
-        for version in self.koordconn.layers.versions.list(layer_id=layer_id):
+        for version in self.client.layers.versions.list(layer_id=layer_id):
             cnt_of_versions_returned += 1
 
         self.assertEqual(cnt_of_versions_returned, 2)
 
 
 #       '''
-#       self.assertEqual(self.koordconn.layer.id, layer_id)
-#       self.assertEqual(self.koordconn.layer.version.id, version_id)
-#       self.assertEqual(self.koordconn.layer.version.status, "ok")
-#       self.assertEqual(self.koordconn.layer.version.created_by, 2879)
-#       self.assertEqual(self.koordconn.layer.version._raw_response.status_code, 200)
+#       self.assertEqual(self.client.layer.id, layer_id)
+#       self.assertEqual(self.client.layer.version.id, version_id)
+#       self.assertEqual(self.client.layer.version.status, "ok")
+#       self.assertEqual(self.client.layer.version.created_by, 2879)
+#       self.assertEqual(self.client.layer.version._raw_response.status_code, 200)
 #       '''
 
 #   '''
@@ -438,12 +438,12 @@ class TestKoordinates(unittest.TestCase):
 
 #       the_response = '''{"id":1474, "version":"foobar"}'''
 #       responses.add(responses.GET,
-#                     self.koordconn.get_url('LAYER', 'GET', 'single', {'layer_id':id}),
+#                     self.client.get_url('LAYER', 'GET', 'single', {'layer_id':id}),
 #                     body=the_response, status=200,
 #                     content_type='application/json')
 #       import pdb;pdb.set_trace()
 #       with self.assertRaises(exceptions.AttributeNameIsReserved):
-#           self.koordconn.layer.get(id)
+#           self.client.layer.get(id)
 
 
     def tearDown(self):

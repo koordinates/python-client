@@ -12,7 +12,7 @@ Begin by importing the Koordinates module::
 
     >>> import koordinates
 
-Prepare to use the library by making a connection ::
+Prepare to use the library by creating a client ::
 
     >>> client = koordinates.Client('labs.koordinates.com', 'MY_API_TOKEN')
 

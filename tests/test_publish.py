@@ -21,7 +21,7 @@ import responses
 
 #from koordinates import api
 from koordinates import exceptions
-from koordinates import Connection
+from koordinates import Client
 from koordinates import PublishRequest
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
@@ -40,38 +40,37 @@ class TestKoordinatesPublishing(unittest.TestCase):
         return strtosearch.lower().find(strtosearchfor) > -1
 
     def setUp(self):
-        self.koordconn = Connection('test')
-        self.koordtestconn = Connection('test', host="test.koordinates.com")
-        self.bad_koordconn = Connection('bad')
+        self.client = Client(token='test', host='koordinates.com')
+        self.testclient = Client(token='test', host="test.koordinates.com")
 
 #   @responses.activate
 #   def test_create_redaction(self):
 #       the_response = layer_create_good_redaction_response
 
 #       responses.add(responses.POST,
-#                     self.koordconn.layer.get_url('REDACTION', 'POST', 'create'),
+#                     self.client.layer.get_url('REDACTION', 'POST', 'create'),
 #                     body=the_response, status=201,
 #                     content_type='application/json')
 
-#       self.koordconn.redaction.name = api.Layer()
-#       self.koordconn.redaction.name = "A Test Layer Name for Unit Testing"
+#       self.client.redaction.name = api.Layer()
+#       self.client.redaction.name = "A Test Layer Name for Unit Testing"
 
-#       self.koordconn.redaction.group.id = 263
-#       self.koordconn.redaction.group.url = "https://test.koordinates.com/services/api/v1/groups/{}/".format(self.koordconn.redaction.group.id)
-#       self.koordconn.redaction.group.name = "Wellington City Council"
-#       self.koordconn.redaction.group.country = "NZ"
+#       self.client.redaction.group.id = 263
+#       self.client.redaction.group.url = "https://test.koordinates.com/services/api/v1/groups/{}/".format(self.client.redaction.group.id)
+#       self.client.redaction.group.name = "Wellington City Council"
+#       self.client.redaction.group.country = "NZ"
 
-#       self.koordconn.redaction.data = api.Data(datasources = [api.DataSource(144355)])
+#       self.client.redaction.data = api.Data(datasources = [api.DataSource(144355)])
 
-#       self.koordconn.redaction.create()
+#       self.client.redaction.create()
 
-#       self.assertEqual(self.koordconn.redaction.created_at.year, 2015)
-#       self.assertEqual(self.koordconn.redaction.created_at.month,   6)
-#       self.assertEqual(self.koordconn.redaction.created_at.day,    11)
-#       self.assertEqual(self.koordconn.redaction.created_at.hour,   11)
-#       self.assertEqual(self.koordconn.redaction.created_at.minute, 14)
-#       self.assertEqual(self.koordconn.redaction.created_at.second, 10)
-#       self.assertEqual(self.koordconn.redaction.created_by, 18504)
+#       self.assertEqual(self.client.redaction.created_at.year, 2015)
+#       self.assertEqual(self.client.redaction.created_at.month,   6)
+#       self.assertEqual(self.client.redaction.created_at.day,    11)
+#       self.assertEqual(self.client.redaction.created_at.hour,   11)
+#       self.assertEqual(self.client.redaction.created_at.minute, 14)
+#       self.assertEqual(self.client.redaction.created_at.second, 10)
+#       self.assertEqual(self.client.redaction.created_by, 18504)
 
     @responses.activate
     def test_publish_get_by_id(self):
@@ -79,11 +78,11 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
         publish_id = 2054
         responses.add(responses.GET,
-                      self.koordconn.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
+                      self.client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        obj = self.koordconn.publishes.get(publish_id)
+        obj = self.client.publishes.get(publish_id)
 
         self.assertEqual(obj.state, "completed")
         self.assertEqual(obj.created_by.id, 18504)
@@ -103,13 +102,13 @@ class TestKoordinatesPublishing(unittest.TestCase):
         the_response = publish_multiple_get_simulated_response
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('PUBLISH', 'GET', 'multi'),
+                      self.client.get_url('PUBLISH', 'GET', 'multi'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         cnt_of_publish_records_returned = 0
 
-        for pub_record in self.koordconn.publishes.list():
+        for pub_record in self.client.publishes.list():
             if cnt_of_publish_records_returned == 0:
                 self.assertEqual(pub_record.id, 2054)
                 self.assertEqual(pub_record.error_strategy, 'abort')
@@ -122,13 +121,13 @@ class TestKoordinatesPublishing(unittest.TestCase):
     def test_multipublish_resource_specification(self):
         the_response = '''{}'''
         responses.add(responses.POST,
-                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
+                      self.testclient.get_url('CLIENT', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
                       body=the_response, status=999,
                       content_type='application/json')
 
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.multi_publish("")
+            self.testclient.multi_publish("")
 
         pr = PublishRequest(kwargs={'hostname':"test.koordinates.com"})
         pr.add_layer_to_publish(100, 1000)
@@ -140,54 +139,54 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
         with self.assertRaises(exceptions.UnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.multi_publish(pr)
+            self.testclient.multi_publish(pr)
 
     @responses.activate
     def test_multipublish_bad_args(self):
         the_response = '''{}'''
 
         responses.add(responses.POST,
-                      self.koordtestconn.get_url('CONN', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
+                      self.testclient.get_url('CLIENT', 'POST', 'publishmulti', optargs={'hostname':"test.koordinates.com"}),
                       body=the_response, status=999,
                       content_type='application/json')
 
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.multi_publish("")
+            self.testclient.multi_publish("")
 
         pr = PublishRequest([],[])
 
         with self.assertRaises(exceptions.UnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.multi_publish(pr)
+            self.testclient.multi_publish(pr)
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.multi_publish("", 'Z')
+            self.testclient.multi_publish("", 'Z')
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.multi_publish(pr, 'Z')
+            self.testclient.multi_publish(pr, 'Z')
 
         with self.assertRaises(exceptions.UnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.multi_publish(pr, 'together')
+            self.testclient.multi_publish(pr, 'together')
 
         with self.assertRaises(AssertionError):
-            self.koordtestconn.multi_publish(pr, 'together', 'Z')
+            self.testclient.multi_publish(pr, 'together', 'Z')
 
         with self.assertRaises(exceptions.UnexpectedServerResponse):
             #the Responses mocking will result in a 999 being returned
-            self.koordtestconn.multi_publish(pr, 'together', 'abort')
+            self.testclient.multi_publish(pr, 'together', 'abort')
 
     @responses.activate
     def test_publish_single_layer_version(self, layer_id=1474, version_id=4067):
         the_response = layers_version_single_good_simulated_response
         responses.add(responses.GET,
-                      self.koordconn.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
+                      self.client.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
                       body=the_response, status=200,
                       content_type='application/json')
 
         #import pdb;pdb.set_trace()
-        lv = self.koordconn.layers.versions.get(1474, 4067)
+        lv = self.client.layers.versions.get(1474, 4067)
 
         self.assertEqual(lv.id, 1474)
         self.assertEqual(lv.version.id, 4067)
@@ -195,7 +194,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
         the_response = '''{"id": 2057, "url": "https://test.koordinates.com/services/api/v1/publish/2057/", "state": "publishing", "created_at": "2015-06-08T10:39:44.823Z", "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, "error_strategy": "abort", "publish_strategy": "together", "publish_at": null, "items": ["https://test.koordinates.com/services/api/v1/layers/1474/versions/4067/"]}'''
 
         responses.add(responses.POST,
-                      self.koordconn.get_url('VERSION', 'POST', 'publish', {'layer_id': layer_id, 'version_id': version_id}),
+                      self.client.get_url('VERSION', 'POST', 'publish', {'layer_id': layer_id, 'version_id': version_id}),
                       body=the_response, status=201,
                       content_type='application/json')
 
@@ -207,14 +206,14 @@ class TestKoordinatesPublishing(unittest.TestCase):
         publish_id = 2054
 
         responses.add(responses.GET,
-                      self.koordconn.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
+                      self.client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
                       body=publish_single_good_simulated_response, status=200,
                       content_type='application/json')
 
         responses.add(responses.DELETE,
-              self.koordconn.get_url('PUBLISH', 'DELETE', 'single', {'id': publish_id}),
+              self.client.get_url('PUBLISH', 'DELETE', 'single', {'id': publish_id}),
               body="", status=204,
               content_type='application/json')
 
-        obj = self.koordconn.publishes.get(publish_id)
+        obj = self.client.publishes.get(publish_id)
         obj.cancel()

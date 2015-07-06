@@ -37,7 +37,7 @@ from .exceptions import (
 from .layer import Layer
 from .layer import Table
 
-from .connection import Connection
+from .client import Client
 from .licenses import License
 from .metadata import Metadata
 from .publish import Publish

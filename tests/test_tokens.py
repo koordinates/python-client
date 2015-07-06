@@ -2,7 +2,7 @@ import unittest
 
 import responses
 
-from koordinates import Token, Connection
+from koordinates import Token, Client
 
 from response_data.responses_10 import token_get_multiple_tokens_good_response
 from response_data.responses_10 import token_get_single_token_good_response
@@ -11,23 +11,21 @@ from response_data.responses_10 import token_good_create
 
 class TestTokens(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test')
+        self.client = Client(token='test', host='test.koordinates.com')
 
     @responses.activate
     def test_get_all_tokens_for_user(self):
         the_response = token_get_multiple_tokens_good_response
 
         responses.add(responses.GET,
-                      self.conn.get_url('TOKEN', 'GET', 'multi'),
+                      self.client.get_url('TOKEN', 'GET', 'multi'),
                       body=the_response, status=200,
                       content_type='application/json')
-
-        obj = self.conn.tokens.list()
 
         cnt_of_sets_returned = 0
         is_first = True
 
-        for token in self.conn.tokens.list():
+        for token in self.client.tokens.list():
             cnt_of_sets_returned += 1
             if is_first:
                 is_first = False
@@ -41,11 +39,11 @@ class TestTokens(unittest.TestCase):
         the_response = token_get_single_token_good_response
 
         responses.add(responses.GET,
-                      self.conn.get_url('TOKEN', 'GET', 'single', {'id':987654}),
+                      self.client.get_url('TOKEN', 'GET', 'single', {'id':987654}),
                       body=the_response, status=200,
                       content_type='application/json')
 
-        obj_tok = self.conn.tokens.get(987654)
+        obj_tok = self.client.tokens.get(987654)
 
         self.assert_(isinstance(obj_tok, Token))
 
@@ -62,14 +60,14 @@ class TestTokens(unittest.TestCase):
         the_response = token_good_create
 
         responses.add(responses.POST,
-                      self.conn.get_url('TOKEN', 'POST', 'create'),
+                      self.client.get_url('TOKEN', 'POST', 'create'),
                       body=the_response, status=200,
                       content_type='application/json')
 
         obj_tok = Token(name='Sample Token for Testing')
         obj_tok.scope = "query tiles catalog wxs:wfs wxs:wms wxs:wcs documents:read documents:write layers:read layers:write sets:read sets:write sources:read sources:write users:read users:write tokens:read tokens:write"
         obj_tok.expires_at = '2015-08-01T08:00:00Z'
-        obj_tok_new = self.conn.tokens.create(obj_tok, 'foo@example.com', 'foobar')
+        obj_tok_new = self.client.tokens.create(obj_tok, 'foo@example.com', 'foobar')
 
         self.assert_(isinstance(obj_tok_new, Token))
 
@@ -87,10 +85,10 @@ class TestTokens(unittest.TestCase):
 
         the_response = ""
 
-        responses.add(responses.DELETE, 
-                      self.conn.get_url('TOKEN', 'DELETE', 'single', {'id':987654}),
+        responses.add(responses.DELETE,
+                      self.client.get_url('TOKEN', 'DELETE', 'single', {'id':987654}),
                       body=the_response, status=204,
                       content_type='application/json')
 
-        self.conn.tokens.delete(987654)
+        self.client.tokens.delete(987654)
 

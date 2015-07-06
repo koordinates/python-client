@@ -5,7 +5,7 @@ import unittest
 import responses
 from six.moves.urllib.parse import parse_qs, urlparse
 
-from koordinates import base, Connection
+from koordinates import base, Client
 from koordinates.exceptions import NotAValidBasisForOrdering, NotAValidBasisForFiltration
 
 
@@ -37,8 +37,8 @@ class FooModel(base.Model):
 
 class ModelTests(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test')
-        self.mgr = FooManager(self.conn)
+        self.client = Client(host='test.koordinates.com', token='test')
+        self.mgr = FooManager(self.client)
 
     def test_manager_init(self):
         self.assert_(hasattr(FooModel, "_meta"))
@@ -49,7 +49,7 @@ class ModelTests(unittest.TestCase):
     def test_relations(self):
         m = FooModel()
         self.assert_(m._manager is None)
-        self.assertRaises(ValueError, lambda: m._connection)
+        self.assertRaises(ValueError, lambda: m._client)
 
     @responses.activate
     def test_manager_from_query(self):
@@ -73,7 +73,7 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(o2.id, 1234)
         self.assertEqual(o2.attr2, 'test3')
 
-        mgr2 = FooManager(self.conn)
+        mgr2 = FooManager(self.client)
         o = FooModel(id=1234)
         o._manager = self.mgr
         o2 = o.deserialize({}, mgr2)
@@ -147,8 +147,8 @@ class ModelTests(unittest.TestCase):
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
-        self.conn = Connection('test', activate_logging=True)
-        self.foos = FooManager(self.conn)
+        self.client = Client(host='test.koordinates.com', token='test', activate_logging=True)
+        self.foos = FooManager(self.client)
 
     def test_list(self):
         q = self.foos.list()

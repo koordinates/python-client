@@ -34,6 +34,6 @@ class Set(base.Model):
 
     def deserialize(self, data, manager):
         super(Set, self).deserialize(data, manager)
-        self.group = Group().deserialize(data['group'], manager.connection.get_manager(Group)) if data.get("group") else None
-        self.metadata = Metadata().deserialize(data['metadata'], manager.connection.get_manager(Metadata)) if data.get("metadata") else None
+        self.group = Group().deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
+        self.metadata = Metadata().deserialize(data['metadata'], manager.client.get_manager(Metadata)) if data.get("metadata") else None
         return self

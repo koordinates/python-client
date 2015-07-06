@@ -48,7 +48,7 @@ class KoordinatesURLMixin(object):
     A Mixin to support URL operations
     '''
     URL_TEMPLATES = {
-        'CONN': {
+        'CLIENT': {
             'POST': {
                 'publishmulti': '/publish/',
             },
@@ -148,7 +148,7 @@ class KoordinatesURLMixin(object):
                 optargs['hostname'] = self._parent.host
             except AttributeError:
                 # We need to cater for when `get_url` is
-                # invoked from a method on the `Connection`
+                # invoked from a method on the `Client`
                 # object itself
                 optargs['hostname'] = self.host
         if "api_version" not in optargs:
@@ -156,7 +156,7 @@ class KoordinatesURLMixin(object):
                 optargs['api_version'] = self._parent.api_version
             except AttributeError:
                 # We need to cater for when `get_url` is
-                # invoked from a method on the `Connection`
+                # invoked from a method on the `Client`
                 # object itself
                 optargs['api_version'] = self.api_version
 
