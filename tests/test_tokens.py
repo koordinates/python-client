@@ -87,7 +87,6 @@ class TestTokens(unittest.TestCase):
 
         the_response = ""
 
-        
         responses.add(responses.DELETE, 
                       self.conn.get_url('TOKEN', 'DELETE', 'single', {'id':987654}),
                       body=the_response, status=204,
