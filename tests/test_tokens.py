@@ -81,3 +81,17 @@ class TestTokens(unittest.TestCase):
         self.assertEqual(obj_tok_new.expires_at.year, 2015)
         self.assertEqual(obj_tok_new.expires_at.hour, 8)
         self.assertEqual(obj_tok_new.key, '77777777777777777777777777777777')
+
+    @responses.activate
+    def test_delete_token_good(self):
+
+        the_response = ""
+
+        
+        responses.add(responses.DELETE, 
+                      self.conn.get_url('TOKEN', 'DELETE', 'single', {'id':987654}),
+                      body=the_response, status=204,
+                      content_type='application/json')
+
+        self.conn.tokens.delete(987654)
+

@@ -23,6 +23,13 @@ logger = logging.getLogger(__name__)
 class TokenManager(base.Manager):
     URL_KEY = 'TOKEN'
 
+    def delete(self, id ):
+        target_url = self.connection.get_url('TOKEN', 'DELETE', 'single', {'id':id})
+
+        r = self.connection._raw_request('DELETE', target_url, headers={'Content-type': 'application/json'})
+        r.raise_for_status()
+
+
     def create(self, token, email, password):
         target_url = self.connection.get_url('TOKEN', 'POST', 'create')
         post_data = {
