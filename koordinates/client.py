@@ -148,7 +148,22 @@ class Client(object):
 
     def request(self, method, url, *args, **kwargs):
         headers = self.assemble_headers(method, kwargs.pop("headers", {}))
-        return self._raw_request(method, url, headers, *args, **kwargs)
+        r = self._raw_request(method, url, headers, *args, **kwargs)
+
+        if method == 'POST':
+            # If we're posting to an endpoint
+            if r.status_code in (requests.codes.created, requests.codes.accepted):
+                # and we get a 201/202 response
+                if 'location' in r.headers:
+                    # with a location header
+                    logger.info("%s -> %s", r.status_code, r.headers['location'])
+
+                    # follow it and return the results of the GET
+                    r2 = self.request('GET', r.headers['location'])
+                    r2.parent_response = r
+                    return r2
+
+        return r
 
     def _raw_request(self, method, url, headers, *args, **kwargs):
         logger.info('Request: %s %s %s', method, url, headers)
@@ -221,11 +236,6 @@ class Client(object):
         return url.format(**subst)
 
     URL_TEMPLATES__v1 = {
-        'CLIENT': {
-            'POST': {
-                'publishmulti': '/publish/',
-            },
-        },
         'LAYER': {
             'GET': {
                 'singleversion': '/layers/{layer_id}/versions/{version_id}/',
@@ -274,6 +284,9 @@ class Client(object):
             'GET': {
                 'single': '/publish/{id}/',
                 'multi': '/publish/',
+            },
+            'POST': {
+                'create': '/publish/',
             },
             'DELETE': {
                 'single': '/publish/{id}/',

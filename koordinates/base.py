@@ -360,6 +360,7 @@ class Model(object):
         * attribute values that are ``None`` (unless ``skip_empty`` is ``False``)
         * attribute values that are empty lists/tuples/dicts (unless ``skip_empty`` is ``False``)
         * attribute names in ``Meta.serialize_skip``
+        * constants set on the model class
 
         Inner :py:class:`Model` instances get :py:meth:`serialize` called on them.
         Date and datetime objects are converted into ISO 8601 strings.

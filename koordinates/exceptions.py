@@ -34,7 +34,12 @@ class ServerError(KoordinatesException):
     def __init__(self, message=None, error=None, response=None):
         if not message:
             if response:
-                message = "%s %s " % (response.status_code, response.reason)
+                message = "%s %s" % (response.status_code, response.reason)
+                try:
+                    # most API errors are of the form {"error": "description"}
+                    message += ": %s" % response.json()['error']
+                except:
+                    pass
             else:
                 message = str(error)
         super(ServerError, self).__init__(message, error=error, response=response)
