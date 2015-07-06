@@ -34,15 +34,13 @@ from .exceptions import (
     InvalidPublicationResourceList
 )
 
-from .layer import Layer
-from .layer import Table
-
 from .client import Client
+from .layers import Layer, Table
 from .licenses import License
 from .metadata import Metadata
-from .publish import Publish
+from .publishing import Publish
 from .publishrequest import PublishRequest
-from .set import Set
+from .sets import Set
 from .tokens import Token
 from .users import Group, User
 

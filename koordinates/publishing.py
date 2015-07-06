@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.publish
-===================
+koordinates.publishing
+======================
 
 The Group Publishing API allows for draft versions of versioned objects
 Documents, Layers, and Tables) to be scheduled for publishing together.

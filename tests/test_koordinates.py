@@ -21,7 +21,7 @@ import responses
 import koordinates
 from koordinates import exceptions
 from koordinates import Client
-from koordinates import layer
+from koordinates import layers
 
 from response_data.responses_1 import layers_multiple_good_simulated_response
 from response_data.responses_2 import layers_single_good_simulated_response
@@ -49,7 +49,7 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(g.country, "NZ")
 
     def test_instantiate_data_class(self):
-        d = layer.LayerData(encoding=None,
+        d = layers.LayerData(encoding=None,
                             crs="EPSG:2193",
                             geometry_field="GEOMETRY"
         )
@@ -59,7 +59,7 @@ class TestKoordinates(unittest.TestCase):
 
     @unittest.skip("FIXME")
     def test_instantiate_datasource_class(self):
-        ds = layer.Datasource(99)
+        ds = layers.Datasource(99)
         self.assertEqual(ds.id, 99)
 
     def test_instantiate_licence_class(self):
@@ -104,7 +104,7 @@ class TestKoordinates(unittest.TestCase):
 
 
         #TODO ideally we would drill down into exception and test actual HTTP return
-        #self.assertTrue(self.bad_client.layer._raw_response.status_code,
+        #self.assertTrue(self.bad_client.layers._raw_response.status_code,
         #                401)
         #TODO ideally we would drill down into exception and test actual HTTP return
         import requests
@@ -125,7 +125,7 @@ class TestKoordinates(unittest.TestCase):
         obj_lyr.name = "A Test Layer Name for Unit Testing"
 
         obj_lyr.group = 263
-        obj_lyr.data = layer.LayerData(datasources = [144355])
+        obj_lyr.data = layers.LayerData(datasources = [144355])
 
         result_layer = self.client.layers.create(obj_lyr)
         self.assert_(result_layer is obj_lyr)

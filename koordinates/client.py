@@ -14,12 +14,12 @@ import sys
 import requests
 
 from .mixins import KoordinatesURLMixin
-from .layer import LayerManager, TableManager
+from .layers import LayerManager, TableManager
 from .licenses import LicenseManager
 from .metadata import MetadataManager
-from .publish import PublishManager
+from .publishing import PublishManager
 from .publishrequest import PublishRequest
-from .set import SetManager
+from .sets import SetManager
 from .tokens import TokenManager
 from .users import UserManager, GroupManager
 from .exceptions import (
@@ -83,7 +83,7 @@ class Client(KoordinatesURLMixin):
 
         self._init_managers(public={
                 'sets': SetManager,
-                'publishes': PublishManager,
+                'publishing': PublishManager,
                 'tokens': TokenManager,
                 'layers': LayerManager,
                 'tables': TableManager,

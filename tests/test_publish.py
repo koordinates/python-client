@@ -48,7 +48,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
 #       the_response = layer_create_good_redaction_response
 
 #       responses.add(responses.POST,
-#                     self.client.layer.get_url('REDACTION', 'POST', 'create'),
+#                     self.client.layers.get_url('REDACTION', 'POST', 'create'),
 #                     body=the_response, status=201,
 #                     content_type='application/json')
 
@@ -82,7 +82,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
                       body=the_response, status=200,
                       content_type='application/json')
 
-        obj = self.client.publishes.get(publish_id)
+        obj = self.client.publishing.get(publish_id)
 
         self.assertEqual(obj.state, "completed")
         self.assertEqual(obj.created_by.id, 18504)
@@ -108,7 +108,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
 
         cnt_of_publish_records_returned = 0
 
-        for pub_record in self.client.publishes.list():
+        for pub_record in self.client.publishing.list():
             if cnt_of_publish_records_returned == 0:
                 self.assertEqual(pub_record.id, 2054)
                 self.assertEqual(pub_record.error_strategy, 'abort')
@@ -215,5 +215,5 @@ class TestKoordinatesPublishing(unittest.TestCase):
               body="", status=204,
               content_type='application/json')
 
-        obj = self.client.publishes.get(publish_id)
+        obj = self.client.publishing.get(publish_id)
         obj.cancel()

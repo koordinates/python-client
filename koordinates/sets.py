@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.set
-~~~~~~~~~~~~~~
+koordinates.sets
+================
 
-This module provides the `Set` class used in the Koordinates
-Client Library
+For grouping layers, tables and documents together.
 
 """
 
@@ -24,11 +23,7 @@ class SetManager(base.Manager):
 
 
 class Set(base.Model):
-    '''A Set
-
-    TODO: Description of what a `Set` is
-
-    '''
+    ''' For grouping layers, tables and documents together. '''
     class Meta:
         manager = SetManager
 

@@ -70,7 +70,7 @@ class TestKoordinatesURLHandling(unittest.TestCase):
         test_host_name = "{fakedomain}.com".format(fakedomain=test_domain)
         with self.assertRaises(exceptions.InvalidAPIVersion):
             client_altapiversion = Client(host=test_host_name, api_version=test_api_version)
-            client_altapiversion.layer.get(1)
+            client_altapiversion.layers.get(1)
 
 
 if __name__ == '__main__':

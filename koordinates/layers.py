@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-koordinates.layer
-~~~~~~~~~~~~~~~~~
+koordinates.layers
+==================
 
 For getting, editing and updating layers and tables.
 
@@ -16,7 +16,7 @@ from .utils import (
 from . import base
 from .licenses import License
 from .metadata import Metadata
-from .publish import Publish
+from .publishing import Publish
 from .users import Group
 from .utils import is_bound
 
