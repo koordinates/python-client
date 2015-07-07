@@ -195,7 +195,7 @@ class Client(object):
                 'create': '/sets/',
             },
             'PUT': {
-                'update': '/sets/{set_id}/',
+                'update': '/sets/{id}/',
             },
         },
         'VERSION': {

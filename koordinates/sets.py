@@ -50,7 +50,7 @@ class Set(base.Model):
 
     @is_bound
     def save(self):
-        target_url = self._client.get_url('SET', 'PUT', 'update', {'set_id': self.id})
+        target_url = self._client.get_url('SET', 'PUT', 'update', {'id': self.id})
         r = self._client.request('PUT', target_url, json=self.serialize())
         return self.deserialize(r.json(), self._manager)
 
