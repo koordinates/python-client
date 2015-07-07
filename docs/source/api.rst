@@ -30,27 +30,6 @@ Classes
 .. autoclass:: koordinates.layers.LayerDataManager      
     :members:
     :undoc-members:
-.. autoclass:: koordinates.base.BaseManager
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.InnerManager
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.Manager
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.Query
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.ModelMeta
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.Model
-    :members:
-    :undoc-members:
-.. autoclass:: koordinates.base.InnerModel
-    :members:
-    :undoc-members:
 
 .. autoclass:: koordinates.catalog.CatalogEntry  
     :members:
@@ -113,12 +92,6 @@ Classes
 .. autoclass:: koordinates.users.Group
     :members:
     :undoc-members:
-
-Available Methods
------------------
-
-.. autofunction:: utils.is_bound
-.. autofunction:: utils.make_date
 
 
 Exceptions
