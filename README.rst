@@ -6,6 +6,8 @@ A BSD-licensed Python client library for a number of Koordinates web APIs.
 
 The library provides easy access to Koordinates web services, particularly the `Data Administration APIs <https://support.koordinates.com/hc/en-us/sections/200876264-Koordinates-Administration-API>`_.
 
+.. image:: https://circleci.com/gh/koordinates/python-client/tree/master.svg?style=svg
+    :target: https://circleci.com/gh/koordinates/python-client/tree/master
 
 Installation
 ============
