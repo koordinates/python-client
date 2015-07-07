@@ -10,10 +10,11 @@ For grouping layers, tables and documents together.
 
 import logging
 
-from .users import Group
-from .metadata import Metadata, MetadataManager
-from . import base
-from .utils import is_bound
+#from .users import Group
+from koordinates.users import Group
+from koordinates.metadata import Metadata, MetadataManager
+from koordinates import base
+from koordinates.utils import is_bound
 
 
 logger = logging.getLogger(__name__)
