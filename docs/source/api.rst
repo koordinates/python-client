@@ -7,115 +7,136 @@ Developer Interface
 
 Some blurb around the interfaces available.
 
+Classes
+-------------------
+.. autoclass:: koordinates.client.Client
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.Layer     
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.LayerManager     
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.LayerVersion   
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.LayerVersionManager   
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.LayerData      
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.layers.LayerDataManager      
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.BaseManager
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.InnerManager
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.Manager
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.Query
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.ModelMeta
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.Model
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.base.InnerModel
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.catalog.CatalogEntry  
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.catalog.CatalogManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.licenses.LicenseManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.licenses License
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.metadata.MetadataManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.metadata.Metadata(base.InnerModel):
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.publishing.PublishManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.publishing.Publish
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.sets.SetManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.sets.Set
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.tokens.TokenManager
+    :members:
+    :undoc-members:
+
+.. autoclass:: koordinates.tokens.Token
+    :members:
+    :undoc-members:
+
+ 
+.. autoclass:: koordinates.users.UserManager
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.users.User
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.users.GroupManager
+    :members:
+    :undoc-members:
+.. autoclass:: koordinates.users.Group
+    :members:
+    :undoc-members:
+
 Available Methods
 -----------------
 
-.. autofunction:: utils.dump_class_attributes_to_dict
-.. autofunction:: utils.is_empty_list
+.. autofunction:: utils.is_bound
 .. autofunction:: utils.make_date
-.. autofunction:: utils.make_date_if_possible
-.. autofunction:: utils.make_date_list_from_string_list
-.. autofunction:: utils.make_list_of_Categories
-.. autofunction:: utils.make_list_of_Datasources
-.. autofunction:: utils.make_list_of_Fields
-.. autofunction:: utils.remove_empty_from_dict
 
 
 Exceptions
 ----------
-.. autoexception:: exceptions.AttributeNameIsReserved
-.. autoexception:: exceptions.FilterMustNotBeSpaces
-.. autoexception:: exceptions.ImportEncounteredUpdateConflict
-.. autoexception:: exceptions.InvalidAPIVersion
-.. autoexception:: exceptions.InvalidPublicationResourceList
-.. autoexception:: exceptions.InvalidURL
 .. autoexception:: exceptions.KoordinatesException
-.. autoexception:: exceptions.KoordinatesValueException
-.. autoexception:: exceptions.NotAValidBasisForFiltration
-.. autoexception:: exceptions.NotAValidBasisForOrdering
-.. autoexception:: exceptions.NotAuthorised
-.. autoexception:: exceptions.OnlyOneFilterAllowed
-.. autoexception:: exceptions.OnlyOneOrderingAllowed
-.. autoexception:: exceptions.PublishAlreadyStarted
+.. autoexception:: exceptions.ClientError
+.. autoexception:: exceptions.ClientValidationError
+.. autoexception:: exceptions.InvalidAPIVersion
+.. autoexception:: exceptions.ServerError
+.. autoexception:: exceptions.BadRequest
+.. autoexception:: exceptions.AuthenticationError
+.. autoexception:: exceptions.Forbidden
+.. autoexception:: exceptions.NotFound
+.. autoexception:: exceptions.NotAllowed
+.. autoexception:: exceptions.Conflict
 .. autoexception:: exceptions.RateLimitExceeded
-.. autoexception:: exceptions.ServerTimeOut
-.. autoexception:: exceptions.UnexpectedServerResponse
+.. autoexception:: exceptions.InternalServerError
+.. autoexception:: exceptions.ServiceUnvailable
 
-Classes
--------------------
-.. autoclass:: connection.Connection
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Version   
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Group     
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Data
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Datasource
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Category
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Autoupdate
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Createdby
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.License 
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Versioninstance 
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Metadata
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Field    
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: layer.Layer   
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: publish.Publish
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: publish.PublishRequest
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: set.Set       
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: api.KData     
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: mixins.KoordinatesURLMixin
-    :members:
-    :private-members:
-    :undoc-members:
-.. autoclass:: mixins.KoordinatesObjectMixin
-    :members:
-    :private-members:
-    :undoc-members:
+
+
