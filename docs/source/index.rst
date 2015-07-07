@@ -9,7 +9,7 @@ The library provides easy access to Koordinates web services, particularly the `
 
     import koordinates
 
-    client = koordinates.Connection(host='labs.koordinates.com', token='MY_API_TOKEN')
+    client = koordinates.Client(host='labs.koordinates.com', token='MY_API_TOKEN')
 
     # print the 10 most recently created layers
     for layer in client.layers.order_by('created_at')[:10]:

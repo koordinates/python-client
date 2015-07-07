@@ -10,7 +10,7 @@ import re
 import six
 from six.moves import urllib
 
-from .exceptions import NotAValidBasisForOrdering, NotAValidBasisForFiltration
+from .exceptions import ClientValidationError
 from .utils import make_date
 
 
@@ -20,14 +20,14 @@ class BaseManager(object):
     Base class for Model Manager classes.
 
     Instantiated by the Model metaclass and attached to model._meta.manager.
-    The Connection object needs to set itself on the Manager instance before it's used.
+    The Client object needs to set itself on the Manager instance before it's used.
     """
 
     #URL_KEY = None
     model = None
 
-    def __init__(self, connection):
-        self.connection = connection
+    def __init__(self, client):
+        self.client = client
 
     def _meta_attribute(self, attribute, default=None):
         return getattr(self.model._meta, attribute, default)
@@ -41,7 +41,7 @@ class BaseManager(object):
         if expand:
             headers['Expand'] = ','.join(expand)
 
-        r = self.connection.request('GET', target_url, headers=headers)
+        r = self.client.request('GET', target_url, headers=headers)
         return self.create_from_result(r.json())
 
 
@@ -56,7 +56,7 @@ class Manager(BaseManager):
         """
         Fetches a set of Tokens
         """
-        target_url = self.connection.get_url(self.URL_KEY, 'GET', 'multi')
+        target_url = self.client.get_url(self.URL_KEY, 'GET', 'multi')
         return Query(self, target_url)
 
     def get(self, id, expand=[]):
@@ -64,7 +64,7 @@ class Manager(BaseManager):
 
         :param id: ID for the new :class:`Token`  object.
         """
-        target_url = self.connection.get_url(self.URL_KEY, 'GET', 'single', {'id': id})
+        target_url = self.client.get_url(self.URL_KEY, 'GET', 'single', {'id': id})
         return self._get(target_url, expand=expand)
 
     # Query methods we delegate
@@ -107,7 +107,7 @@ class Query(object):
         return self._to_url()
 
     def _request(self, url, method='GET'):
-        r = self._manager.connection.request(method, url, headers=self._to_headers())
+        r = self._manager.client.request(method, url, headers=self._to_headers())
         r.raise_for_status()
         return r
 
@@ -210,7 +210,7 @@ class Query(object):
             filter_key = re.split('__', key)
             filter_attr = filter_key[0]
             if filter_attr not in self._manager._meta_attribute('filter_attributes', []):
-                raise NotAValidBasisForFiltration(key)
+                raise ClientValidationError("Invalid filter attribute: %s" % key)
 
             # we use __ as a separator in the Python library, the APIs use '.'
             q._filters['.'.join(filter_key)].append(value)
@@ -226,7 +226,7 @@ class Query(object):
         if sort_key is not None:
             sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
             if sort_attr not in self._manager._meta_attribute('ordering_attributes', []):
-                raise NotAValidBasisForOrdering(sort_key)
+                raise ClientValidationError("Invalid ordering attribute: %s" % sort_key)
 
         q = self._clone()
         q._order_by = sort_key
@@ -318,10 +318,10 @@ class Model(object):
         return self.id and self._manager
 
     @property
-    def _connection(self):
+    def _client(self):
         if not self._manager:
-            raise ValueError("%r must be bound to access a Connection" % self)
-        return self._manager.connection
+            raise ValueError("%r must be bound to access a Client" % self)
+        return self._manager.client
 
     def deserialize(self, data, manager):
         """
@@ -346,7 +346,7 @@ class Model(object):
             if k.endswith('_at') and isinstance(v, six.string_types):
                 v = make_date(v)
             elif k.endswith('_by') and isinstance(v, dict):
-               v = User().deserialize(v, manager.connection.get_manager(User))
+               v = User().deserialize(v, manager.client.get_manager(User))
 
             setattr(self, k, v)
         return self
@@ -360,6 +360,7 @@ class Model(object):
         * attribute values that are ``None`` (unless ``skip_empty`` is ``False``)
         * attribute values that are empty lists/tuples/dicts (unless ``skip_empty`` is ``False``)
         * attribute names in ``Meta.serialize_skip``
+        * constants set on the model class
 
         Inner :py:class:`Model` instances get :py:meth:`serialize` called on them.
         Date and datetime objects are converted into ISO 8601 strings.

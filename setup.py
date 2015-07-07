@@ -12,19 +12,16 @@ from codecs import open
 
 version = ''
 with open('koordinates/__init__.py', 'r') as fd:
-    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-                        fd.read(), re.MULTILINE).group(1)
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
 with open('README.rst', 'r', 'utf-8') as f:
     readme = f.read()
-
-history = ''
 
 setup(
     name='koordinates',
     packages=['koordinates',],
     version=version,
     description='A Python client library for a number of Koordinates web APIs',
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Koordinates Limited',
     author_email='support@koordinates.com',
     url='https://github.com/koordinates/python-client',

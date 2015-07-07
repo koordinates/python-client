@@ -26,7 +26,7 @@ class LicenseManager(base.Manager):
             license (eg. ``nz``)
         :rtype: License
         """
-        target_url = self.connection.get_url(self.URL_KEY, 'GET', 'cc', {'slug': slug, 'jurisdiction': jurisdiction})
+        target_url = self.client.get_url(self.URL_KEY, 'GET', 'cc', {'slug': slug, 'jurisdiction': jurisdiction})
         return self._get(target_url)
 
 

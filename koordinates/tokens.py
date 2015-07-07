@@ -24,14 +24,14 @@ class TokenManager(base.Manager):
     URL_KEY = 'TOKEN'
 
     def delete(self, id ):
-        target_url = self.connection.get_url('TOKEN', 'DELETE', 'single', {'id':id})
+        target_url = self.client.get_url('TOKEN', 'DELETE', 'single', {'id':id})
 
-        r = self.connection.request('DELETE', target_url, headers={'Content-type': 'application/json'})
+        r = self.client.request('DELETE', target_url, headers={'Content-type': 'application/json'})
         r.raise_for_status()
 
 
     def create(self, token, email, password):
-        target_url = self.connection.get_url('TOKEN', 'POST', 'create')
+        target_url = self.client.get_url('TOKEN', 'POST', 'create')
         post_data = {
             'grant_type': 'password',
             'username': email,
@@ -43,7 +43,7 @@ class TokenManager(base.Manager):
         if getattr(token, 'expires_at', None):
             post_data['expires_at'] = token.expires_at
 
-        r = self.connection._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
+        r = self.client._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
         return Token().deserialize(r.json(), self)
 
 
@@ -82,15 +82,15 @@ def console_create():
     import sys
     import requests
     from six.moves import input
-    from koordinates.connection import Connection
+    from koordinates.client import Client
 
     parser = argparse.ArgumentParser(description="Command line tool to create a Koordinates API Token.")
-    parser.add_argument('site', help="Domain (eg. labs.koordinates.com) for the Koordinates site.", metavar="DOMAIN")
-    parser.add_argument('email', help="User account email address")
-    parser.add_argument('name', help="Description/name for the key")
-    parser.add_argument('--scopes', help="Scopes for the new API token", nargs='+')
+    parser.add_argument('site', help="Domain (eg. labs.koordinates.com) for the Koordinates site.", metavar='SITE')
+    parser.add_argument('email', help="User account email address", metavar='EMAIL')
+    parser.add_argument('name', help="Description for the key", metavar='NAME')
+    parser.add_argument('--scopes', help="Scopes for the new API token", nargs='+', metavar="SCOPE")
     parser.add_argument('--referrers', help="Restrict the request referrers for the token. You can use * as a wildcard, eg. *.example.com", nargs='+', metavar='HOST')
-    parser.add_argument('--expires', help="Expiry time (ISO 8601 format)", metavar="TIMESTAMP")
+    parser.add_argument('--expires', help="Expiry time in ISO 8601 (YYYY-MM-DD) format", metavar="DATE")
     args = parser.parse_args()
 
     # check we have a valid-ish looking domain name
@@ -127,7 +127,7 @@ def console_create():
 
     print("\nRequesting token...")
     # need a dummy token here for initialisation
-    client = Connection(host=args.site, token='-dummy-')
+    client = Client(host=args.site, token='-dummy-')
     try:
         token = client.tokens.create(token, args.email, password)
     except requests.HTTPError as e:

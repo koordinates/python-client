@@ -12,17 +12,17 @@ Begin by importing the Koordinates module::
 
     >>> import koordinates
 
-Prepare to use the library by making a connection ::
+Prepare to use the library by creating a client::
 
     >>> client = koordinates.Client('labs.koordinates.com', 'MY_API_TOKEN')
 
-Fetch all the Layer objects via the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API#layers-&-tables-api-layers-&-tables-list>`_ and iterate over them ::
+Fetch all the Layer objects via the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API#layers-&-tables-api-layers-&-tables-list>`_ and iterate over them::
 
     >>> for layer in client.layers.list():
     ...     print(layer.id)
     >>>
 
-Fetch filtered and sorted Layer objects via the `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_ and iterate over them ::
+Fetch filtered and sorted Layer objects via the `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_ and iterate over them::
 
     >>> for layer in client.data.list().filter(license__type='cc')\
     ...                                .filter(type='layer')\
@@ -31,7 +31,7 @@ Fetch filtered and sorted Layer objects via the `Data Catalog API <https://suppo
     >>>
 
 
-Fetch a single Layer object ::
+Fetch a single Layer object::
 
     >>> # Fetch the Layer with id = 123
     >>> layer = client.layers.get(123)
@@ -39,7 +39,7 @@ Fetch a single Layer object ::
     >>>
 
 Make use of the hierarchy of data within a single object exposed as Python 
-class instances via the library ::
+class instances via the library::
 
     >>> # Fetch the Layer with id = 123 and extract the 
     >>> # data.crs value
@@ -56,7 +56,7 @@ Create a new Layer from existing datasources::
     >>> layer = client.layers.create(layer)
     >>> print(layer.url)
 
-Publish multiple objects of various types ::
+Publish multiple objects of various types::
 
     >>> # Publish a number of items, in this case one
     >>> # Table and one Layer 
@@ -67,14 +67,14 @@ Publish multiple objects of various types ::
     >>> publish = client.publishing.create(publish)
     >>> print(publish.url)
 
-Reimport an existing Layer from its previous datasources and create a new version ::
+Reimport an existing Layer from its previous datasources and create a new version::
 
     >>> # Take the version with id=9999 of the Layer 
     >>> # with id = 8888 and reimport it 
     >>> layer = client.layers.get(8888)
     >>> layer = layer.reimport()
 
-Publish a specific version of a Layer ::
+Publish a specific version of a Layer::
 
     >>> # Fetch the version with id=9999 of the Layer
     >>> # with id = 8888 and publish it
@@ -87,7 +87,7 @@ Authentication
 
 See the `Token API documentation <https://support.koordinates.com/hc/en-us/articles/204890044>`_ for details on creating API tokens for use with this library.
 
-Once you have an API token, you can either pass it into the `koordinates.Client`_ object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable.::
+Once you have an API token, you can either pass it into the `koordinates.Client`_ object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable. ::
 
     # Pass token explicitly
     client = koordinates.Client(host='labs.koordinates.com', token='abcdef1234567890abcdef')
@@ -105,6 +105,35 @@ In addition to the scopes, the user or group owner of the token needs appropriat
 
 If required permissions aren't present, you will receive a :py:class`Forbidden`_ exception.
 
+Creating tokens from the command line
+-------------------------------------
+
+The library includes a command line tool ``koordinates-create-token`` that can create API tokens. ::
+
+    usage: koordinates-create-token [-h] [--scopes SCOPE [SCOPE ...]]
+                                    [--referrers HOST [HOST ...]] [--expires DATE]
+                                    SITE EMAIL NAME
+
+    Command line tool to create a Koordinates API Token.
+
+    positional arguments:
+      SITE                  Domain (eg. labs.koordinates.com) for the Koordinates
+                            site.
+      EMAIL                 User account email address
+      NAME                  Description for the key
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --scopes SCOPE [SCOPE ...]
+                            Scopes for the new API token
+      --referrers HOST [HOST ...]
+                            Restrict the request referrers for the token. You can
+                            use * as a wildcard, eg. *.example.com
+      --expires DATE        Expiry time in ISO 8601 (YYYY-MM-DD) format
+
+
+The tool will prompt for the Koordinates account password corresponding to the email address, and request a new API token. The token will only be printed once, so you should copy/save it to a safe place.
+
 
 Pagination
 ==========
@@ -115,7 +144,7 @@ The library handles pagination of the results of ``.list()`` and related methods
 Limiting Results
 ================
 
-Limiting the results of ``.list()`` and related methods is available via the python slicing syntax. Only the ``[:N]`` slicing style is supported. For example:::
+Limiting the results of ``.list()`` and related methods is available via the python slicing syntax. Only the ``[:N]`` slicing style is supported. For example: ::
 
     # Limit to a maximum of three results
     for layer in client.layers.list()[:3]:
@@ -125,7 +154,7 @@ Limiting the results of ``.list()`` and related methods is available via the pyt
 Counting Results
 ================
 
-In order to count the results of a query or list, use ``len()``. For example:::
+In order to count the results of a query or list, use ``len()``. For example: ::
 
     print(len(client.layers.list()))
     print(len(client.layers.filter(license='cc')))
@@ -140,14 +169,14 @@ To prevent additional API requests, you can get the API to expand some relations
 
 Not all properties or relations can be expanded. Refer to the Koordinates API documentation for details. **Important:** Using expansions may have `significant` performance implications for some API requests.
 
-To expand results in a list request:::
+To expand results in a list request: ::
 
     for object in client.data.list().expand():
         # object will be a detailed model instance with
         # a full set of attributes
         print(object)
 
-To expand an attribute in a get request:::
+To expand an attribute in a get request: ::
 
     set = client.sets.get(id=123, expand='items')
     # the following get_items() call will use the .expand() results
