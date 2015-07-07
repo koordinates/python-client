@@ -6,9 +6,11 @@ import responses
 
 from koordinates import Token, Client
 
-from response_data.responses_10 import token_get_multiple_tokens_good_response
-from response_data.responses_10 import token_get_single_token_good_response
-from response_data.responses_10 import token_good_create
+from response_data.tokens import (
+    token_get_multiple_tokens_good_response,
+    token_get_single_token_good_response,
+    token_good_create,
+)
 
 
 class TestTokens(unittest.TestCase):
