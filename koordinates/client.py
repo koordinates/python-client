@@ -83,7 +83,7 @@ class Client(object):
         """
         return self._manager_map[model]
 
-    def assemble_headers(self, method, user_headers=None):
+    def _assemble_headers(self, method, user_headers=None):
         """
         Takes the supplied headers and adds in any which
         are defined at a client level and then returns
@@ -108,7 +108,7 @@ class Client(object):
         return headers
 
     def request(self, method, url, *args, **kwargs):
-        headers = self.assemble_headers(method, kwargs.pop("headers", {}))
+        headers = self._assemble_headers(method, kwargs.pop("headers", {}))
         r = self._raw_request(method, url, headers, *args, **kwargs)
 
         if method == 'POST':
