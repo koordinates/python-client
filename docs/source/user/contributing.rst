@@ -24,8 +24,7 @@ If you're uncertain about how to write tests, take a look at some existing tests
 Release Process
 ---------------
 
-This process describes the steps to execute in order to release a new version. In this example, ``0.0.0``
-
+This guide describes the process to release a new version of the library. In this example, ``v0.0.0``. The library follows the `Semantic Versioning guidelines <http://semver.org/>`_, so select major, minor, and patch version numbers appropriately.
 
 Preparations
 ~~~~~~~~~~~~
@@ -36,8 +35,7 @@ Preparations
 #. Update the *minimum* required versions of dependencies in :file:`setup.py`.
    Update the *exact* version of all entries in :file:`requirements.txt`.
 
-#. Run :command:`tox` from the project root. All tests for all supported
-   versions must pass:
+#. Run :command:`tox` from the project root. All tests for all supported Python versions must pass:
 
    .. code-block:: bash
 
@@ -53,7 +51,7 @@ Preparations
     Tox will use the :file:`requirements.txt` to setup the virtualenvs, so make sure
     you've updated it!
 
-#. Build the docs. Make sure there are no errors and undefined references.
+#. Build the Sphinx docs. Make sure there are no errors and undefined references.
 
    .. code-block:: bash
 
@@ -125,7 +123,8 @@ Build and release
 
    .. code-block:: bash
 
-    $ twine upload -r test dist/koordinates*0.0.0*
+    $ python setup.py register -r test
+    $ python setup.py sdist upload -r test
     $ pip install -i https://testpypi.python.org/pypi koordinates
 
 #. Check if the package is displayed correctly:
@@ -135,7 +134,8 @@ Build and release
 
    .. code-block:: bash
 
-    $ twine upload -r pypi dist/koordinates*0.0.0*
+    $ python setup.py register -r pypi
+    $ python setup.py sdist upload -r pypi
     $ pip install -U koordinates
 
 #. Check the package is displayed correctly:

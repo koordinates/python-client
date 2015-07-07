@@ -10,7 +10,7 @@ The library provides easy access to Koordinates web services, particularly the `
 Installation
 ============
 
-To install the latest stable release of the library, simply:::
+To install the latest stable release of the library, simply::
 
     $ pip install koordinates
 
@@ -20,7 +20,8 @@ The library is compatible with Python 2.7 & Python 3.3+.
 Documentation
 =============
 
-Documentation is available at `http://koordinates-python.readthedocs.org`_
+* `Documentation for the Python library <http://koordinates-python.readthedocs.org>`_.
+* `Documentation on the APIs and available actions <https://support.koordinates.com/hc/en-us/sections/200876264-Koordinates-Administration-API>`_.
 
 
 Support & Contributions
