@@ -13,7 +13,6 @@ import sys
 import requests
 
 from . import layers, licenses, metadata, publishing, sets, tokens, users
-from .publishrequest import PublishRequest
 from . import exceptions
 
 

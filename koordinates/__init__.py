@@ -30,7 +30,6 @@ from .layers import Layer, Table
 from .licenses import License
 from .metadata import Metadata
 from .publishing import Publish
-from .publishrequest import PublishRequest
 from .sets import Set
 from .tokens import Token
 from .users import Group, User
