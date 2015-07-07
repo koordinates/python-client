@@ -10,6 +10,7 @@ import unittest
 import responses
 
 from koordinates import Client, Table, Layer, Set
+from koordinates.catalog import CatalogEntry
 
 from response_data.catalog import response_1
 
@@ -49,3 +50,10 @@ class CatalogTests(unittest.TestCase):
         results = list(self.client.catalog.list_latest().filter(version__status='importing'))
         self.assertEqual(len(results), 14)
 
+    def test_nocreate(self):
+        with self.assertRaises(TypeError):
+            CatalogEntry()
+
+    def test_no_get(self):
+        with self.assertRaises(NotImplementedError):
+            self.client.catalog.get(1)

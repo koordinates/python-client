@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class CatalogManager(base.Manager):
     URL_KEY = 'CATALOG'
 
-    def get(self):
+    def get(self, *args, **kwargs):
         raise NotImplementedError("No support for getting individual items via the Catalog API")
 
     def list(self):

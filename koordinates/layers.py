@@ -9,10 +9,7 @@ For getting, editing and updating layers and tables.
 """
 import logging
 
-from .utils import (
-    make_date,
-    make_date_list_from_string_list,
-)
+from .utils import make_date
 from . import base
 from .licenses import License
 from .metadata import Metadata, MetadataManager

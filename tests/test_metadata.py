@@ -70,7 +70,7 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(s.getvalue().decode("utf-8"), "<native>")
 
     @responses.activate
-    def test_set_xml(self):
+    def test_layer_set_xml(self):
         lv_url = self.client.get_url('VERSION', 'GET', 'single', {'layer_id': 1474, 'version_id': 4067})
         responses.add(responses.GET,
                       lv_url,
@@ -101,7 +101,7 @@ class MetadataTests(unittest.TestCase):
         self.assert_(layer.metadata is not old_meta)
 
     @responses.activate
-    def test_set_xml_manager(self):
+    def test_layer_set_xml_manager(self):
         lv_url = self.client.get_url('VERSION', 'GET', 'single', {'layer_id': 1474, 'version_id': 4067})
         responses.add(responses.GET,
                       lv_url,
@@ -123,5 +123,4 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(responses.calls[0].request.body.getvalue(), "<test>")
 
         self.assertEqual(r, None)
-
 

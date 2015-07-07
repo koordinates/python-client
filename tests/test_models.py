@@ -6,6 +6,7 @@ from six.moves.urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Client
 from koordinates.exceptions import ClientValidationError
+from koordinates.utils import is_bound
 
 
 class FooManager(base.Manager):
@@ -38,6 +39,11 @@ class FooModel(base.Model):
         manager = FooManager
         ordering_attributes = ['sortable']
         filter_attributes = ['filterable', 'thing', 'other', 'b1']
+        serialize_skip = ['noserialize']
+
+    @is_bound
+    def test_is_bound(self):
+        pass
 
 
 class ModelTests(unittest.TestCase):
@@ -94,7 +100,7 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(o.mylist, [1, 2])
 
     def test_serialize(self):
-        o = FooModel(id=1234, attr='test')
+        o = FooModel(id=1234, attr='test', noserialize=1)
         self.assertEqual(o.serialize(), {
             'attr': 'test',
             'id': 1234,
@@ -149,6 +155,23 @@ class ModelTests(unittest.TestCase):
         else:
             assert False, "Should have received an AttributeError for not having Meta.manager set"
 
+    def test_is_bound(self):
+        with self.assertRaises(ValueError):
+            # needs a manager set
+            FooModel().test_is_bound()
+
+        with self.assertRaises(ValueError):
+            # needs a manager set
+            FooModel(id=123).test_is_bound()
+
+        with self.assertRaises(ValueError):
+            # needs 'id' set
+            f = self.mgr.create_from_result({})
+            f.test_is_bound()
+
+        # bound
+        f = self.mgr.create_from_result({"id": 123})
+        f.test_is_bound()
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
