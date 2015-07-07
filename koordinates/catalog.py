@@ -46,7 +46,7 @@ class CatalogManager(base.Manager):
         try:
             klass = self._get_item_class(result['url'])
             obj = klass()
-            return obj.deserialize(result, self.client.get_manager(klass))
+            return obj._deserialize(result, self.client.get_manager(klass))
         except NotImplementedError:
             # return as dict
             return result

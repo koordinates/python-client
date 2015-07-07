@@ -47,8 +47,8 @@ class LayerManager(base.Manager):
         :return: the new draft version of the layer.
         """
         target_url = self.client.get_url('LAYER', 'POST', 'create')
-        r = self.client.request('POST', target_url, json=layer.serialize())
-        return layer.deserialize(r.json(), self)
+        r = self.client.request('POST', target_url, json=layer._serialize())
+        return layer._deserialize(r.json(), self)
 
     def list_versions(self, layer_id):
         """
@@ -145,20 +145,20 @@ class Layer(base.Model):
         )
         ordering_attributes = ('name', 'created_at', 'updated_at', 'popularity',)
 
-    def serialize(self, with_data=True):
-        o = super(Layer, self).serialize()
+    def _serialize(self, with_data=True):
+        o = super(Layer, self)._serialize()
         if not with_data and ('data' in o):
             del o['data']
         return o
 
-    def deserialize(self, data, manager):
-        super(Layer, self).deserialize(data, manager)
-        self.group = Group().deserialize(data["group"], manager.client.get_manager(Group)) if data.get("group") else None
-        self.data = LayerData().deserialize(data["data"], manager._data, self) if data.get("data") else None
-        self.version = LayerVersion().deserialize(data["version"], manager.versions, self) if data.get("version") else None
+    def _deserialize(self, data, manager):
+        super(Layer, self)._deserialize(data, manager)
+        self.group = Group()._deserialize(data["group"], manager.client.get_manager(Group)) if data.get("group") else None
+        self.data = LayerData()._deserialize(data["data"], manager._data, self) if data.get("data") else None
+        self.version = LayerVersion()._deserialize(data["version"], manager.versions, self) if data.get("version") else None
         self.collected_at = [make_date(d) for d in data["collected_at"]] if data.get('collected_at') else None
-        self.license = License().deserialize(data["license"], manager.client.get_manager(License)) if data.get("license") else None
-        self.metadata = Metadata().deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+        self.license = License()._deserialize(data["license"], manager.client.get_manager(License)) if data.get("license") else None
+        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
         return self
 
     @is_bound
@@ -229,7 +229,7 @@ class Layer(base.Model):
 
         target_url = self._client.get_url('VERSION', 'POST', 'import', {'layer_id': self.id, 'version_id': version_id})
         r = self._client.request('POST', target_url)
-        return self.deserialize(r.json(), self._manager)
+        return self._deserialize(r.json(), self._manager)
 
     @is_bound
     def start_update(self):
@@ -272,8 +272,8 @@ class Layer(base.Model):
         :raises NotAllowed: if the version is already published.
         """
         target_url = self._client.get_url('VERSION', 'PUT', 'edit', {'layer_id': self.id, 'version_id': self.version.id})
-        r = self._client.request('PUT', target_url, json=self.serialize(with_data=with_data))
-        return self.deserialize(r.json(), self._manager)
+        r = self._client.request('PUT', target_url, json=self._serialize(with_data=with_data))
+        return self._deserialize(r.json(), self._manager)
 
     @is_bound
     def delete_version(self, version_id=None):
@@ -315,7 +315,7 @@ class Layer(base.Model):
 
         # reload myself
         r = self._client.request('GET', base_url)
-        return self.deserialize(r.json(), self._manager)
+        return self._deserialize(r.json(), self._manager)
 
 
 class LayerVersionManager(base.InnerManager):

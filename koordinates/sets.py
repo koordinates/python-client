@@ -30,8 +30,8 @@ class SetManager(base.Manager):
 
     def create(self, set):
         target_url = self.client.get_url('SET', 'POST', 'create')
-        r = self.client.request('POST', target_url, json=set.serialize())
-        return set.deserialize(r.json(), self)
+        r = self.client.request('POST', target_url, json=set._serialize())
+        return set._deserialize(r.json(), self)
 
     def set_metadata(self, set_id, fp):
         base_url = self.client.get_url('SET', 'GET', 'single', {'id': set_id})
@@ -43,17 +43,17 @@ class Set(base.Model):
     class Meta:
         manager = SetManager
 
-    def deserialize(self, data, manager):
-        super(Set, self).deserialize(data, manager)
-        self.group = Group().deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
-        self.metadata = Metadata().deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+    def _deserialize(self, data, manager):
+        super(Set, self)._deserialize(data, manager)
+        self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
+        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
         return self
 
     @is_bound
     def save(self):
         target_url = self._client.get_url('SET', 'PUT', 'update', {'id': self.id})
-        r = self._client.request('PUT', target_url, json=self.serialize())
-        return self.deserialize(r.json(), self._manager)
+        r = self._client.request('PUT', target_url, json=self._serialize())
+        return self._deserialize(r.json(), self._manager)
 
     @is_bound
     def set_metadata(self, fp):
@@ -62,4 +62,4 @@ class Set(base.Model):
 
         # reload myself
         r = self._client.request('GET', base_url)
-        return self.deserialize(r.json(), self._manager)
+        return self._deserialize(r.json(), self._manager)

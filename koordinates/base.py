@@ -34,7 +34,7 @@ class BaseManager(object):
 
     def create_from_result(self, result):
         obj = self.model()
-        return obj.deserialize(result, self)
+        return obj._deserialize(result, self)
 
     def _get(self, target_url, expand=[]):
         headers = {}
@@ -334,7 +334,7 @@ class Model(object):
             ordering_attributes = []
             # Attributes available for filtering
             filter_attributes = []
-            # For the default implementation of .serialize(), attributes to skip.
+            # For the default implementation of ._serialize(), attributes to skip.
             serialize_skip = []
         ...
     """
@@ -368,7 +368,7 @@ class Model(object):
             object.__setattr__(value, '_parent', self)
         object.__setattr__(self, name, value)
 
-    def deserialize(self, data, manager):
+    def _deserialize(self, data, manager):
         """
         Deserialise from JSON response data.
 
@@ -391,12 +391,12 @@ class Model(object):
             if k.endswith('_at') and isinstance(v, six.string_types):
                 v = make_date(v)
             elif k.endswith('_by') and isinstance(v, dict):
-               v = User().deserialize(v, manager.client.get_manager(User))
+               v = User()._deserialize(v, manager.client.get_manager(User))
 
             setattr(self, k, v)
         return self
 
-    def serialize(self, skip_empty=True):
+    def _serialize(self, skip_empty=True):
         """
         Serialise this instance into JSON-style request data.
 
@@ -407,7 +407,7 @@ class Model(object):
         * attribute names in ``Meta.serialize_skip``
         * constants set on the model class
 
-        Inner :py:class:`Model` instances get :py:meth:`serialize` called on them.
+        Inner :py:class:`Model` instances get :py:meth:`_serialize` called on them.
         Date and datetime objects are converted into ISO 8601 strings.
 
         :param bool skip_empty: whether to skip attributes where the value is ``None``
@@ -431,14 +431,14 @@ class Model(object):
 
     def _serialize_value(self, value):
         """
-        Called by :py:meth:`serialize` to serialise an individual value.
+        Called by :py:meth:`_serialize` to serialise an individual value.
         """
         if isinstance(value, (list, tuple, set)):
             return [self._serialize_value(v) for v in value]
         elif isinstance(value, dict):
             return dict([(k, self._serialize_value(v)) for k, v in value.items()])
         elif isinstance(value, Model):
-            return value.serialize()
+            return value._serialize()
         elif isinstance(value, datetime.date):  # includes datetime.datetime
             return value.isoformat()
         else:
@@ -457,8 +457,8 @@ class InnerModel(Model):
     def _client(self):
         return self._parent._client
 
-    def deserialize(self, data, manager, parent):
+    def _deserialize(self, data, manager, parent):
         self._parent = parent
-        return super(InnerModel, self).deserialize(data, manager)
+        return super(InnerModel, self)._deserialize(data, manager)
 
 

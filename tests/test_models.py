@@ -73,12 +73,12 @@ class ModelTests(unittest.TestCase):
         self.assert_(o._manager is self.mgr)
 
     def test_deserialize(self):
-        o = FooModel().deserialize({'id': '12345'}, self.mgr)
+        o = FooModel()._deserialize({'id': '12345'}, self.mgr)
         self.assert_(isinstance(o, FooModel))
         self.assert_(o._manager is self.mgr)
 
         o = FooModel(id=1234, attr='test1')
-        o2 = o.deserialize({'attr': 'test2', 'attr2': 'test3'}, self.mgr)
+        o2 = o._deserialize({'attr': 'test2', 'attr2': 'test3'}, self.mgr)
         self.assert_(o2 is o)
         self.assertEqual(o2.attr, 'test2')
         self.assertEqual(o2.id, 1234)
@@ -87,12 +87,12 @@ class ModelTests(unittest.TestCase):
         mgr2 = FooManager(self.client)
         o = FooModel(id=1234)
         o._manager = self.mgr
-        o2 = o.deserialize({}, mgr2)
+        o2 = o._deserialize({}, mgr2)
         self.assert_(o2 is o)
         self.assertEqual(o2._manager, mgr2)
 
     def test_deserialize_list(self):
-        o = FooModel().deserialize({
+        o = FooModel()._deserialize({
                 'mylist': [1, 2],
                 'created_at': ['2013-01-01', '2014-01-01'],
             }, self.mgr)
@@ -101,7 +101,7 @@ class ModelTests(unittest.TestCase):
 
     def test_serialize(self):
         o = FooModel(id=1234, attr='test', noserialize=1)
-        self.assertEqual(o.serialize(), {
+        self.assertEqual(o._serialize(), {
             'attr': 'test',
             'id': 1234,
         })
