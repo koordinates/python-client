@@ -1,19 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-test_koordinates
-----------------------------------
-
-Tests for `koordinates` module.
-
-:copyright: (c) 2015 by Koordinates .
-:license: BSD, see LICENSE for more details.
-"
+General tests.
 """
 from __future__ import unicode_literals, absolute_import
 
 import unittest
-import uuid
 from six.moves import urllib
 
 import responses
@@ -61,22 +53,6 @@ class TestKoordinates(unittest.TestCase):
     def test_instantiate_datasource_class(self):
         ds = layers.Datasource(99)
         self.assertEqual(ds.id, 99)
-
-    def test_instantiate_licence_class(self):
-        li = koordinates.License(id=99,
-                        title="Creative Commons Attribution 3.0 New Zealand",
-                        type="cc-by",
-                        jurisdiction="nz",
-                        version="3.0",
-                        url="https://koordinates.com/services/api/v1/licenses/9/",
-                        url_html="https://koordinates.com/license/attribution-3-0-new-zealand/")
-        self.assertEqual(li.id, 99)
-        self.assertEqual(li.title, "Creative Commons Attribution 3.0 New Zealand")
-        self.assertEqual(li.type, 'cc-by')
-        self.assertEqual(li.jurisdiction, "nz")
-        self.assertEqual(li.version, "3.0")
-        self.assertEqual(li.url, "https://koordinates.com/services/api/v1/licenses/9/")
-        self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
 
     @unittest.skip("FIXME")
     def test_instantiate_field_class(self):
