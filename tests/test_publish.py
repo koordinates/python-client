@@ -142,7 +142,7 @@ class TestKoordinatesPublishing(unittest.TestCase):
           body=the_response, status=200,
           content_type='application/json')
 
-        lv = self.client.layers.versions.get(1474, 4067)
+        lv = self.client.layers.get_version(1474, 4067)
 
         self.assertEqual(lv.id, 1474)
         self.assertEqual(lv.version.id, 4067)

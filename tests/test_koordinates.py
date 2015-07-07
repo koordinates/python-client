@@ -78,15 +78,6 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(li.url, "https://koordinates.com/services/api/v1/licenses/9/")
         self.assertEqual(li.url_html, "https://koordinates.com/license/attribution-3-0-new-zealand/")
 
-    def test_instantiate_metadata_class(self):
-        m = koordinates.Metadata(iso="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/",
-                                 dc="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/",
-                                 native="https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
-
-        self.assertEqual(m.iso, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/iso/")
-        self.assertEqual(m.dc, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/dc/")
-        self.assertEqual(m.native, "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/")
-
     @unittest.skip("FIXME")
     def test_instantiate_field_class(self):
         f = koordinates.Field("Field Name", "integer")
@@ -283,7 +274,7 @@ class TestKoordinates(unittest.TestCase):
                       body=the_response, status=202,
                       content_type='application/json')
 
-        self.test_client.layers.versions.start_import(layer_id, version_id)
+        self.test_client.layers.start_import(layer_id, version_id)
 
     @responses.activate
     def test_layer_hierarchy_of_classes(self):
@@ -391,7 +382,7 @@ class TestKoordinates(unittest.TestCase):
 
         cnt_of_versions_returned = 0
 
-        for version in self.client.layers.versions.list(layer_id=1474):
+        for version in self.client.layers.list_versions(layer_id=1474):
             cnt_of_versions_returned += 1
 
         self.assertEqual(cnt_of_versions_returned, 2)

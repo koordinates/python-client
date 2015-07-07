@@ -47,7 +47,9 @@ class BaseManager(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class InnerManager(BaseManager):
-    pass
+    def __init__(self, client, parent):
+        super(InnerManager, self).__init__(client)
+        self.parent = parent
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -287,8 +289,9 @@ class ModelMeta(type):
         klass = super(ModelMeta, meta).__new__(meta, name, bases, attrs)
         try:
             Model
+            InnerModel
         except NameError:
-            # klass is Model, it doesn't have a `Meta:` object
+            # klass is Model/InnerModel, it doesn't have a `Meta:` object
             pass
         else:
             if not hasattr(klass, "Meta"):
@@ -339,7 +342,7 @@ class Model(object):
         return "<%s: %s>" % (self.__class__.__name__, self)
 
     def __str__(self):
-        s = str(self.id)
+        s = str(getattr(self, "id", None))
         if getattr(self, 'title', None):
             s += " - %s" % self.title
         return s
@@ -352,13 +355,18 @@ class Model(object):
 
     @property
     def _is_bound(self):
-        return self.id and self._manager
+        return bool(self.id and self._manager)
 
     @property
     def _client(self):
         if not self._manager:
             raise ValueError("%r must be bound to access a Client" % self)
         return self._manager.client
+
+    def __setattr__(self, name, value):
+        if isinstance(value, Model) and not name.startswith('_'):
+            object.__setattr__(value, '_parent', self)
+        object.__setattr__(self, name, value)
 
     def deserialize(self, data, manager):
         """
@@ -435,4 +443,22 @@ class Model(object):
             return value.isoformat()
         else:
             return value
+
+class InnerModel(Model):
+    def __init__(self, **kwargs):
+        self._parent = None
+        super(InnerModel, self).__init__(**kwargs)
+
+    @property
+    def _is_bound(self):
+        return bool(self._parent)
+
+    @property
+    def _client(self):
+        return self._parent._client
+
+    def deserialize(self, data, manager, parent):
+        self._parent = parent
+        return super(InnerModel, self).deserialize(data, manager)
+
 

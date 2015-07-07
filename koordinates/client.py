@@ -12,7 +12,7 @@ import sys
 
 import requests
 
-from . import layers, licenses, metadata, publishing, sets, tokens, users, catalog
+from . import layers, licenses, publishing, sets, tokens, users, catalog
 from . import exceptions
 
 
@@ -59,7 +59,6 @@ class Client(object):
             private=(
                 users.GroupManager,
                 users.UserManager,
-                metadata.MetadataManager,
             )
         )
 
@@ -145,6 +144,13 @@ class Client(object):
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
 
+    def get_url_path(self, datatype, verb, urltype, params={}, api_version=None):
+        api_version = api_version or 'v1'
+        templates = getattr(self, 'URL_TEMPLATES__%s' % api_version)
+
+        url = templates[datatype][verb][urltype]
+        return url.format(**params)
+
     def get_url(self, datatype, verb, urltype, params={}, api_host=None, api_version=None):
         """Returns a fully formed url
 
@@ -162,10 +168,8 @@ class Client(object):
         subst['api_host'] = api_host
         subst['api_version'] = api_version
 
-        templates = getattr(self, 'URL_TEMPLATES__%s' % api_version)
-
         url = "https://{api_host}/services/api/{api_version}"
-        url += templates[datatype][verb][urltype]
+        url += self.get_url_path(datatype, verb, urltype, params, api_version)
         return url.format(**subst)
 
     URL_TEMPLATES__v1 = {
@@ -184,6 +188,7 @@ class Client(object):
         'SET': {
             'GET': {
                 'single': '/sets/{id}/',
+                'metadata': '/sets/{id}/metadata',
                 'multi': '/sets/',
             },
             'POST': {
@@ -249,4 +254,10 @@ class Client(object):
                 'cc': '/licenses/{slug}/{jurisdiction}/',
             },
         },
+        'METADATA': {
+            # InnerManager, so relative to a parent object
+            'POST': {
+                'set': 'metadata/',
+            }
+        }
     }
