@@ -68,8 +68,8 @@ class Token(base.Model):
 
     @is_bound
     def save(self):
-        target_url = self._connection.get_url('TOKEN', 'PUT', 'update', {'id': self.id})
-        r = self._connection.request('PUT', target_url, json=self.serialize())
+        target_url = self._client.get_url('TOKEN', 'PUT', 'update', {'id': self.id})
+        r = self._client.request('PUT', target_url, json=self.serialize())
         return self.deserialize(r.json(), self._manager)
 
 
