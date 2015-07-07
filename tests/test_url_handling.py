@@ -1,15 +1,9 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
-test_koordinates
-----------------------------------
+test_url_handling
+-----------------
 
-Tests for `koordinates` module.
-
-:copyright: (c) 2015 by Koordinates .
-:license: BSD, see LICENSE for more details.
-"
+URL lookup tests
 """
 from __future__ import unicode_literals
 
@@ -53,7 +47,3 @@ class TestKoordinatesURLHandling(unittest.TestCase):
     def test_layer_versions_multi_url(self, layer_id=1494, version_id=4067):
         self.assertEqual(self.client.get_url('VERSION', 'GET', 'multi', {'layer_id':layer_id}),
                         '''https://koordinates.com/services/api/v1/layers/1494/versions/''')
-
-
-if __name__ == '__main__':
-    unittest.main()

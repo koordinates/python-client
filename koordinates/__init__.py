@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 '''
-Koordinates API Library
+Koordinates Python API Client Library
 
-:copyright: (c) Koordinates .
+:copyright: (c) Koordinates Limited.
 :license: BSD, see LICENSE for more details.
-
 '''
-__version__ = '0.0.1'
+
+__version__ = '0.1.0'
 
 from .exceptions import (
     KoordinatesException,
@@ -33,4 +33,3 @@ from .publishing import Publish
 from .sets import Set
 from .tokens import Token
 from .users import Group, User
-

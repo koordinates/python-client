@@ -5,17 +5,11 @@
 test_publish
 ----------------------------------
 
-Tests for the publishing part of the
-`koordinates` module.
-
-:copyright: (c) 2015 by Koordinates .
-:license: BSD, see LICENSE for more details.
-"
+Tests for the `koordinates.publishing` module.
 """
 from __future__ import unicode_literals, absolute_import
 
 import unittest
-import uuid
 
 import responses
 
