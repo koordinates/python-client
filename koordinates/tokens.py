@@ -15,7 +15,7 @@ import logging
 
 from koordinates import base
 from koordinates.utils import make_date
-
+from .utils import is_bound
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,13 @@ class Token(base.Model):
     def __str__(self):
         s = "%s (%s): %s" % (self.id, self.name, self.key_hint)
         return s
+
+    @is_bound
+    def save(self):
+        target_url = self._connection.get_url('TOKEN', 'PUT', 'update', {'id': self.id})
+        r = self._connection.request('PUT', target_url, json=self.serialize())
+        return self.deserialize(r.json(), self._manager)
+
 
 
 def console_create():

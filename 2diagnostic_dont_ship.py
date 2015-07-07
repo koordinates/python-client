@@ -36,6 +36,11 @@ def gettoken():
     else:
         raise Exception('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
+def get_id(url):
+    lst_path = os.path.split(url)
+    if lst_path[1] == "":
+        lst_path = os.path.split(lst_path[0])
+    return lst_path[1]
 
 
 def getpass():
@@ -62,14 +67,36 @@ def target_url(id=8093):
     url_templates['GET'] = {}
     url_templates['GET']['single'] = '''https://koordinates.com/services/api/v1/layers/{layer_id}/'''
     return url_templates['GET']['single'].format(layer_id=id)
+def sub_token_test():
+    obj_conn_c = Connection(host='test.koordinates.com')
+    idx = 0
+    target_delete_id = None
+    target_update_id = None
+    tok_for_update = None
+    for tok in obj_conn_c.tokens.list():
+        print(tok.id, " " ,get_id(tok.url), " " , tok.name)
+        if idx == 0:
+            target_delete_id = get_id(tok.url)
+        if idx == 2:
+            tok_for_update = tok
+            target_update_id = get_id(tok.url)
+        idx += 1
+
+    d=datetime.now()
+    my_name = "Test Token - {}".format(d.strftime('%Y%m%dT%H%M%S'))
+    obj_tok = Token(name=my_name)
+    obj_tok.scope = "query tiles catalog wxs:wfs wxs:wms wxs:wcs tokens:write tokens:read "
+    obj_tok.expires_at = '2015-08-01T08:00:00Z'
+    obj_tok.referrers = None
+    obj_tok_new = obj_conn_c.tokens.create(obj_tok, 'rshea@thecubagroup.com', 'mercatorproj1000')
+    print("{} has key of {}".format(obj_tok_new.name, obj_tok_new.key))
+    obj_tok_new.name = obj_tok_new.name + " A"
+    print("{} has key of {}".format(obj_tok_new.name, obj_tok_new.key))
+    obj_tok_new.save()
+
 def main_token_test():
     username = input("What is your userid? ")
     pwd = getpass()
-    def get_id(url):
-        lst_path = os.path.split(url)
-        if lst_path[1] == "":
-            lst_path = os.path.split(lst_path[0])
-        return lst_path[1]
 
     if False:
         #Phase 1
@@ -86,26 +113,38 @@ def main_token_test():
     obj_tok.scope = "query tiles catalog wxs:wfs wxs:wms wxs:wcs tokens:write tokens:read "
     obj_tok.expires_at = '2015-08-01T08:00:00Z'
     obj_tok.referrers = None
-    print("-" * 40)
+    print("1", "-" * 40)
     print("About to create new token named : {}".format(my_name))
-    print("-" * 40)
+    print("2", "-" * 40)
     obj_tok_new = obj_conn_b.tokens.create(obj_tok, 'rshea@thecubagroup.com', 'mercatorproj1000')
     print("Created token with key : {}".format(obj_tok_new.key))
     obj_conn_c = Connection(host='test.koordinates.com', token=obj_tok_new.key)
     print("List existing tokens including new one")
-    is_first = True
-    target_id = None
+    idx = 0
+    target_delete_id = None
+    target_update_id = None
+    tok_for_update = None
     for tok in obj_conn_c.tokens.list():
-        print(get_id(tok.url), " " , tok.name)
-        if is_first:
-            is_first = False
-            target_id = get_id(tok.url)
+        print(tok.id, " " ,get_id(tok.url), " " , tok.name)
+        if idx == 0:
+            target_delete_id = get_id(tok.url)
+        if idx == 2:
+            tok_for_update = tok
+            target_update_id = get_id(tok.url)
+        idx += 1
 
     #Phase 3
-    print("-" * 40)
-    print("About to delete a token with id : {}".format(target_id))
-    obj_conn_c.tokens.delete(target_id)
-    print("Deleted a token with id : {}".format(target_id))
+    print("3", "-" * 40)
+    print("About to delete a token with id : {}".format(target_delete_id))
+    obj_conn_c.tokens.delete(target_delete_id)
+    print("Deleted a token with id : {}".format(target_delete_id))
+    #Phase 4
+    import pdb;pdb.set_trace()
+    print("4", "-" * 40)
+    print("About to update a token with id : {}".format(target_update_id))
+    tok_for_update.name = "{} {}".format(tok_for_update.name, "A")
+    tok_for_update.save()
+    print("Updated a token with id : {}".format(target_delete_id))
 
 
 
@@ -146,7 +185,7 @@ def main(cmdargs):
     url = target_url(id=8093)
     if False:
         main17(username)
-    main_token_test()
+    sub_token_test()
 
 def getcommandlineargs():
     '''
