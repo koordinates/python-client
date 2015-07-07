@@ -24,7 +24,9 @@ The library aims to reflect the available `Koordinates web APIs <https://support
 - `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API>`_
 - `Sets API <https://support.koordinates.com/hc/en-us/articles/205008090-Koordinates-Sets-API>`_
 - `Publishing API <https://support.koordinates.com/hc/en-us/articles/204795854-Koordinates-Publishing-API>`_
-- `Redaction API <https://support.koordinates.com/hc/en-us/articles/205008080-Koordinates-Redaction-API>`_
+- `Licenses API <https://support.koordinates.com/hc/en-us/articles/205008070-Koordinates-License-API>`_
+- `Metadata API <https://support.koordinates.com/hc/en-us/articles/204795834-Koordinates-Metadata-API>`_
+- `Token API <https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API>`_
 
 We're working hard to add support for additional APIs to the library, so expect this list to grow soon.
 
