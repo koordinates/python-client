@@ -58,5 +58,6 @@ setup(
         'responses>=0.3',
         'coverage>=3.7,<4',
     ],
+    zip_safe=False,
 )
 
