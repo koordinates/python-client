@@ -51,7 +51,6 @@ class Publish(base.Model):
         target_url = self._client.get_url('PUBLISH', 'DELETE', 'single', {'id': self.id})
         r = self._client.request('DELETE', target_url)
         logger.info("cancel(): %s", r.status_code)
-        return True
 
     def get_items(self):
         """

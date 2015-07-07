@@ -184,6 +184,9 @@ class Client(object):
                 'create': '/layers/',
                 'update': '/layers/{layer_id}/import/',
             },
+            'DELETE': {
+                'delete': '/layers/{id}/',
+            }
         },
         'SET': {
             'GET': {
@@ -211,7 +214,7 @@ class Client(object):
                 'publish': '/layers/{layer_id}/versions/{version_id}/publish/',
             },
             'PUT': {
-                'update': '/layers/{layer_id}/versions/{version_id}/',
+                'edit': '/layers/{layer_id}/versions/{version_id}/',
             }
         },
         'CATALOG': {
