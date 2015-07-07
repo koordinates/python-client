@@ -12,7 +12,7 @@ class FooManager(base.Manager):
     TEST_LIST_URL = 'https://test.koordinates.com/services/v1/api/foo/'
     TEST_GET_URL = 'https://test.koordinates.com/services/v1/api/foo/%s'
 
-    def list(self, *args, **kwargs):
+    def list(self):
         """
         Fetches a set of Tokens
         """
@@ -25,6 +25,12 @@ class FooManager(base.Manager):
         """
         target_url = self.TEST_GET_URL % id
         return self._get(target_url, expand=expand)
+
+    def list_custom_attrs(self):
+        return base.Query(self, self.TEST_LIST_URL,
+            valid_filter_attributes=('custom',),
+            valid_sort_attributes=('custom',)
+        )
 
 
 class FooModel(base.Model):
@@ -173,9 +179,14 @@ class QueryTests(unittest.TestCase):
         self.assert_('sort=-sortable' in q._to_url())
         self.assert_('sort=sortable' not in q._to_url())
 
-    def test_order_by_invalud(self):
+    def test_order_by_invalid(self):
         base_q = self.foos.list()
         self.assertRaises(ClientValidationError, base_q.order_by, 'invalid')
+
+    def test_order_by_custom(self):
+        base_q = self.foos.list_custom_attrs()
+        self.assertRaises(ClientValidationError, base_q.order_by, 'sortable')
+        base_q.order_by('custom')
 
     def test_clone(self):
         q0 = self.foos.list().filter(thing='bang')
@@ -215,6 +226,11 @@ class QueryTests(unittest.TestCase):
     def test_filter_invalid(self):
         base_q = self.foos.list()
         self.assertRaises(ClientValidationError, base_q.filter, invalid='test')
+
+    def test_filter_custom(self):
+        base_q = self.foos.list_custom_attrs()
+        self.assertRaises(ClientValidationError, base_q.filter, thing='test')
+        base_q.filter(custom=12)
 
     def test_extra(self):
         base_q = self.foos.list().filter(thing='value')

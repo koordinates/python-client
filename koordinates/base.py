@@ -52,7 +52,7 @@ class InnerManager(BaseManager):
 
 @six.add_metaclass(abc.ABCMeta)
 class Manager(BaseManager):
-    def list(self, *args, **kwargs):
+    def list(self):
         """
         Fetches a set of Tokens
         """
@@ -91,7 +91,7 @@ class Query(object):
     len() to return the length - this will do the "first" page request
     and examine the X-Resource-Range header to produce a count.
     """
-    def __init__(self, manager, url):
+    def __init__(self, manager, url, valid_filter_attributes=None, valid_sort_attributes=None):
         self._manager = manager
         self._target_url = url
         self._count = None
@@ -99,6 +99,9 @@ class Query(object):
         self._order_by = None
         self._expand = None
         self._extra = collections.defaultdict(list)
+
+        self._valid_filter_attrs = self._manager._meta_attribute('filter_attributes', []) if valid_filter_attributes is None else valid_filter_attributes
+        self._valid_sort_attrs = self._manager._meta_attribute('ordering_attributes', []) if valid_sort_attributes is None else valid_sort_attributes
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self._manager.model.__name__)
@@ -211,7 +214,12 @@ class Query(object):
         return list(itertools.islice(self.__iter__(), k.stop))
 
     def _clone(self):
-        q = Query(self._manager, self._target_url)
+        q = Query(manager=self._manager,
+            url=self._target_url,
+            valid_filter_attributes=self._valid_filter_attrs,
+            valid_sort_attributes=self._valid_sort_attrs
+        )
+
         q._filters = collections.defaultdict(list, copy.deepcopy(self._filters))
         q._order_by = self._order_by
         q._expand = self._expand
@@ -238,7 +246,7 @@ class Query(object):
         for key, value in filters.items():
             filter_key = re.split('__', key)
             filter_attr = filter_key[0]
-            if filter_attr not in self._manager._meta_attribute('filter_attributes', []):
+            if filter_attr not in self._valid_filter_attrs:
                 raise ClientValidationError("Invalid filter attribute: %s" % key)
 
             # we use __ as a separator in the Python library, the APIs use '.'
@@ -254,7 +262,7 @@ class Query(object):
         """
         if sort_key is not None:
             sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
-            if sort_attr not in self._manager._meta_attribute('ordering_attributes', []):
+            if sort_attr not in self._valid_sort_attrs:
                 raise ClientValidationError("Invalid ordering attribute: %s" % sort_key)
 
         q = self._clone()
