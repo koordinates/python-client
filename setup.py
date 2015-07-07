@@ -46,6 +46,17 @@ setup(
             'koordinates-create-token = koordinates.tokens:console_create',
         ],
     },
+    install_requires=[
+        'python-dateutil>=2,<3',
+        'pytz',
+        'requests>=2,<3',
+        'six>=1.9,<2',
+    ],
     test_suite = 'nose.collector',
+    tests_require=[
+        'nose>=1.3,<2',
+        'responses>=0.3',
+        'coverage>=3.7,<4',
+    ],
 )
 
