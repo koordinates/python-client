@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserManager(base.Manager):
-    URL_KEY = 'USER'
+    _URL_KEY = 'USER'
 
 class User(base.Model):
     ''' A User '''
@@ -16,7 +16,7 @@ class User(base.Model):
 
 
 class GroupManager(base.Manager):
-    URL_KEY = 'GROUP'
+    _URL_KEY = 'GROUP'
 
 
 class Group(base.Model):

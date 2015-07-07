@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class PublishManager(base.Manager):
-    URL_KEY = 'PUBLISH'
+    _URL_KEY = 'PUBLISH'
 
     def create(self, publish):
         target_url = self.client.get_url('PUBLISH', 'POST', 'create')

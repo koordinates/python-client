@@ -14,7 +14,7 @@ from . import exceptions
 
 
 class LicenseManager(base.Manager):
-    URL_KEY = 'LICENSE'
+    _URL_KEY = 'LICENSE'
 
     def get_creative_commons(self, slug, jurisdiction=None):
         """Returns the Creative Commons license for the given attributes.
@@ -33,7 +33,7 @@ class LicenseManager(base.Manager):
         if jurisdiction is None:
             jurisdiction = ''
 
-        target_url = self.client.get_url(self.URL_KEY, 'GET', 'cc', {'slug': slug, 'jurisdiction': jurisdiction})
+        target_url = self.client.get_url(self._URL_KEY, 'GET', 'cc', {'slug': slug, 'jurisdiction': jurisdiction})
         return self._get(target_url)
 
 

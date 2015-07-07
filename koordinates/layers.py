@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class LayerManager(base.Manager):
-    URL_KEY = 'LAYER'
+    _URL_KEY = 'LAYER'
 
     def __init__(self, client):
         super(LayerManager, self).__init__(client)
@@ -319,7 +319,7 @@ class Layer(base.Model):
 
 
 class LayerVersionManager(base.InnerManager):
-    URL_KEY = 'VERSION'
+    _URL_KEY = 'VERSION'
 
 
 class LayerVersion(base.InnerModel):
@@ -329,7 +329,7 @@ class LayerVersion(base.InnerModel):
 
 
 class LayerDataManager(base.InnerManager):
-    URL_KEY = 'DATA'
+    _URL_KEY = 'DATA'
 
 class LayerData(base.InnerModel):
     class Meta:

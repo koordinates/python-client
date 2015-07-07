@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class TokenManager(base.Manager):
-    URL_KEY = 'TOKEN'
+    _URL_KEY = 'TOKEN'
 
     def delete(self, id ):
         target_url = self.client.get_url('TOKEN', 'DELETE', 'single', {'id':id})

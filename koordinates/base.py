@@ -23,7 +23,7 @@ class BaseManager(object):
     The Client object needs to set itself on the Manager instance before it's used.
     """
 
-    #URL_KEY = None
+    #_URL_KEY = None
     model = None
 
     def __init__(self, client):
@@ -58,7 +58,7 @@ class Manager(BaseManager):
         """
         Fetches a set of Tokens
         """
-        target_url = self.client.get_url(self.URL_KEY, 'GET', 'multi')
+        target_url = self.client.get_url(self._URL_KEY, 'GET', 'multi')
         return Query(self, target_url)
 
     def get(self, id, expand=[]):
@@ -66,7 +66,7 @@ class Manager(BaseManager):
 
         :param id: ID for the new :class:`Token`  object.
         """
-        target_url = self.client.get_url(self.URL_KEY, 'GET', 'single', {'id': id})
+        target_url = self.client.get_url(self._URL_KEY, 'GET', 'single', {'id': id})
         return self._get(target_url, expand=expand)
 
     # Query methods we delegate

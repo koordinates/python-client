@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class SetManager(base.Manager):
-    URL_KEY = 'SET'
+    _URL_KEY = 'SET'
 
     def __init__(self, client):
         super(SetManager, self).__init__(client)

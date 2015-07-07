@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class CatalogManager(base.Manager):
-    URL_KEY = 'CATALOG'
+    _URL_KEY = 'CATALOG'
 
     def get(self, *args, **kwargs):
         raise NotImplementedError("No support for getting individual items via the Catalog API")
@@ -56,7 +56,7 @@ class CatalogManager(base.Manager):
         A filterable list view of layers, tables, sets, documents and sources, similar to :py:meth:`list`.
         This returns the latest version of each item, regardless of whether or not it has been published.
         """
-        target_url = self.client.get_url(self.URL_KEY, 'GET', 'latest')
+        target_url = self.client.get_url(self._URL_KEY, 'GET', 'latest')
         filter_attrs = self.model._meta.filter_attributes + ('version',)
         return base.Query(self, target_url, valid_filter_attributes=filter_attrs)
 
