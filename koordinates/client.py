@@ -12,7 +12,7 @@ import sys
 
 import requests
 
-from . import layers, licenses, metadata, publishing, sets, tokens, users
+from . import layers, licenses, metadata, publishing, sets, tokens, users, catalog
 from . import exceptions
 
 
@@ -54,6 +54,7 @@ class Client(object):
                 'layers': layers.LayerManager,
                 'tables': layers.TableManager,
                 'licenses': licenses.LicenseManager,
+                'catalog': catalog.CatalogManager,
             },
             private=(
                 users.GroupManager,
@@ -107,44 +108,6 @@ class Client(object):
 
         return headers
 
-    def build_multi_publish_json(self, pub_request, publish_strategy, error_strategy):
-        '''
-        Build a JSON body suitable for the multi-resource
-        publishing
-
-        :param pub_request: a PublishRequest instance .
-        :param pub_strategy: a string defining the publish_strategy.
-        :param error_strategy: a string defining the error_strategy.
-
-        :return: a dictionary which corresponds to the body required\
-                when doing a `Client.multipublish` of resources.
-
-        '''
-
-        pub_request.validate()
-
-        dic_out = {}
-        if publish_strategy:
-            dic_out['publish_strategy'] = publish_strategy
-        if error_strategy:
-            dic_out['error_strategy'] = error_strategy
-
-        lst_items = []
-
-        for table_resource_dict in pub_request.tables:
-            table_resource_dict['hostname'] = self.host
-            target_url = self.get_url('TABLE', 'GET', 'singleversion', table_resource_dict)
-            lst_items.append(target_url)
-
-        for layer_resource_dict in pub_request.layers:
-            layer_resource_dict['hostname'] = self.host
-            target_url = self.get_url('LAYER', 'GET', 'singleversion', layer_resource_dict)
-            lst_items.append(target_url)
-
-        dic_out['items'] = lst_items
-
-        return dic_out
-
     def request(self, method, url, *args, **kwargs):
         headers = self.assemble_headers(method, kwargs.pop("headers", {}))
         r = self._raw_request(method, url, headers, *args, **kwargs)
@@ -181,35 +144,6 @@ class Client(object):
             raise exceptions.ServerError.from_requests_error(e)
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
-
-    def multi_publish(self, pub_request, publish_strategy=None, error_strategy=None):
-        """
-        Publishes a set of items, potentially a mixture of Layers and Tables
-
-        :param pub_request: A `PublishRequest' object specifying what resources are to be published
-        :param pub_strategy: A string defining the publish_strategy. One of: `"individual"`, `"together"`. Default = `"together"`
-        :param error_strategy: a string defining the error_strategy. One of: `"abort"`, `"ignore"`. Default = `"abort"`
-
-        :return: a dictionary which corresponds to the body required\
-                when doing a `Client.multipublish` of resources.
-
-        """
-
-        assert type(pub_request) is PublishRequest,\
-            "The 'pub_request' argument must be a PublishRequest instance"
-        assert publish_strategy in ["individual", "together", None],\
-            "The 'publish_strategy' value must be None or 'individual' or 'together'"
-        assert error_strategy in ["abort", "ignore", None],\
-            "The 'error_strategy' value must be None or 'abort' or 'ignore'"
-
-        dic_args = {}
-        if pub_request.hostname:
-            dic_args = {'hostname': pub_request.hostname}
-
-        target_url = self.get_url('CLIENT', 'POST', 'publishmulti', dic_args)
-        dic_body = self.build_multi_publish_json(pub_request, publish_strategy, error_strategy)
-        r = self.request('POST', target_url, json=dic_body)
-        return r
 
     def get_url(self, datatype, verb, urltype, params={}, api_host=None, api_version=None):
         """Returns a fully formed url
@@ -275,14 +209,10 @@ class Client(object):
                 'update': '/layers/{layer_id}/versions/{version_id}/',
             }
         },
-        'DATA': {
+        'CATALOG': {
             'GET': {
                 'multi': '/data/',
-            },
-        },
-        'TABLE': {
-            'GET': {
-                'singleversion': '/tables/{table_id}/versions/{version_id}/',
+                'latest': '/data/latest/',
             },
         },
         'PUBLISH': {
