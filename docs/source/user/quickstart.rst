@@ -3,12 +3,12 @@
 Quick Start
 ===========
 
-Here's a very short overview of how the library may be used to achieve some
+In this guide, we provide a very short overview of how the library may be used to achieve some
 common tasks.
 
-First off, you need to know the koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See `Authentication`_ for more information. You also need permissions on the site to take actions (eg. creating a Layer).
+Before you begin, you'll need to know the Koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See `Authentication`_ for more information. You'll also need sufficient permissions on the site to take actions (for example, creating a Layer).
 
-Begin by importing the Koordinates module::
+First, import the Koordinates module::
 
     >>> import koordinates
 
@@ -24,9 +24,9 @@ Fetch all the Layer objects via the `Layers & Tables API <https://support.koordi
 
 Fetch filtered and sorted Layer objects via the `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_ and iterate over them::
 
-    >>> for layer in client.data.list().filter(license__type='cc')\
-    ...                                .filter(type='layer')\
-    ...                                .order_by('created_at'):
+    >>> for layer in client.catalog.list().filter(license__type='cc')\
+    ...                                   .filter(type='layer')\
+    ...                                   .order_by('created_at'):
     ...     print(layer.title)
     >>>
 
@@ -67,7 +67,7 @@ Publish multiple objects of various types::
     >>> publish = client.publishing.create(publish)
     >>> print(publish.url)
 
-Reimport an existing Layer from its previous datasources and create a new version::
+Reimport an existing Layer from its previous data sources and create a new version::
 
     >>> # Take the version with id=9999 of the Layer 
     >>> # with id = 8888 and reimport it 
@@ -95,13 +95,13 @@ Once you have an API token, you can either pass it into the `koordinates.Client`
     # Token from environment variable KOORDINATES_TOKEN
     client = koordinates.Client(host='labs.koordinates.com')
 
-Tokens are specific to a Koordinates site, so a token created for eg. ``labs.koordinates.com`` wouldn't be valid for another site (eg. ``koordinates.com``).
+Tokens are specific to a Koordinates site. For example, a token created for ``labs.koordinates.com`` wouldn't be valid for another site, such as ``koordinates.com``.
 
 Tokens need to be `created with scopes appropriate <https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API>`_ for the APIs you are utilising. For example, to query Sets you need a token with the ``sets:read`` scope, and to create or update a Set you need a token with the ``sets:write`` scope.
 
-If a required scope isn't associated with the token, you will receive a `InvalidTokenScope`_ exception.
+If a required scope isn't associated with the token, you will receive an `InvalidTokenScope`_ exception.
 
-In addition to the scopes, the user or group owner of the token needs appropriate permissions for the actions they're attempting to take. For example, viewing a particular Set.
+In addition to the scopes, the user or group owner of the token needs appropriate permissions for the actions they're attempting to take - for example, viewing a particular Set.
 
 If required permissions aren't present, you will receive a :py:class`Forbidden`_ exception.
 
@@ -144,7 +144,7 @@ The library handles pagination of the results of ``.list()`` and related methods
 Limiting Results
 ================
 
-Limiting the results of ``.list()`` and related methods is available via the python slicing syntax. Only the ``[:N]`` slicing style is supported. For example: ::
+Limiting the results of ``.list()`` and related methods is available via the python slicing syntax. Only the ``[:N]`` slicing style is supported. For example::
 
     # Limit to a maximum of three results
     for layer in client.layers.list()[:3]:
@@ -167,16 +167,18 @@ Result Expansion
 
 To prevent additional API requests, you can get the API to expand some relations and levels of detail in responses. 
 
-Not all properties or relations can be expanded. Refer to the Koordinates API documentation for details. **Important:** Using expansions may have `significant` performance implications for some API requests.
+Not all properties or relations can be expanded. Refer to the Koordinates API documentation for details.
 
-To expand results in a list request: ::
+**Important:** Using expansions may have significant performance implications for some API requests.
 
-    for object in client.data.list().expand():
+To expand results in a list request::
+
+    for object in client.catalog.list().expand():
         # object will be a detailed model instance with
         # a full set of attributes
         print(object)
 
-To expand an attribute in a get request: ::
+To expand an attribute in a get request::
 
     set = client.sets.get(id=123, expand='items')
     # the following get_items() call will use the .expand() results

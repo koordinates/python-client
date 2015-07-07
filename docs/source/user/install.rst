@@ -8,7 +8,7 @@ This part of the documentation covers the installation of the Koordinates Python
 Pip
 ---
 
-Installing the Koordinates API Library is simple with `pip <https://pip.pypa.io>`_, just run this in your terminal::
+Installing the Koordinates API Library is simple with `pip <https://pip.pypa.io>`_. All you need to do isrun the following in your terminal::
 
     $ pip install koordinates
 
@@ -26,7 +26,7 @@ You can either clone the public git repository::
 
 Or, download the `latest release <https://github.com/koordinates/python-client/releases/latest>`_.
 
-Once you have a copy of the source, you can embed it in your Python package, or install it into your virtualenv/site-packages easily::
+Once you have a copy of the source, you can embed it in your Python package, or install it into your virtualenv/site-packages::
 
     $ python setup.py install
 
