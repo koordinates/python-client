@@ -4,7 +4,7 @@ class KoordinatesException(Exception):
     def __init__(self, message, **kwargs):
         super(KoordinatesException, self).__init__(message)
         for k, v in kwargs.items():
-            self.k = v
+            setattr(self, k, v)
 
 # Client Errors
 class ClientError(KoordinatesException):

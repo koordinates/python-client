@@ -121,7 +121,7 @@ class Query(object):
             self._count = None
 
     def _to_url(self):
-        """ Serializes this query into a request-able URL including parameters """
+        """ Serialises this query into a request-able URL including parameters """
         url = self._target_url
 
         params = collections.defaultdict(list, copy.deepcopy(self._filters))
@@ -136,16 +136,44 @@ class Query(object):
         return url
 
     def _to_headers(self):
-        """ Serializes this query into a request-able set of headers """
+        """ Serialises this query into a request-able set of headers """
         headers = {}
         if self._expand:
             headers['Expand'] = 'list'
 
         return headers
 
+    def _next_url(self, response):
+        """
+        Return the URL to the next page of results
+
+        Paginate via Link headers
+        Link URLs will include the query parameters, so we can use it as an entire URL.
+        """
+        return response.links.get("page-next", {}).get('url', None)
+
     def __iter__(self):
         """ Execute this query and return the results (generally as Model objects) """
-        url = self._to_url()
+
+        if hasattr(self, '_first_page'):
+            # if len() has been called on this Query, we have a cached page
+            # of results & a next url
+            page_results, url = self._first_page
+            del self._first_page
+        else:
+            url = self._to_url()
+            r = self._request(url)
+            page_results = r.json()
+
+            # Update position
+            self._update_range(r)
+
+            # Point to the next page
+            url = self._next_url(r)
+
+        for raw_result in page_results:
+            yield self._manager.create_from_result(raw_result)
+
         while url:
             r = self._request(url)
             page_results = r.json()
@@ -163,11 +191,12 @@ class Query(object):
     def __len__(self):
         """
         Get the count for the query results. If we've previously started iterating we use
-        that count, otherwise do a HEAD request and look at the X-Resource-Range header.
+        that count, otherwise do a request and look at the X-Resource-Range header.
         """
         if self._count is None:
-            r = self._request(self._to_url(), method='HEAD')
+            r = self._request(self._to_url())
             self._update_range(r)
+            self._first_page = (r.json(), self._next_url(r))
         return self._count
 
     def __getitem__(self, k):

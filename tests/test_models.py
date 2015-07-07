@@ -238,7 +238,7 @@ class QueryTests(unittest.TestCase):
 
     @responses.activate
     def test_count(self):
-        responses.add(responses.HEAD,
+        responses.add(responses.GET,
                       FooManager.TEST_LIST_URL,
                       body="{}",
                       content_type='application/json',
@@ -358,3 +358,32 @@ class QueryTests(unittest.TestCase):
         self.assertRaises(ValueError, lambda qq: qq[:-5], q)
         self.assertRaises(ValueError, lambda qq: qq[:0], q)
         self.assertRaises(ValueError, lambda qq: qq[1:30:2], q)
+
+    @responses.activate
+    def test_list_cast(self):
+        # Test that ``list(query)`` doesn't make an extra HEAD request
+        responses.add(
+            responses.HEAD,
+            FooManager.TEST_LIST_URL,
+            body="",
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '0-10/10',
+            },
+        )
+        responses.add(
+            responses.GET,
+            FooManager.TEST_LIST_URL,
+            body=json.dumps([{'id': id} for id in range(10)]),
+            content_type='application/json',
+            adding_headers={
+                'X-Resource-Range': '0-10/10',
+            },
+        )
+
+        results = list(self.foos.list())
+
+        self.assertEqual(len(responses.calls), 1)
+
+        self.assertEqual(len(results), 10)
+        self.assert_(isinstance(results[0], FooModel))
