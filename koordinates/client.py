@@ -252,6 +252,12 @@ class Client(object):
                 'single': '/sets/{id}/',
                 'multi': '/sets/',
             },
+            'POST': {
+                'create': '/sets/',
+            },
+            'PUT': {
+                'update': '/sets/{set_id}/',
+            },
         },
         'VERSION': {
             'GET': {
