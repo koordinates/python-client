@@ -44,7 +44,7 @@ class TokenManager(base.Manager):
             post_data['expires_at'] = token.expires_at
 
         r = self.client._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
-        return Token().deserialize(r.json(), self)
+        return self.create_from_result(r.json())
 
 
 class Token(base.Model):
@@ -71,7 +71,6 @@ class Token(base.Model):
         target_url = self._client.get_url('TOKEN', 'PUT', 'update', {'id': self.id})
         r = self._client.request('PUT', target_url, json=self.serialize())
         return self.deserialize(r.json(), self._manager)
-
 
 
 def console_create():

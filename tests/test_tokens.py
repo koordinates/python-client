@@ -1,3 +1,5 @@
+from datetime import datetime
+import json
 import unittest
 
 import responses
@@ -32,6 +34,7 @@ class TestTokens(unittest.TestCase):
                 self.assertEqual(token.name, "")
                 self.assertEqual(token.key_hint, "0fooxx...")
                 self.assertEqual(token.url, "https://test.koordinates.com/services/api/v1/tokens/987654/")
+                self.assert_(token._is_bound)
         self.assertEqual(cnt_of_sets_returned, 1)
 
     @responses.activate
@@ -46,6 +49,7 @@ class TestTokens(unittest.TestCase):
         obj_tok = self.client.tokens.get(987654)
 
         self.assert_(isinstance(obj_tok, Token))
+        self.assert_(obj_tok._is_bound)
 
         self.assertEqual(obj_tok.name, "")
         self.assertEqual(obj_tok.key_hint, "0fooxx...")
@@ -92,3 +96,35 @@ class TestTokens(unittest.TestCase):
 
         self.client.tokens.delete(987654)
 
+    @responses.activate
+    def test_update_token(self):
+        the_response = token_get_single_token_good_response
+
+        responses.add(responses.GET,
+                      self.client.get_url('TOKEN', 'GET', 'single', {'id':987654}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        responses.add(responses.PUT,
+                      self.client.get_url('TOKEN', 'PUT', 'update', {'id':987654}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        obj_tok = self.client.tokens.get(987654)
+        self.assert_(isinstance(obj_tok, Token))
+
+        obj_tok.expires_at = datetime(2011, 1, 2, 3, 45)
+        obj_tok.scopes = ['layers:read', 'layers:write']
+
+        self.assertEqual(obj_tok.scope, 'layers:read layers:write')
+
+        obj_tok.save()
+
+        self.assertEqual(len(responses.calls), 2)
+
+        req = json.loads(responses.calls[1].request.body)
+        self.assertEqual(req['scope'], 'layers:read layers:write')
+        self.assertEqual(req['expires_at'], '2011-01-02T03:45:00')
+
+        # reset to server values
+        self.assertEqual(len(obj_tok.scopes), 18)
