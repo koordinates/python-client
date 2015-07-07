@@ -11,7 +11,7 @@ For grouping layers, tables and documents together.
 import logging
 
 from .users import Group
-from .metadata import Metadata
+from .metadata import Metadata, MetadataManager
 from . import base
 from .utils import is_bound
 
@@ -21,6 +21,12 @@ logger = logging.getLogger(__name__)
 
 class SetManager(base.Manager):
     URL_KEY = 'SET'
+
+    def __init__(self, client):
+        super(SetManager, self).__init__(client)
+        # Inner model managers
+        self.metadata = MetadataManager(self)
+
 
     def create(self, set):
         target_url = self.client.get_url('SET', 'POST', 'create')
@@ -32,10 +38,14 @@ class Set(base.Model):
     class Meta:
         manager = SetManager
 
+    def __getattr__(self, name):     
+        print('attr: ', name)
+        return 1
+
     def deserialize(self, data, manager):
         super(Set, self).deserialize(data, manager)
         self.group = Group().deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
-        self.metadata = Metadata().deserialize(data['metadata'], manager.client.get_manager(Metadata)) if data.get("metadata") else None
+        self.metadata = Metadata().deserialize(data['metadata'], manager.client.get_manager(Metadata)) if data.get("metadata") else Metadata()
         return self
 
     @is_bound

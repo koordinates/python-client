@@ -54,11 +54,11 @@ class Client(object):
                 'layers': layers.LayerManager,
                 'tables': layers.TableManager,
                 'licenses': licenses.LicenseManager,
+                'metadata': metadata.MetadataManager,
             },
             private=(
                 users.GroupManager,
                 users.UserManager,
-                metadata.MetadataManager,
             )
         )
 
@@ -250,6 +250,7 @@ class Client(object):
         'SET': {
             'GET': {
                 'single': '/sets/{id}/',
+                'metadata': '/sets/{id}/metadata',
                 'multi': '/sets/',
             },
             'POST': {
