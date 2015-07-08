@@ -63,7 +63,7 @@ Preparations
 
    .. code-block:: bash
 
-    $ git commit -m 'Bump version to 0.0.0' koordinates/__init__.py
+    $ git commit -m 'Version 0.0.0 release' koordinates/__init__.py
 
    .. warning::
 
@@ -89,7 +89,7 @@ Build and release
 
    .. code-block:: bash
 
-    $ rm -rf /tmp/koordinates-sdist  # ensure clean state if ran repeatedly
+    $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist
     $ /tmp/koordinates-sdist/bin/pip install dist/koordinates-0.0.0.tar.gz
     $ /tmp/koordinates-sdist/bin/python
@@ -125,7 +125,10 @@ Build and release
 
     $ python setup.py register -r test
     $ python setup.py sdist upload -r test
-    $ pip install -i https://testpypi.python.org/pypi koordinates
+
+    $ rm -rf /tmp/koordinates-sdist  # ensure clean state
+    $ virtualenv /tmp/koordinates-sdist
+    $ /tmp/koordinates-sdist/bin/pip install -i https://testpypi.python.org/pypi --extra-index-url https://pypi.python.org/pypi koordinates
 
 #. Check if the package is displayed correctly:
    https://testpypi.python.org/pypi/koordinates
@@ -136,6 +139,9 @@ Build and release
 
     $ python setup.py register -r pypi
     $ python setup.py sdist upload -r pypi
+
+    $ rm -rf /tmp/koordinates-sdist  # ensure clean state
+    $ virtualenv /tmp/koordinates-sdist
     $ pip install -U koordinates
 
 #. Check the package is displayed correctly:
