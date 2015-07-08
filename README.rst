@@ -2,7 +2,7 @@
 Koordinates Python API Client
 ==============================
 
-A BSD-licensed Python client library for a number of Koordinates web APIs.
+A BSD-licensed Python client library for a number of `Koordinates <https://koordinates.com>`_ web APIs.
 
 The library provides easy access to Koordinates web services, particularly the `Administration APIs <https://support.koordinates.com/hc/en-us/sections/200876264-Koordinates-Administration-API>`_.
 
