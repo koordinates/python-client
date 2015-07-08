@@ -8,7 +8,7 @@ This part of the documentation covers the installation of the Koordinates Python
 Pip
 ---
 
-Installing the Koordinates API Library is simple with `pip <https://pip.pypa.io>`_. All you need to do isrun the following in your terminal::
+Installing the Python Library is simple with `pip <https://pip.pypa.io>`_. All you need to do is run the following in your terminal::
 
     $ pip install koordinates
 
@@ -34,4 +34,4 @@ Once you have a copy of the source, you can embed it in your Python package, or 
 Upgrading
 ---------
 
-We strongly encourage you to use the latest release of the Library to ensure you get the benefit of fixes, improvements, and new features. The library follows the `Semantic Versioning guidelines <http://semver.org/>`_, so all releases with the same major version number (eg. ``1.x.x``) will be backwards compatible.
+We strongly encourage you to use the latest release of the Python Library to ensure you get the benefit of fixes, improvements, and new features. The library follows the `Semantic Versioning guidelines <http://semver.org/>`_, so all releases with the same major version number (eg. ``1.x.x``) will be backwards compatible.
