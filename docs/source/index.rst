@@ -45,6 +45,7 @@ User Guide
    user/intro
    user/install
    user/quickstart
+   user/api
    user/contributing
 
 API Documentation
@@ -55,7 +56,7 @@ API Documentation
  .. toctree::
     :maxdepth: 3
 
-    koordinates
+    api
 
 Support
 =======
