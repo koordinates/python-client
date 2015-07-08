@@ -16,7 +16,7 @@ Installing the Koordinates API Library is simple with `pip <https://pip.pypa.io>
 Getting the Code
 ----------------
 
-Koordinates API Library is `on GitHub <https://github.com/koordinates/python-client>`_.
+The Koordinates Python Client Library is `on GitHub <https://github.com/koordinates/python-client>`_.
 
 Development occurs in the `master branch <https://github.com/koordinates/python-client/tree/master>`_, and releases are tagged and pushed to PyPI regularly.
 
@@ -34,4 +34,4 @@ Once you have a copy of the source, you can embed it in your Python package, or 
 Upgrading
 ---------
 
-We strongly encourage you to use the latest release of the API to ensure you get the benefit of fixes, improvements, and new features. The library follows the `Semantic Versioning guidelines <http://semver.org/>`_, so all releases with the same major version number (eg. ``1.x.x``) will be backwards compatible.
+We strongly encourage you to use the latest release of the Library to ensure you get the benefit of fixes, improvements, and new features. The library follows the `Semantic Versioning guidelines <http://semver.org/>`_, so all releases with the same major version number (eg. ``1.x.x``) will be backwards compatible.
