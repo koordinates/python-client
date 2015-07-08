@@ -6,7 +6,7 @@ Quick Start
 In this guide, we provide a very short overview of how the library may be used to achieve some
 common tasks.
 
-Before you begin, you'll need to know the Koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See `Authentication`_ for more information. You'll also need sufficient permissions on the site to take actions (for example, creating a Layer).
+Before you begin, you'll need to know the Koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See :ref:`Authentication` for more information. You'll also need sufficient permissions on the site to take actions (for example, creating a Layer).
 
 First, import the Koordinates module::
 
@@ -88,7 +88,7 @@ Authentication
 
 See the `Token API documentation <https://support.koordinates.com/hc/en-us/articles/204890044>`_ for details on creating API tokens for use with this library.
 
-Once you have an API token, you can either pass it into the `koordinates.Client`_ object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable. ::
+Once you have an API token, you can either pass it into the :py:class:`koordinates.client.Client` object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable. ::
 
     # Pass token explicitly
     client = koordinates.Client(host='labs.koordinates.com', token='abcdef1234567890abcdef')
@@ -100,11 +100,11 @@ Tokens are specific to a Koordinates site. For example, a token created for ``la
 
 Tokens need to be `created with scopes appropriate <https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API>`_ for the APIs you are utilising. For example, to query Sets you need a token with the ``sets:read`` scope, and to create or update a Set you need a token with the ``sets:write`` scope.
 
-If a required scope isn't associated with the token, you will receive an `InvalidTokenScope`_ exception.
+If a required scope isn't associated with the token, you will receive an :py:exc:`koordinates.exceptions.InvalidTokenScope` exception.
 
 In addition to the scopes, the user or group owner of the token needs appropriate permissions for the actions they're attempting to take - for example, viewing a particular Set.
 
-If required permissions aren't present, you will receive a :py:class`Forbidden`_ exception.
+If required permissions aren't present, you will receive a :py:exc:`koordinates.exceptions.Forbidden` exception.
 
 Creating tokens from the command line
 -------------------------------------
