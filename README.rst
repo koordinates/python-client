@@ -32,4 +32,3 @@ Support & Contributions
 Please report bugs as `Github issues <https://github.com/koordinates/python-client/issues>`_. For general technical support for the APIs and libraries, please contact us via `support.koordinates.com <https://support.koordinates.com>`_.
 
 We welcome contributions as pull requests - please open a new issue to start a discussion around a feature idea or bug. See the `Contributing notes <>`_ for more details.
-.
