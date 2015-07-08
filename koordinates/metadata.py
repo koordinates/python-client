@@ -49,7 +49,7 @@ class Metadata(base.InnerModel):
 
         :param file fp: A reference to an open file which the content should be written to.
         :param str format: desired format for the output. This should be one of the available
-            formats from :py:meth:`get_formats`_, or :py:const:`FORMAT_NATIVE`_ for the native format.
+            formats from :py:meth:`.get_formats`, or :py:attr:`.FORMAT_NATIVE` for the native format.
         """
         r = self._client.request('GET', getattr(self, format))
         for chunk in r.iter_content(65536):

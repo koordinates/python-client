@@ -61,7 +61,7 @@ class CatalogManager(base.Manager):
 
     def list_latest(self):
         """
-        A filterable list view of layers, tables, sets, documents and sources, similar to :py:meth:`list`.
+        A filterable list view of layers, tables, sets, documents and sources, similar to :py:meth:`.list`.
         This returns the latest version of each item, regardless of whether or not it has been published.
         """
         target_url = self.client.get_url(self._URL_KEY, 'GET', 'latest')

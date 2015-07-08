@@ -30,6 +30,7 @@ Fetch filtered and sorted Layer objects via the `Data Catalog API <https://suppo
     ...     print(layer.title)
     >>>
 
+The results of ``.list()`` returns a :py:class:`Query` object which is chainable. It will only make an API request once it gets iterated over or :py:func:`len` is called on it.
 
 Fetch a single Layer object::
 

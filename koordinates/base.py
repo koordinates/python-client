@@ -407,7 +407,7 @@ class Model(object):
         * attribute names in ``Meta.serialize_skip``
         * constants set on the model class
 
-        Inner :py:class:`Model` instances get :py:meth:`_serialize` called on them.
+        Inner :py:class:`Model` instances get :py:meth:`._serialize` called on them.
         Date and datetime objects are converted into ISO 8601 strings.
 
         :param bool skip_empty: whether to skip attributes where the value is ``None``
@@ -431,7 +431,7 @@ class Model(object):
 
     def _serialize_value(self, value):
         """
-        Called by :py:meth:`_serialize` to serialise an individual value.
+        Called by :py:meth:`._serialize` to serialise an individual value.
         """
         if isinstance(value, (list, tuple, set)):
             return [self._serialize_value(v) for v in value]
