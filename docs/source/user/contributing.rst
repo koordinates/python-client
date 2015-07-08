@@ -49,7 +49,7 @@ Preparations
    .. note::
 
     Tox will use the :file:`requirements.txt` to setup the virtualenvs, so make sure
-    you've updated it!
+    you've updated it.
 
 #. Build the Sphinx docs. Make sure there are no errors and undefined references.
 

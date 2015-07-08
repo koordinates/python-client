@@ -4,9 +4,10 @@
 koordinates.licenses
 ===================
 
-The Koordinates License API provides access to licenses that can be applied to
-layers, tables, sources and documents. It provides access to Creative Commons API
-by property lookup, as well as custom and built-in licenses.
+The `License API <https://support.koordinates.com/hc/en-us/articles/205008070-Koordinates-License-API>`_
+provides access to licenses that can be applied to layers, tables, sources
+and documents. It provides access to Creative Commons API by property
+lookup, as well as custom and built-in licenses.
 """
 
 from . import base
@@ -14,6 +15,12 @@ from . import exceptions
 
 
 class LicenseManager(base.Manager):
+    """
+    Accessor for querying licenses.
+
+    Access via the ``licenses`` property of a :py:class:`koordinates.client.Client` instance.
+    """
+
     _URL_KEY = 'LICENSE'
 
     def get_creative_commons(self, slug, jurisdiction=None):
@@ -39,7 +46,7 @@ class LicenseManager(base.Manager):
 
 class License(base.Model):
     """
-    Licenses that can be applied to layers, tables, sources, and documents.
+    Represents a license that can be applied to layers, tables, sources, and documents.
     """
     class Meta:
         manager = LicenseManager

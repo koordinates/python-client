@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 class KoordinatesException(Exception):
+    """ Base class for all koordinates module errors """
     def __init__(self, message, **kwargs):
         super(KoordinatesException, self).__init__(message)
         for k, v in kwargs.items():
@@ -8,17 +9,20 @@ class KoordinatesException(Exception):
 
 # Client Errors
 class ClientError(KoordinatesException):
+    """ Base class for client errors """
     pass
 
 class ClientValidationError(ClientError):
-    """ Validation error pre-submission to the API """
+    """ Client-side validation error """
     pass
 
 class InvalidAPIVersion(ClientError):
+    """ Invalid API Version """
     pass
 
 # Server Errors
 class ServerError(KoordinatesException):
+    """ Base class for errors returned from the API Servers """
     @classmethod
     def from_requests_error(cls, err):
         """
@@ -51,31 +55,31 @@ class ServerError(KoordinatesException):
             return super(ServerError, self).__str__()
 
 class BadRequest(ServerError):
-    """ Invalid request data or parameters. Check your request. """
+    """ Invalid request data or parameters. Check your request. (400) """
     pass
 class AuthenticationError(ServerError):
-    """ The API token is invalid or expired. """
+    """ The API token is invalid or expired. (401) """
     pass
 class Forbidden(ServerError):
-    """ The API token or user doesn't have access to perform the request. """
+    """ The API token or user doesn't have access to perform the request. (403) """
     pass
 class NotFound(ServerError):
-    """ The requested object was not found. """
+    """ The requested object was not found. (404) """
     pass
 class NotAllowed(ServerError):
-    """ The requested action isn't available for this object. """
+    """ The requested action isn't available for this object. (405) """
     pass
 class Conflict(ServerError):
-    """ The requested action isn't available for this object due to a conflict. """
+    """ The requested action isn't available for this object due to a conflict. (409) """
     pass
 class RateLimitExceeded(ServerError):
-    """ The request has exceeded the API rate limit. Retry the request again later. """
+    """ The request has exceeded the API rate limit. Retry the request again later. (429) """
     pass
 class InternalServerError(ServerError):
-    """ An internal server error has occurred. """
+    """ An internal server error has occurred. (500) """
     pass
 class ServiceUnvailable(ServerError):
-    """ The Koordinates service is currently unavailable. """
+    """ The Koordinates service is currently unavailable. (502/503/504) """
     pass
 
 

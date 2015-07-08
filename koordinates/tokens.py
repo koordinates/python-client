@@ -2,7 +2,7 @@
 
 """
 koordinates.token
-~~~~~~~~~~~~~~~~~
+=================
 
 Support for creating and managing API tokens via the `Token API`__.
 
@@ -21,9 +21,17 @@ logger = logging.getLogger(__name__)
 
 
 class TokenManager(base.Manager):
+    """
+    Accessor for querying Tokens.
+
+    Access via the ``tokens`` property of a :py:class:`koordinates.client.Client` instance.
+    """
+
+
     _URL_KEY = 'TOKEN'
 
     def delete(self, id ):
+        """ Delete a token """
         target_url = self.client.get_url('TOKEN', 'DELETE', 'single', {'id':id})
 
         r = self.client.request('DELETE', target_url, headers={'Content-type': 'application/json'})
@@ -31,6 +39,13 @@ class TokenManager(base.Manager):
 
 
     def create(self, token, email, password):
+        """
+        Create a new token
+
+        :param Token token: Token instance to create.
+        :param str email: Email address of the Koordinates user account.
+        :param str password: Koordinates user account password.
+        """
         target_url = self.client.get_url('TOKEN', 'POST', 'create')
         post_data = {
             'grant_type': 'password',
@@ -48,14 +63,16 @@ class TokenManager(base.Manager):
 
 
 class Token(base.Model):
-    ''' An API Token '''
+    '''
+    Represents an API Token.
+    '''
     class Meta:
         manager = TokenManager
         serialize_skip = ('key',)
 
     @property
     def scopes(self):
-        """ Read/Write accessor for the :ref:`Token.scope` property as a list of scope strings. """
+        """ Read/Write accessor for the :py:attr:`.scope` property as a list of scope strings. """
         return (self.scope or '').split()
 
     @scopes.setter
@@ -68,13 +85,16 @@ class Token(base.Model):
 
     @is_bound
     def save(self):
+        """ Saves changes to a token """
         target_url = self._client.get_url('TOKEN', 'PUT', 'update', {'id': self.id})
         r = self._client.request('PUT', target_url, json=self._serialize())
         return self._deserialize(r.json(), self._manager)
 
 
 def console_create():
-    """ Command line tool to create an API token """
+    """
+    Command line tool (``koordinates-create-token``) used to create an API token.
+    """
     import argparse
     import getpass
     import re

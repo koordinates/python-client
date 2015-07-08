@@ -1,6 +1,7 @@
 """
-The Koordinates Metadata API provides an interface for adding, inspecting
-and downloading XML metadata documents against a range of objects.
+The `Metadata API <https://support.koordinates.com/hc/en-us/articles/204795834-Koordinates-Metadata-API>`_
+provides an interface for adding, inspecting and downloading
+XML metadata documents against a range of objects.
 """
 
 from . import base
@@ -8,6 +9,13 @@ from . import exceptions
 
 
 class MetadataManager(base.InnerManager):
+    """
+    Accessor for querying and updating metadata.
+
+    Access via the ``metadata`` property of :py:class:`koordinates.layers.Layer`
+    or :py:class:`koordinates.sets.Set` instances.
+    """
+
     def set(self, parent_url, fp):
         """
         If the parent object already has XML metadata, it will be overwritten.

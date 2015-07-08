@@ -4,8 +4,9 @@
 koordinates.publishing
 ======================
 
-The Group Publishing API allows for draft versions of versioned objects
-Documents, Layers, and Tables) to be scheduled for publishing together.
+The `Group Publishing API <https://support.koordinates.com/hc/en-us/articles/204795854-Koordinates-Publishing-API>`_
+allows for draft versions of versioned objects Documents,
+Layers, and Tables) to be scheduled for publishing together.
 """
 import logging
 
@@ -17,19 +18,25 @@ logger = logging.getLogger(__name__)
 
 
 class PublishManager(base.Manager):
+    """
+    Accessor for querying Publish groups.
+
+    Access via the ``publishing`` property of a :py:class:`koordinates.client.Client` instance.
+    """
+
     _URL_KEY = 'PUBLISH'
 
     def create(self, publish):
+        """
+        Creates a new publish group.
+        """
         target_url = self.client.get_url('PUBLISH', 'POST', 'create')
         r = self.client.request('POST', target_url, json=publish._serialize())
         return self.create_from_result(r.json())
 
 class Publish(base.Model):
     """
-    The Group Publishing API allows for draft versions of versioned objects
-    (Documents, Layers, and Tables) to be scheduled for publishing together.
-
-    A Publish object describes an active publishing group.
+    Represents an active publishing group.
     """
     class Meta:
         manager = PublishManager
@@ -69,12 +76,18 @@ class Publish(base.Model):
         return results
 
     def add_layer_item(self, layer):
+        """
+        Adds a Layer to the publish group.
+        """
         if not hasattr(layer, 'draft_version'):
             raise ValueError("Layer has no draft_version")
 
         self.items.append(layer.draft_version)
 
     def add_table_item(self, table):
+        """
+        Adds a Table to the publish group.
+        """
         if not hasattr(table, 'draft_version'):
             raise ValueError("Table has no draft_version")
 

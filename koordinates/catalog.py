@@ -4,8 +4,10 @@
 koordinates.catalog
 ===================
 
-The Data Catalog API is a read-only API for listing data from the Koordinates catalog.
-For write access to the listed items, refer to the item specific API endpoints.
+The `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_
+is a read-only API for listing data from the Koordinates catalog.
+For write access to the listed items, refer to the item specific models.
+
 """
 import logging
 
@@ -17,6 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class CatalogManager(base.Manager):
+    """
+    Accessor for querying across the site via the Catalog API.
+
+    Access via the ``catalog`` property of a :py:class:`koordinates.client.Client` instance.
+    """
+
     _URL_KEY = 'CATALOG'
 
     def get(self, *args, **kwargs):

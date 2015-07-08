@@ -4,7 +4,8 @@
 koordinates.layers
 ==================
 
-For getting, editing and updating layers and tables.
+For getting, editing and updating layers and tables, via
+the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API>`_.
 
 """
 import logging
@@ -22,6 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 class LayerManager(base.Manager):
+    """
+    Accessor for querying Layers & Tables.
+
+    Access via the ``layers`` property of a :py:class:`koordinates.client.Client` instance.
+    """
+
     _URL_KEY = 'LAYER'
 
     def __init__(self, client):
@@ -130,12 +137,8 @@ class LayerManager(base.Manager):
 
 
 class Layer(base.Model):
-    '''A Layer
-
-    Layers are objects on the map that consist of one or more separate items,
-    but are manipulated as a single unit. Layers generally reflect collections
-    of objects that you add on top of the map to designate a common
-    association.
+    '''
+    Represents a version of a single Layer or Table.
     '''
     class Meta:
         manager = LayerManager
@@ -323,6 +326,9 @@ class LayerVersionManager(base.InnerManager):
 
 
 class LayerVersion(base.InnerModel):
+    """
+    Represents the ``version`` property of a :py:class:`.Layer` instance.
+    """
     class Meta:
         manager = LayerVersionManager
 
@@ -332,6 +338,9 @@ class LayerDataManager(base.InnerManager):
     _URL_KEY = 'DATA'
 
 class LayerData(base.InnerModel):
+    """
+    Represents the ``data`` property of a :py:class:`.Layer` instance.
+    """
     class Meta:
         manager = LayerDataManager
 

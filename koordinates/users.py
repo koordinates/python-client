@@ -10,7 +10,7 @@ class UserManager(base.Manager):
     _URL_KEY = 'USER'
 
 class User(base.Model):
-    ''' A User '''
+    ''' Represents a Koordinates User '''
     class Meta:
         manager = UserManager
 
@@ -20,5 +20,6 @@ class GroupManager(base.Manager):
 
 
 class Group(base.Model):
+    ''' Represents a Koordinates Group '''
     class Meta:
         manager = GroupManager
