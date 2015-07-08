@@ -7,4 +7,3 @@ Client
 
 .. autoclass:: koordinates.client.Client
     :members:
-    :undoc-members:
