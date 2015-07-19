@@ -164,6 +164,21 @@ class Layer(base.Model):
         self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
         return self
 
+    @property
+    def is_published_version(self):
+        """ Return if this version is the published version of a layer """
+        pub_ver = getattr(self, 'published_version', None)
+        this_ver = getattr(self, 'this_version', None)
+        return this_ver and pub_ver and (this_ver == pub_ver)
+
+    @property
+    def is_draft_version(self):
+        """ Return if this version is the draft version of a layer """
+        pub_ver = getattr(self, 'published_version', None)
+        latest_ver = getattr(self, 'latest_version', None)
+        this_ver = getattr(self, 'this_version', None)
+        return this_ver and latest_ver and (this_ver == latest_ver) and (latest_ver != pub_ver)
+
     @is_bound
     def list_versions(self):
         """
