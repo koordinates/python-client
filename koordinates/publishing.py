@@ -79,16 +79,16 @@ class Publish(base.Model):
         """
         Adds a Layer to the publish group.
         """
-        if not hasattr(layer, 'draft_version'):
-            raise ValueError("Layer has no draft_version")
+        if not layer.is_draft_version:
+            raise ValueError("Layer isn't a draft version")
 
-        self.items.append(layer.draft_version)
+        self.items.append(layer.latest_version)
 
     def add_table_item(self, table):
         """
         Adds a Table to the publish group.
         """
-        if not hasattr(table, 'draft_version'):
-            raise ValueError("Table has no draft_version")
+        if not table.is_draft_version:
+            raise ValueError("Table isn't a draft version")
 
-        self.items.append(table.draft_version)
+        self.items.append(table.latest_version)
