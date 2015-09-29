@@ -38,16 +38,20 @@ class ServerError(KoordinatesException):
     def __init__(self, message=None, error=None, response=None):
         self.response = response
         if not message:
-            if response:
-                message = "%s %s" % (response.status_code, response.reason)
-                try:
-                    # most API errors are of the form {"error": "description"}
-                    message += ": %s" % response.json()
-                except:
-                    pass
-            else:
-                message = str(error)
+            message = self._get_message(error, response)
         super(ServerError, self).__init__(message, error=error, response=response)
+
+    def _get_message(self, error, response):
+        if response:
+            message = "%s %s" % (response.status_code, response.reason)
+            try:
+                # most API errors are of the form {"error": "description"}
+                message += ": %s" % response.json()["error"]
+            except:
+                pass
+        else:
+            message = str(error)
+        return message
 
     def __str__(self):
         if self.response:
@@ -57,7 +61,16 @@ class ServerError(KoordinatesException):
 
 class BadRequest(ServerError):
     """ Invalid request data or parameters. Check your request. (400) """
-    pass
+    def _get_message(self, error, response):
+        try:
+            messages = []
+            for field, errors in response.json().items():
+                messages.append("%s: %s" % (field, "; ".join(errors)))
+            return "\n".join(messages)
+        except Exception as e:
+            assert False, e
+            return super(BadRequest, self)._get_message(error, response)
+
 class AuthenticationError(ServerError):
     """ The API token is invalid or expired. (401) """
     pass

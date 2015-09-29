@@ -16,7 +16,7 @@ import requests
 import requests_toolbelt
 import six
 
-from . import layers, licenses, publishing, sets, tokens, users, catalog
+from . import layers, licenses, publishing, sets, tokens, users, catalog, sources
 from . import exceptions
 
 
@@ -61,10 +61,12 @@ class Client(object):
                 'tables': layers.TableManager,
                 'licenses': licenses.LicenseManager,
                 'catalog': catalog.CatalogManager,
+                'sources': sources.SourceManager,
             },
             private=(
                 users.GroupManager,
                 users.UserManager,
+                sources.ScanManager,
             )
         )
 
@@ -308,5 +310,33 @@ class Client(object):
             'POST': {
                 'set': 'metadata/',
             }
-        }
+        },
+        'SOURCE': {
+            'GET': {
+                'single': '/sources/{id}/',
+                'multi': '/sources/',
+            },
+            'POST': {
+                'create': '/sources/',
+            },
+            'DELETE': {
+                'single': '/sources/{id}/',
+            }
+        },
+        'SCAN': {
+            'GET': {
+                'single': '/sources/{source_id}/scans/{scan_id}/',
+                'multi': '/sources/{source_id}/scans/',
+                'log': '/sources/{source_id}/scans/{scan_id}/log/',
+            },
+            'POST': {
+                'create': '/sources/{source_id}/scans/',
+            }
+        },
+        'DATASOURCE': {
+            'GET': {
+                'multi': '/sources/{source_id}/datasources/',
+                'single': '/sources/{source_id}/datasources/{datasource_id}/',
+            }
+        },
     }
