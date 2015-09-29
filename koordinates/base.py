@@ -5,13 +5,17 @@ import collections
 import datetime
 import copy
 import itertools
+import logging
 import re
 
 import six
 from six.moves import urllib
 
 from .exceptions import ClientValidationError
-from .utils import make_date
+from .utils import make_date, is_bound
+
+
+logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -32,9 +36,9 @@ class BaseManager(object):
     def _meta_attribute(self, attribute, default=None):
         return getattr(self.model._meta, attribute, default)
 
-    def create_from_result(self, result):
+    def create_from_result(self, result, **kwargs):
         obj = self.model()
-        return obj._deserialize(result, self)
+        return obj._deserialize(result, self, **kwargs)
 
     def _get(self, target_url, expand=[]):
         headers = {}
@@ -44,12 +48,15 @@ class BaseManager(object):
         r = self.client.request('GET', target_url, headers=headers)
         return self.create_from_result(r.json())
 
+    def _reverse_url(self, url):
+        return self.client.reverse_url(self._URL_KEY, url)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class InnerManager(BaseManager):
-    def __init__(self, client, parent):
+    def __init__(self, client, parent_manager):
         super(InnerManager, self).__init__(client)
-        self.parent = parent
+        self.parent = parent_manager
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -304,14 +311,57 @@ class ModelMeta(type):
             # Associate this model with it's manager
             if getattr(klass._meta.manager, "model") and klass._meta.manager.model is not klass:
                 # the manager already has a model!
-                # this is probably due to subclassing the model and not the manager
-                # which isn't supported yet. You need to subclass the manager too.
-                raise TypeError("%s already has an associated model: %s" % (
-                    klass._meta.manager.__name__,
-                    klass._meta.manager.model.__name__)
-                )
+                if issubclass(klass, klass._meta.manager.model):
+                    # this is due to subclassing the model and not the manager
+                    # we *don't* add the subclass, we assume you're doing downcasting or
+                    # some other cleverness with the subclass, and only querying the superclass.
+                    pass
+                else:
+                    raise TypeError("%s already has an associated model: %s" % (
+                        klass._meta.manager.__name__,
+                        klass._meta.manager.model.__name__)
+                    )
             else:
                 klass._meta.manager.model = klass
+
+            # add default accessors for relations
+            # class MyModel:
+            #     class Meta:
+            #         relations = {
+            #             'foo': FooModel,    # FK to a single FooModel
+            #             'bars': [BarModel], # pointer to multiple BarModel objects
+            #         }
+            #
+            # -> mymodel.get_foo()
+            # -> mymodel.list_bars()
+            for ref_attr, ref_class in getattr(klass._meta, 'relations', {}).items():
+                if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
+                    # multiple relation
+                    ref_method = 'list_%s' % ref_attr
+                    ref_class = ref_class[0]
+                    @is_bound
+                    def ref_getter(self):
+                        rel_url = getattr(self, ref_attr)
+                        rel_mgr = self._manager.client.get_manager(ref_class)
+                        return Query(rel_mgr, rel_url)
+                else:
+                    # single relation
+                    ref_method = 'get_%s' % ref_attr
+                    @is_bound
+                    def ref_getter(self):
+                        rel_url = getattr(self, ref_attr, None)
+                        if rel_url:
+                            rel_mgr = self._manager.client.get_manager(ref_class)
+                            return rel_mgr._get(rel_url)
+                        else:
+                            return None
+
+                    setattr(klass, ref_method, ref_getter)
+
+                # don't redefine any existing methods
+                if not hasattr(klass, ref_method):
+                    setattr(klass, ref_method, ref_getter)
+                    logger.debug("klass=%s added relation method %s()", klass, ref_method)
         return klass
 
 
@@ -353,9 +403,33 @@ class Model(object):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __eq__(self, other):
+        # is it a Model?
+        if not isinstance(other, Model):
+            return False
+
+        # is it a child or parent class?
+        if not (issubclass(self.__class__, other.__class__) or issubclass(other.__class__, self.__class__)):
+            return False
+
+        # am I bound?
+        if not hasattr(self, 'id'):
+            return False
+
+        # does it's id match mine?
+        if getattr(other, 'id', None) != self.id:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @property
     def _is_bound(self):
-        return bool(self.id and self._manager)
+        return bool(getattr(self, 'id', None) is not None \
+            and getattr(self, 'url', None) \
+            and getattr(self, '_manager', None))
 
     @property
     def _client(self):
@@ -365,6 +439,7 @@ class Model(object):
 
     def __setattr__(self, name, value):
         if isinstance(value, Model) and not name.startswith('_'):
+            # set the ._parent attribute on the passed-in Model instance
             object.__setattr__(value, '_parent', self)
         object.__setattr__(self, name, value)
 
@@ -382,8 +457,8 @@ class Model(object):
 
         if not isinstance(data, dict):
             raise ValueError("Need to deserialize from a dict")
-        if manager.model is not self.__class__:
-            raise TypeError("Manager %s is for %s, expecting %s" % (manager.__name__, manager.model.__name__, self.__class__.__name__))
+        if not issubclass(self.__class__, manager.model):
+            raise TypeError("Manager %s is for %s, expecting %s" % (manager.__class__.__name__, manager.model.__name__, self.__class__.__name__))
 
         self._manager = manager
 
@@ -444,14 +519,21 @@ class Model(object):
         else:
             return value
 
+
 class InnerModel(Model):
+    """
+    Base class for Inner Models.
+
+    These are models that are nested inside attributes of another model,
+    and are saved and loaded as part of the parent model.
+    """
     def __init__(self, **kwargs):
         self._parent = None
         super(InnerModel, self).__init__(**kwargs)
 
     @property
     def _is_bound(self):
-        return bool(self._parent)
+        return bool(self._parent and self._parent._is_bound)
 
     @property
     def _client(self):
@@ -460,5 +542,3 @@ class InnerModel(Model):
     def _deserialize(self, data, manager, parent):
         self._parent = parent
         return super(InnerModel, self)._deserialize(data, manager)
-
-
