@@ -8,9 +8,13 @@ koordinates.client
 import logging
 import copy
 import os
+import re
 import sys
 
+import pkg_resources
 import requests
+import requests_toolbelt
+import six
 
 from . import layers, licenses, publishing, sets, tokens, users, catalog
 from . import exceptions
@@ -47,6 +51,8 @@ class Client(object):
         else:
             raise KeyError('No authentication token specified, and KOORDINATES_TOKEN not available in the environment.')
 
+        self._user_agent = requests_toolbelt.user_agent('KoordinatesPython', pkg_resources.require("koordinates")[0].version)
+
         self._init_managers(public={
                 'sets': sets.SetManager,
                 'publishing': publishing.PublishManager,
@@ -66,14 +72,17 @@ class Client(object):
 
     def _init_managers(self, public, private):
         self._manager_map = {}
-        for alias, manager_class in public.items():
-            mgr = manager_class(self)
-            self._manager_map[mgr.model] = mgr
-            setattr(self, alias, mgr)
-
         for manager_class in private:
             mgr = manager_class(self)
-            self._manager_map[mgr.model] = mgr
+            self._register_manager(mgr.model, mgr)
+
+        for alias, manager_class in public.items():
+            mgr = manager_class(self)
+            self._register_manager(mgr.model, mgr)
+            setattr(self, alias, mgr)
+
+    def _register_manager(self, model, manager):
+        self._manager_map[model] = manager
 
     def get_manager(self, model):
         """
@@ -81,7 +90,16 @@ class Client(object):
         :param model: Model class to look up the manager instance for.
         :return: Manager instance for the model associated with this client.
         """
+        if isinstance(model, six.string_types):
+            # undocumented string lookup
+            for k, m in self._manager_map.items():
+                if k.__name__ == model:
+                    return m
+            else:
+                raise KeyError(model)
+
         return self._manager_map[model]
+
 
     def _assemble_headers(self, method, user_headers=None):
         """
@@ -101,6 +119,7 @@ class Client(object):
             headers['Authorization'] = 'key {token}'.format(token=self.token)
 
         headers.setdefault('Accept', 'application/json')
+        headers.setdefault('User-Agent', self._user_agent)
 
         if method not in ('GET', 'HEAD'):
             headers.setdefault('Content-type', 'application/json')
@@ -150,6 +169,33 @@ class Client(object):
 
         url = templates[datatype][verb][urltype]
         return url.format(**params)
+
+    def reverse_url(self, datatype, url, verb='GET', urltype='single', api_version=None):
+        """
+        Extracts parameters from a populated URL
+
+        :param datatype: a string identifying the data the url accesses.
+        :param url: the fully-qualified URL to extract parameters from.
+        :param verb: the HTTP verb needed for use with the url.
+        :param urltype: an adjective used to the nature of the request.
+        :return: dict
+        """
+        api_version = api_version or 'v1'
+        templates = getattr(self, 'URL_TEMPLATES__%s' % api_version)
+
+        # this is fairly simplistic, if necessary we could use the parse lib
+        template_url = r"https://(?P<api_host>.+)/services/api/(?P<api_version>.+)"
+        template_url += re.sub(r'{([^}]+)}', r'(?P<\1>.+)', templates[datatype][verb][urltype])
+        # /foo/{foo_id}/bar/{id}/
+        m = re.match(template_url, url or '')
+        if not m:
+            raise KeyError("No reverse match from '%s' to %s.%s.%s" % (url, datatype, verb, urltype))
+
+        r = m.groupdict()
+        del r['api_host']
+        if r.pop('api_version') != api_version:
+            raise ValueError("API version mismatch")
+        return r
 
     def get_url(self, datatype, verb, urltype, params={}, api_host=None, api_version=None):
         """Returns a fully formed url
