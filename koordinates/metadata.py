@@ -4,6 +4,8 @@ provides an interface for adding, inspecting and downloading
 XML metadata documents against a range of objects.
 """
 
+from requests_toolbelt.downloadutils import stream
+
 from . import base
 from . import exceptions
 
@@ -47,13 +49,16 @@ class Metadata(base.InnerModel):
         Returns the XML metadata for this source, converted to the requested format.
         Converted metadata may not contain all the same information as the native format.
 
-        :param file fp: A reference to an open file which the content should be written to.
+        :param file fp: A path, or an open file-like object which the content should be written to.
         :param str format: desired format for the output. This should be one of the available
             formats from :py:meth:`.get_formats`, or :py:attr:`.FORMAT_NATIVE` for the native format.
+
+        If you pass this function an open file-like object as the fp parameter, the function will
+        not close that file for you.
         """
-        r = self._client.request('GET', getattr(self, format))
-        for chunk in r.iter_content(65536):
-            fp.write(chunk)
+        r = self._client.request('GET', getattr(self, format), stream=True)
+        filename = stream.stream_response_to_file(r, path=fp)
+        return filename
 
     def get_formats(self):
         """ Return the available format names for this metadata """
