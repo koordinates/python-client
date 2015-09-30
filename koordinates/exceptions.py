@@ -55,7 +55,7 @@ class ServerError(KoordinatesException):
 
     def __str__(self):
         if self.response:
-            return "%s: %s" % (self.message, self.response.text)
+            return "%s: %s" % (self.args[0], self.response.text)
         else:
             return super(ServerError, self).__str__()
 
@@ -68,7 +68,6 @@ class BadRequest(ServerError):
                 messages.append("%s: %s" % (field, "; ".join(errors)))
             return "\n".join(messages)
         except Exception as e:
-            assert False, e
             return super(BadRequest, self)._get_message(error, response)
 
 class AuthenticationError(ServerError):

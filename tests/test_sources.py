@@ -1,10 +1,8 @@
 import json
 import os
-import shutil
 import tempfile
 import types
 import unittest
-from StringIO import StringIO
 
 from requests_toolbelt import MultipartEncoderMonitor, MultipartDecoder
 import responses
@@ -139,7 +137,7 @@ class TestSources(unittest.TestCase):
         try:
             source = self.client.sources.create(source)
         except BadRequest as e:
-            self.assertEqual(e.message, "url_remote: Invalid URL: Can't resolve host.")
+            self.assertEqual(str(e), "url_remote: Invalid URL: Can't resolve host.")
         else:
             assert False, "Expected to raise BadRequest"
 
@@ -152,7 +150,7 @@ class TestSources(unittest.TestCase):
 
         source = UploadSource()
         source.title = "Test single-file upload"
-        f = StringIO(self.CSV_DATA)
+        f = six.StringIO(self.CSV_DATA)
         f.name = 'test.csv'
         source.add_file(f)
 
@@ -160,7 +158,7 @@ class TestSources(unittest.TestCase):
 
         req = responses.calls[0].request
         # Check we have multipart data
-        self.assert_(req.headers['Content-Type'].startswith('multipart/form-data; boundary='))
+        self.assertRegexpMatches(req.headers['Content-Type'], r'^multipart/form-data; boundary=')
 
         assert isinstance(req.body, MultipartEncoderMonitor)
         #stringify - this consumes the data too
@@ -168,17 +166,17 @@ class TestSources(unittest.TestCase):
         decoder = MultipartDecoder(req.body.to_string(), req.headers['Content-Type'])
         self.assertEqual(len(decoder.parts), 2)
 
-        parts = sorted([(dict(p.headers), p.text) for p in decoder.parts])
-        self.assertEqual(parts, sorted([
+        parts = [(dict(p.headers), p.text) for p in decoder.parts]
+        six.assertCountEqual(self, parts, [
             (
-                {'Content-Type': 'application/json', 'Content-Disposition': 'form-data; name="source"'},
+                {b'Content-Disposition': b'form-data; name="source"', b'Content-Type': b'application/json'},
                 json.dumps({"type": "upload", "title": "Test single-file upload"}),
             ),
             (
-                {'Content-Type': 'text/csv', 'Content-Disposition': 'form-data; name="file0"; filename="test.csv"'},
+                {b'Content-Disposition': b'form-data; name="file0"; filename="test.csv"', b'Content-Type': b'text/csv'},
                 self.CSV_DATA,
             )
-        ]))
+        ])
 
     @responses.activate
     def test_create_upload_multiple(self):
@@ -196,23 +194,23 @@ class TestSources(unittest.TestCase):
         source = UploadSource()
         source.title = "Test multiple-file upload"
 
-        f = StringIO(self.CSV_DATA)
+        f = six.StringIO(self.CSV_DATA)
         f.name = 'test11.csv'
         source.add_file(f)
 
-        f = StringIO(self.CSV_DATA)
+        f = six.StringIO(self.CSV_DATA)
         f.name = 'test22.csv'
         source.add_file(f, upload_path='bob2.csv')
 
-        f = StringIO(self.CSV_DATA)
+        f = six.StringIO(self.CSV_DATA)
         f.name = 'test33.csv'
         source.add_file(f, content_type='text/csv+fiz')
 
-        f = StringIO(self.CSV_DATA)
+        f = six.StringIO(self.CSV_DATA)
         f.name = 'text44.csv'
         source.add_file(f, upload_path='bob4.csv', content_type='text/csv+fiz')
 
-        ftemp = tempfile.NamedTemporaryFile(suffix='.csv')
+        ftemp = tempfile.NamedTemporaryFile(suffix='.csv', mode='w')
         ftemp.write(self.CSV_DATA)
         ftemp.flush()
         source.add_file(ftemp.name)
@@ -223,38 +221,38 @@ class TestSources(unittest.TestCase):
 
         req = responses.calls[0].request
         # Check we have multipart data
-        self.assert_(req.headers['Content-Type'].startswith('multipart/form-data; boundary='))
+        self.assertRegexpMatches(req.headers['Content-Type'], r'^multipart/form-data; boundary=')
 
         decoder = MultipartDecoder(req.body, req.headers['Content-Type'])
         self.assertEqual(len(decoder.parts), 6)
 
-        parts = sorted([(dict(p.headers), p.text) for p in decoder.parts])
-        self.assertEqual(parts, sorted([
+        parts = [(dict(p.headers), p.text) for p in decoder.parts]
+        six.assertCountEqual(self, parts, [
             (
-                {'Content-Type': 'application/json', 'Content-Disposition': 'form-data; name="source"'},
+                {b'Content-Type': b'application/json', b'Content-Disposition': b'form-data; name="source"'},
                 json.dumps({"type": "upload", "title": "Test multiple-file upload"}),
             ),
             (
-                {'Content-Type': 'text/csv', 'Content-Disposition': 'form-data; name="file0"; filename="test11.csv"'},
+                {b'Content-Type': b'text/csv', b'Content-Disposition': b'form-data; name="file0"; filename="test11.csv"'},
                 self.CSV_DATA,
             ),
             (
-                {'Content-Type': 'text/csv', 'Content-Disposition': 'form-data; name="file1"; filename="bob2.csv"'},
+                {b'Content-Type': b'text/csv', b'Content-Disposition': b'form-data; name="file1"; filename="bob2.csv"'},
                 self.CSV_DATA,
             ),
             (
-                {'Content-Type': 'text/csv+fiz', 'Content-Disposition': 'form-data; name="file2"; filename="test33.csv"'},
+                {b'Content-Type': b'text/csv+fiz', b'Content-Disposition': b'form-data; name="file2"; filename="test33.csv"'},
                 self.CSV_DATA,
             ),
             (
-                {'Content-Type': 'text/csv+fiz', 'Content-Disposition': 'form-data; name="file3"; filename="bob4.csv"'},
+                {b'Content-Type': b'text/csv+fiz', b'Content-Disposition': b'form-data; name="file3"; filename="bob4.csv"'},
                 self.CSV_DATA,
             ),
             (
-                {'Content-Type': 'text/csv', 'Content-Disposition': 'form-data; name="file4"; filename="%s"' % temp_filename},
+                {b'Content-Type': b'text/csv', b'Content-Disposition': ('form-data; name="file4"; filename="%s"' % temp_filename).encode('utf-8')},
                 self.CSV_DATA,
             ),
-        ]))
+        ])
 
     @responses.activate
     def test_scan_list(self):
@@ -306,7 +304,6 @@ class TestSources(unittest.TestCase):
         r = self.client.sources.get_scan_log_lines(44, 41)
         self.assertIsInstance(r, types.GeneratorType)
         for i,line in enumerate(r):
-            print repr(line)
             self.assertIsInstance(line, six.text_type)
             self.assert_(not line.endswith('\n'))
         self.assertEqual(i, 10)

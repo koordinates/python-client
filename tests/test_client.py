@@ -6,11 +6,16 @@ Tests for the `koordinates.catalog` module.
 from __future__ import unicode_literals, absolute_import
 
 import unittest
-from test.test_support import EnvironmentVarGuard
 
 import responses
+import six
 
 from koordinates import Client
+
+if six.PY2:
+    from test.test_support import EnvironmentVarGuard
+else:
+    from test.support import EnvironmentVarGuard
 
 
 class ClientTests(unittest.TestCase):

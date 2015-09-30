@@ -125,7 +125,7 @@ class Client(object):
         headers.setdefault('User-Agent', self._user_agent)
 
         if method not in ('GET', 'HEAD'):
-            headers.setdefault('Content-type', 'application/json')
+            headers.setdefault('Content-Type', 'application/json')
 
         return headers
 
