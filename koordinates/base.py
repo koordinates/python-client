@@ -295,10 +295,11 @@ class ModelMeta(type):
     def __new__(meta, name, bases, attrs):
         klass = super(ModelMeta, meta).__new__(meta, name, bases, attrs)
         try:
+            ModelBase
             Model
             InnerModel
         except NameError:
-            # klass is Model/InnerModel, it doesn't have a `Meta:` object
+            # klass is ModelBase/Model/InnerModel, it doesn't have a `Meta:` object
             pass
         else:
             if not hasattr(klass, "Meta"):
@@ -325,7 +326,7 @@ class ModelMeta(type):
                 klass._meta.manager.model = klass
 
             # add default accessors for relations
-            # class MyModel:
+            # class MyModel(Model):
             #     class Meta:
             #         relations = {
             #             'foo': FooModel,    # FK to a single FooModel
@@ -366,28 +367,7 @@ class ModelMeta(type):
 
 
 @six.add_metaclass(ModelMeta)
-class Model(object):
-    """
-    Base class for models with managers.
-
-    Model subclasses need a Meta class, which (in particular)
-    links to their Manager class:
-
-    class FooManager(Manager):
-        ...
-
-    class Foo(Model):
-        class Meta:
-            # Manager class
-            manager = FooManager
-            # Attributes available for ordering
-            ordering_attributes = []
-            # Attributes available for filtering
-            filter_attributes = []
-            # For the default implementation of ._serialize(), attributes to skip.
-            serialize_skip = []
-        ...
-    """
+class ModelBase(object):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self)
 
@@ -405,7 +385,7 @@ class Model(object):
 
     def __eq__(self, other):
         # is it a Model?
-        if not isinstance(other, Model):
+        if not isinstance(other, ModelBase):
             return False
 
         # is it a child or parent class?
@@ -438,7 +418,7 @@ class Model(object):
         return self._manager.client
 
     def __setattr__(self, name, value):
-        if isinstance(value, Model) and not name.startswith('_'):
+        if isinstance(value, ModelBase) and not name.startswith('_'):
             # set the ._parent attribute on the passed-in Model instance
             object.__setattr__(value, '_parent', self)
         object.__setattr__(self, name, value)
@@ -512,7 +492,7 @@ class Model(object):
             return [self._serialize_value(v) for v in value]
         elif isinstance(value, dict):
             return dict([(k, self._serialize_value(v)) for k, v in value.items()])
-        elif isinstance(value, Model):
+        elif isinstance(value, ModelBase):
             return value._serialize()
         elif isinstance(value, datetime.date):  # includes datetime.datetime
             return value.isoformat()
@@ -520,7 +500,45 @@ class Model(object):
             return value
 
 
-class InnerModel(Model):
+class Model(ModelBase):
+    """
+    Base class for models with managers.
+
+    Model subclasses need a Meta class, which (in particular)
+    links to their Manager class:
+
+    class FooManager(Manager):
+        ...
+
+    class Foo(Model):
+        class Meta:
+            # Manager class
+            manager = FooManager
+            # Attributes available for ordering
+            ordering_attributes = []
+            # Attributes available for filtering
+            filter_attributes = []
+            # For the default implementation of ._serialize(), attributes to skip.
+            serialize_skip = []
+        ...
+    """
+
+    @is_bound
+    def refresh(self):
+        """
+        Refresh this model from the server.
+
+        Updates attributes with the server-defined values. This is useful where the Model
+        instance came from a partial response (eg. a list query) and additional details
+        are required.
+
+        Existing attribute values will be overwritten.
+        """
+        r = self._client.request('GET', self.url)
+        return self._deserialize(r.json(), self._manager)
+
+
+class InnerModel(ModelBase):
     """
     Base class for Inner Models.
 

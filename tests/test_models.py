@@ -359,6 +359,44 @@ class ModelTests(unittest.TestCase):
         o_foo.id = None
         self.assert_(not o_pop._is_bound)
 
+    @responses.activate
+    def test_refresh(self):
+        FOO_LIST_DATA = [
+            {
+                'id': 12345,
+                'url': FooManager.TEST_GET_URL % 12345,
+                'name': 'Alpaca',
+                'age': 1,
+            }
+        ]
+        FOO_GET_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'Alpaca',
+            'age': 1,
+            'species': 'Vicugna pacos',
+        }
+        responses.add(responses.GET,
+                      FooManager.TEST_LIST_URL,
+                      body=json.dumps(FOO_LIST_DATA),
+                      content_type='application/json')
+
+        responses.add(responses.GET,
+                      FooManager.TEST_GET_URL % 12345,
+                      body=json.dumps(FOO_GET_DATA),
+                      content_type='application/json')
+
+        foo = self.mgr.list()[:1][0]
+        self.assertIsInstance(foo, FooModel)
+
+        self.assertRaises(AttributeError, getattr, foo, 'species')
+        foo.age = 3
+
+        f = foo.refresh()
+        self.assertIs(f, foo)
+        self.assertEqual(foo.species, 'Vicugna pacos')
+        self.assertEqual(foo.age, 1)
+
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
