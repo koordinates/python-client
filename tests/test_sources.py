@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tempfile
 import types
 import unittest
@@ -10,12 +11,15 @@ import responses
 import six
 
 from koordinates import Source, Client, Group, User, BadRequest, UploadSource
+from koordinates.sources import Datasource, Scan
+from koordinates.base import Query
 
 from response_data.sources import (
     source_list, source_detail,
     source_create_arcgis, source_create_arcgis_bad_remote,
     source_create_upload_single, source_create_upload_multiple,
     source_scan_list, source_scan_detail, source_scan_log,
+    datasource_list, datasource_detail, datasource_detail_2, datasource_metadata,
 )
 
 
@@ -257,13 +261,40 @@ class TestSources(unittest.TestCase):
         responses.add(responses.GET,
             self.client.get_url('SCAN', 'GET', 'multi', {'source_id': 44}),
             body=source_scan_list, status=200,
-            content_type='text/plain')
+            content_type='application/json')
 
-        self.client.sources.list_scans('')
+        r = self.client.sources.list_scans(44)
+        self.assertIsInstance(r, Query)
+        r = list(r)
+        self.assertEqual(len(r), 1)
+        self.assertIsInstance(r[0], Scan)
 
     @responses.activate
     def test_scan_detail(self):
-        pass
+        responses.add(responses.GET,
+            self.client.get_url('SCAN', 'GET', 'single', {'source_id': 44, 'scan_id': 41}),
+            body=source_scan_detail, status=200,
+            content_type='application/json')
+
+        scan = self.client.sources.get_scan(44, 41)
+        self.assertIsInstance(scan, Scan)
+        self.assertEqual(scan.id, 41)
+
+    @responses.activate
+    def test_scan_cancel(self):
+        responses.add(responses.GET,
+            self.client.get_url('SCAN', 'GET', 'single', {'source_id': 44, 'scan_id': 41}),
+            body=source_scan_detail, status=200,
+            content_type='application/json')
+        responses.add(responses.DELETE,
+            self.client.get_url('SCAN', 'DELETE', 'cancel', {'source_id': 44, 'scan_id': 41}),
+            body='', status=204,
+            content_type='application/json')
+
+        scan = self.client.sources.get_scan(44, 41)
+        scan.cancel()
+
+        self.assertEqual(len(responses.calls), 2)
 
     @responses.activate
     def test_scan_log_lines1(self):
@@ -296,3 +327,48 @@ class TestSources(unittest.TestCase):
         self.assertIsInstance(r, types.GeneratorType)
         self.assertEqual(list(r), source_scan_log.strip().split('\n'))
 
+    @responses.activate
+    def test_datasource_list(self):
+        responses.add(responses.GET,
+            self.client.get_url('DATASOURCE', 'GET', 'multi', {'source_id': 21838}),
+            body=datasource_list, status=200,
+            content_type='application/json')
+
+        r = self.client.sources.list_datasources(21838)
+        self.assertIsInstance(r, Query)
+        r = list(r)
+        self.assertEqual(len(r), 1)
+        ds = r[0]
+        self.assertIsInstance(ds, Datasource)
+        self.assertEqual(ds.id, 144187)
+
+    @responses.activate
+    def test_datasource_detail(self):
+        responses.add(responses.GET,
+            self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': 21838, 'datasource_id': 144187}),
+            body=datasource_detail, status=200,
+            content_type='application/json')
+
+        ds = self.client.sources.get_datasource(21838, 144187)
+        self.assertIsInstance(ds, Datasource)
+
+    @responses.activate
+    def test_datasource_metadata(self):
+        responses.add(responses.GET,
+            self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': 55, 'datasource_id': 167}),
+            body=datasource_detail_2, status=200,
+            content_type='application/json')
+        responses.add(responses.GET,
+            self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': 55, 'datasource_id': 167}) + 'metadata/',
+            body=datasource_metadata, status=200,
+            content_type='text/xml')
+
+        ds = self.client.sources.get_datasource(55, 167)
+        self.assertIsInstance(ds, Datasource)
+        self.assert_(ds.metadata)
+
+        s = six.BytesIO()
+        ds.metadata.get_xml(s)
+        metadata = s.getvalue().decode("utf-8")
+        self.assertEqual(metadata[:16], "<gmd:MD_Metadata")
+        self.assertEqual(len(metadata), 293)

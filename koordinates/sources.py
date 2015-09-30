@@ -24,7 +24,7 @@ import six
 
 from . import base
 from .exceptions import ClientValidationError
-from .metadata import Metadata
+from .metadata import Metadata, MetadataManager
 from .users import Group, User
 from .utils import is_bound
 
@@ -41,12 +41,32 @@ class SourceManager(base.Manager):
 
     _URL_KEY = 'SOURCE'
 
+    def __init__(self, client):
+        super(SourceManager, self).__init__(client)
+        # Inner model managers
+        self._metadata = MetadataManager(client, self)
+
     def create(self, source, upload_progress_callback=None):
         """
         Creates a new source.
         """
         # Delegate to the class itself
         return source._create(self, callback=upload_progress_callback)
+
+    def list_datasources(self, source_id):
+        """
+        Filterable list of Datasources for a Source.
+        """
+        target_url = self.client.get_url('DATASOURCE', 'GET', 'multi', {'source_id': source_id})
+        return base.Query(self.client.get_manager(Datasource), target_url)
+
+    def get_datasource(self, source_id, datasource_id):
+        """
+        Get a Datasource object
+        :rtype: Datasource
+        """
+        target_url = self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': source_id, 'datasource_id': datasource_id})
+        return self.client.get_manager(Datasource)._get(target_url)
 
     def list_scans(self, source_id):
         """
@@ -57,7 +77,7 @@ class SourceManager(base.Manager):
 
     def get_scan(self, source_id, scan_id):
         """
-        Get a scan object
+        Get a Scan object
         :rtype: Scan
         """
         target_url = self.client.get_url('SCAN', 'GET', 'single', {'source_id': source_id, 'scan_id': scan_id})
@@ -65,7 +85,7 @@ class SourceManager(base.Manager):
 
     def get_scan_log_lines(self, source_id, scan_id):
         """
-        Get the log text for a scan object
+        Get the log text for a Scan
         :rtype: Iterator over log lines.
         """
         return self.client.get_manager(Scan).get_log_lines(source_id=source_id, scan_id=scan_id)
@@ -89,6 +109,7 @@ class Source(base.Model):
         manager = SourceManager
         relations = {
             'scans': ['Scan'],
+            'datasources': ['Datasource'],
         }
 
     TYPE_INFO = 'info'
@@ -128,8 +149,19 @@ class Source(base.Model):
         r = self._client.request('DELETE', self.url)
         logger.info("delete(): %s", r.status_code)
 
+    @is_bound
+    def get_datasource(self, datasource_id):
+        return self._manager.get_datasource(self.id, datasource_id)
+
+    @is_bound
+    def get_scan(self, scan_id):
+        return self._manager.get_scan(self.id, scan_id)
+
 
 class UploadSource(Source):
+    """
+    Subclass of Source used for client uploads of files and archives.
+    """
     class Meta:
         manager = SourceManager
 
@@ -184,6 +216,13 @@ class UploadSource(Source):
     def add_file(self, fp, upload_path=None, content_type=None):
         """
         Add a single file or archive to upload.
+
+        To add metadata records with a file, add a .xml file with the same upload path basename
+        eg. ``points-with-metadata.geojson`` & ``points-with-metadata.xml``
+        Datasource XML must be in one of these three formats:
+          * ISO 19115/19139
+          * FGDC CSDGM
+          * Dublin Core (OAI-PMH)
 
         :param fp: File to upload into this source, can be a path or a file-like object.
         :type fp: str or file
@@ -248,3 +287,25 @@ class Scan(base.Model):
         """
         rel = self._client.reverse_url('SCAN', self.url)
         return self._manager.get_log_lines(**rel)
+
+
+class DatasourceManager(base.Manager):
+    _URL_KEY = 'DATASOURCE'
+
+    def __init__(self, client):
+        super(DatasourceManager, self).__init__(client)
+        # Inner model managers
+        self._metadata = MetadataManager(client, self)
+
+
+class Datasource(base.Model):
+    class Meta:
+        manager = DatasourceManager
+        relations = {
+            'source': Source,
+        }
+
+    def _deserialize(self, data, manager):
+        super(Datasource, self)._deserialize(data, manager)
+        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+        return self

@@ -67,6 +67,7 @@ class Client(object):
                 users.GroupManager,
                 users.UserManager,
                 sources.ScanManager,
+                sources.DatasourceManager,
             )
         )
 
@@ -307,6 +308,9 @@ class Client(object):
         },
         'METADATA': {
             # InnerManager, so relative to a parent object
+            'GET': {
+                'get': 'metadata/',
+            },
             'POST': {
                 'set': 'metadata/',
             }
@@ -328,6 +332,9 @@ class Client(object):
                 'single': '/sources/{source_id}/scans/{scan_id}/',
                 'multi': '/sources/{source_id}/scans/',
                 'log': '/sources/{source_id}/scans/{scan_id}/log/',
+            },
+            'DELETE': {
+                'cancel': '/sources/{source_id}/scans/{scan_id}/',
             },
             'POST': {
                 'create': '/sources/{source_id}/scans/',
