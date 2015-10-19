@@ -215,7 +215,10 @@ class Client(object):
             },
             'PUT': {
                 'edit': '/layers/{layer_id}/versions/{version_id}/',
-            }
+            },
+            'DELETE': {
+                'single': '/layers/{layer_id}/versions/{version_id}/',
+            },
         },
         'CATALOG': {
             'GET': {
