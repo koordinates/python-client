@@ -70,10 +70,9 @@ Publish multiple objects of various types::
 
 Reimport an existing Layer from its previous data sources and create a new version::
 
-    >>> # Take the version with id=9999 of the Layer 
-    >>> # with id = 8888 and reimport it 
+    >>> # Take the layer with id=8888 and reimport it
     >>> layer = client.layers.get(8888)
-    >>> layer = layer.reimport()
+    >>> layer = layer.start_update()
 
 Publish a specific version of a Layer::
 
