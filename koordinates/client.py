@@ -182,7 +182,7 @@ class Client(object):
             },
             'POST': {
                 'create': '/layers/',
-                'update': '/layers/{layer_id}/import/',
+                'update': '/layers/{layer_id}/versions/import/',
             },
             'DELETE': {
                 'delete': '/layers/{id}/',
