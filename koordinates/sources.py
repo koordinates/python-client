@@ -9,9 +9,11 @@ provides read+write access to sources, datasources and scans.
 
 A source points to a place where Koordinates can get data from. Sources can contain any number of datasources.
 
-A datasource is a single dataset from a source. One or more datasources may be imported to create a layer, table or document.
+A datasource is a single dataset from a source. One or more datasources may be imported to create a layer,
+table or document.
 
-A scan examines a source to find out about what datasources the source provides. Until a source is scanned it may appear to have no datasources.
+A scan examines a source to find out about what datasources the source provides. Until a source is scanned
+it may appear to have no datasources.
 """
 import collections
 import json
@@ -49,6 +51,12 @@ class SourceManager(base.Manager):
     def create(self, source, upload_progress_callback=None):
         """
         Creates a new source.
+
+        :param str source: The populated Source object to create.
+        :param function upload_progress_callback: For an UploadSource object, an optional callback
+                    function which receives upload progress notifications. The function should take two
+                    arguments: the number of bytes sent, and the total number of bytes to send.
+        :rtype: Source
         """
         # Delegate to the class itself
         return source._create(self, callback=upload_progress_callback)
@@ -63,6 +71,7 @@ class SourceManager(base.Manager):
     def get_datasource(self, source_id, datasource_id):
         """
         Get a Datasource object
+
         :rtype: Datasource
         """
         target_url = self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': source_id, 'datasource_id': datasource_id})
@@ -78,6 +87,7 @@ class SourceManager(base.Manager):
     def get_scan(self, source_id, scan_id):
         """
         Get a Scan object
+
         :rtype: Scan
         """
         target_url = self.client.get_url('SCAN', 'GET', 'single', {'source_id': source_id, 'scan_id': scan_id})
@@ -86,6 +96,7 @@ class SourceManager(base.Manager):
     def get_scan_log_lines(self, source_id, scan_id):
         """
         Get the log text for a Scan
+
         :rtype: Iterator over log lines.
         """
         return self.client.get_manager(Scan).get_log_lines(source_id=source_id, scan_id=scan_id)
@@ -93,6 +104,7 @@ class SourceManager(base.Manager):
     def start_scan(self, source_id):
         """
         Start a new scan of a Source.
+
         :rtype: Scan
         """
         target_url = self.client.get_url('SCAN', 'POST', 'create', {'source_id': source_id})
@@ -103,7 +115,8 @@ class SourceManager(base.Manager):
 
 class Source(base.Model):
     """
-    A source points to a place where Koordinates can get data from. Sources can contain any number of datasources.
+    A source points to a place where Koordinates can get data from. Sources can contain any number
+    of datasources.
     """
     class Meta:
         manager = SourceManager
@@ -160,7 +173,16 @@ class Source(base.Model):
 
 class UploadSource(Source):
     """
-    Subclass of Source used for client uploads of files and archives.
+    Subclass of Source used for uploads of files and archives, which are automatically scanned.
+
+    :Example:
+
+    >>> upload = koordinates.UploadSource()
+    >>> upload.user = 5
+    >>> upload.title = "upload_source example"
+    >>> upload.add_file('/path/to/data.zip')
+    >>> upload = client.sources.create(upload)
+
     """
     class Meta:
         manager = SourceManager
@@ -220,9 +242,10 @@ class UploadSource(Source):
         To add metadata records with a file, add a .xml file with the same upload path basename
         eg. ``points-with-metadata.geojson`` & ``points-with-metadata.xml``
         Datasource XML must be in one of these three formats:
-          * ISO 19115/19139
-          * FGDC CSDGM
-          * Dublin Core (OAI-PMH)
+
+          - ISO 19115/19139
+          - FGDC CSDGM
+          - Dublin Core (OAI-PMH)
 
         :param fp: File to upload into this source, can be a path or a file-like object.
         :type fp: str or file
@@ -265,6 +288,10 @@ class ScanManager(base.Manager):
 
 
 class Scan(base.Model):
+    """
+    A scan operation examines a source to find out about what datasources the source provides.
+    """
+
     class Meta:
         manager = ScanManager
         relations = {
@@ -283,6 +310,7 @@ class Scan(base.Model):
     def get_log_lines(self):
         """
         Get the log text for a scan object
+
         :rtype: Iterator over log lines.
         """
         rel = self._client.reverse_url('SCAN', self.url)
@@ -299,6 +327,11 @@ class DatasourceManager(base.Manager):
 
 
 class Datasource(base.Model):
+    """
+    A datasource is a single dataset from a source. One or more datasources may be imported to create a layer,
+    table or document.
+    """
+
     class Meta:
         manager = DatasourceManager
         relations = {

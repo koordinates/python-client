@@ -63,25 +63,45 @@ class InnerManager(BaseManager):
 class Manager(BaseManager):
     def list(self):
         """
-        Fetches a set of Tokens
+        Fetches a set of model objects
+
+        :rtype: :py:class:`koordinates.base.Query`
         """
         target_url = self.client.get_url(self._URL_KEY, 'GET', 'multi')
         return Query(self, target_url)
 
     def get(self, id, expand=[]):
-        """Fetches a Token determined by the value of `id`.
+        """Fetches a Model instance determined by the value of `id`.
 
-        :param id: ID for the new :class:`Token`  object.
+        :param id: numeric ID for the Model.
         """
         target_url = self.client.get_url(self._URL_KEY, 'GET', 'single', {'id': id})
         return self._get(target_url, expand=expand)
 
     # Query methods we delegate
     def filter(self, *args, **kwargs):
+        """
+        Returns a filtered Query view of the model objects.
+        Equivalent to calling ``.list().filter(...)``.
+        See :py:meth:`koordinates.base.Query.filter`.
+        """
         return self.list().filter(*args, **kwargs)
+
     def order_by(self, *args, **kwargs):
+        """
+        Returns an ordered Query view of the model objects.
+        Equivalent to calling ``.list().order_by(...)``.
+        See :py:meth:`koordinates.base.Query.order_by`.
+        """
         return self.list().order_by(*args, **kwargs)
+
     def expand(self, *args, **kwargs):
+        """
+        Returns an expanded Query view of the model objects.
+        Equivalent to calling ``.list().expand()``.
+        Using expansions may have significant performance implications for some API requests.
+        See :py:meth:`koordinates.base.Query.expand`.
+        """
         return self.list().expand(*args, **kwargs)
 
     def create(self, object):
@@ -98,7 +118,7 @@ class Query(object):
     Query objects are instantiated by methods on the Manager classes.
     To actually execute the query, iterate over it. You can also call
     len() to return the length - this will do the "first" page request
-    and examine the X-Resource-Range header to produce a count.
+    and examine the ``X-Resource-Range`` header to produce a count.
     """
     def __init__(self, manager, url, valid_filter_attributes=None, valid_sort_attributes=None):
         self._manager = manager
@@ -165,8 +185,9 @@ class Query(object):
         return response.links.get("page-next", {}).get('url', None)
 
     def __iter__(self):
-        """ Execute this query and return the results (generally as Model objects) """
-
+        """
+        Execute this query and return the results (generally as Model objects)
+        """
         if hasattr(self, '_first_page'):
             # if len() has been called on this Query, we have a cached page
             # of results & a next url
@@ -203,7 +224,7 @@ class Query(object):
     def __len__(self):
         """
         Get the count for the query results. If we've previously started iterating we use
-        that count, otherwise do a request and look at the X-Resource-Range header.
+        that count, otherwise do a request and look at the ``X-Resource-Range`` header.
         """
         if self._count is None:
             r = self._request(self._to_url())
@@ -212,7 +233,9 @@ class Query(object):
         return self._count
 
     def __getitem__(self, k):
-        """ Very limited slicing support ([:N] only) """
+        """
+        Very limited slicing support ([:N] only)
+        """
         if not isinstance(k, slice) \
                 or k.start is not None \
                 or k.step is not None \
@@ -239,6 +262,8 @@ class Query(object):
         """
         Set extra query parameters (eg. filter expressions/attributes that don't validate).
         Appends to any previous extras set.
+
+        :rtype: Query
         """
         q = self._clone()
         for key, value in params.items():
@@ -249,6 +274,8 @@ class Query(object):
         """
         Add a filter to this query.
         Appends to any previous filters set.
+
+        :rtype: Query
         """
 
         q = self._clone()
@@ -265,9 +292,11 @@ class Query(object):
     def order_by(self, sort_key=None):
         """
         Set the sort for this query. Not all attributes are sorting candidates.
-        To sort in descending order, call `Query.order_by('-attribute')`.
+        To sort in descending order, call ``Query.order_by('-attribute')``.
 
-        Calling `Query.order_by()` replaces any previous ordering.
+        Calling ``Query.order_by()`` replaces any previous ordering.
+
+        :rtype: Query
         """
         if sort_key is not None:
             sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
@@ -281,7 +310,9 @@ class Query(object):
     def expand(self):
         """
         Expand list results in this query.
-        This can have a performance penalty for
+        This can have a performance penalty for some objects.
+
+        :rtype: Query
         """
         q = self._clone()
         q._expand = True
@@ -290,7 +321,7 @@ class Query(object):
 
 class ModelMeta(type):
     """
-    Sets up the special model characteristics based on the `Meta:` object on the model
+    Sets up the special model characteristics based on the ``Meta:`` object on the model
     """
     def __new__(meta, name, bases, attrs):
         klass = super(ModelMeta, meta).__new__(meta, name, bases, attrs)
@@ -507,20 +538,20 @@ class Model(ModelBase):
     Model subclasses need a Meta class, which (in particular)
     links to their Manager class:
 
-    class FooManager(Manager):
-        ...
+        class FooManager(Manager):
+            ...
 
-    class Foo(Model):
-        class Meta:
-            # Manager class
-            manager = FooManager
-            # Attributes available for ordering
-            ordering_attributes = []
-            # Attributes available for filtering
-            filter_attributes = []
-            # For the default implementation of ._serialize(), attributes to skip.
-            serialize_skip = []
-        ...
+        class Foo(Model):
+            class Meta:
+                # Manager class
+                manager = FooManager
+                # Attributes available for ordering
+                ordering_attributes = []
+                # Attributes available for filtering
+                filter_attributes = []
+                # For the default implementation of ._serialize(), attributes to skip.
+                serialize_skip = []
+            ...
     """
 
     @is_bound

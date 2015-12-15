@@ -14,6 +14,7 @@ Classes
  - :doc:`set` 
  - :doc:`token` 
  - :doc:`user` 
+ - :doc:`sources` 
 
 Exceptions
 ----------

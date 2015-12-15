@@ -27,6 +27,7 @@ The library aims to reflect the available `Koordinates web APIs <https://support
 - `Licenses API <https://support.koordinates.com/hc/en-us/articles/205008070-Koordinates-License-API>`_
 - `Metadata API <https://support.koordinates.com/hc/en-us/articles/204795834-Koordinates-Metadata-API>`_
 - `Token API <https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API>`_
+- `Sources API <https://support.koordinates.com/hc/en-us/articles/204795864-Koordinates-Sources-API>`_
 
 We're working hard to add support for additional APIs to the library, so expect this list to grow soon.
 
