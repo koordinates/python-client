@@ -50,11 +50,6 @@ class TestKoordinates(unittest.TestCase):
         self.assertEqual(d.geometry_field, "GEOMETRY")
 
     @unittest.skip("FIXME")
-    def test_instantiate_datasource_class(self):
-        ds = layers.Datasource(99)
-        self.assertEqual(ds.id, 99)
-
-    @unittest.skip("FIXME")
     def test_instantiate_field_class(self):
         f = koordinates.Field("Field Name", "integer")
         self.assertEqual(f.name, "Field Name")

@@ -5,6 +5,9 @@ Tests for the `koordinates.metadata` module.
 """
 from __future__ import unicode_literals, absolute_import
 
+import os
+import shutil
+import tempfile
 import unittest
 
 import responses
@@ -58,6 +61,10 @@ class MetadataTests(unittest.TestCase):
                       "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/",
                       body="<native>", status=200,
                       content_type='text/xml')
+        responses.add(responses.GET,
+                      "https://koordinates.com/services/api/v1/layers/1474/versions/4067/metadata/",
+                      body="<native>", status=200,
+                      content_type='text/xml')
 
         layer = self.client.layers.get(1474)
 
@@ -68,6 +75,16 @@ class MetadataTests(unittest.TestCase):
         s = six.BytesIO()
         layer.metadata.get_xml(s, layer.metadata.FORMAT_NATIVE)
         self.assertEqual(s.getvalue().decode("utf-8"), "<native>")
+
+        t = tempfile.mkdtemp()
+        try:
+            tfn = os.path.join(t, 'metadata.xml')
+            layer.metadata.get_xml(tfn)
+
+            with open(tfn, 'r') as tf:
+                self.assertEqual(tf.read(), "<native>")
+        finally:
+            shutil.rmtree(t)
 
     @responses.activate
     def test_layer_set_xml(self):

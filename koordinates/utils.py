@@ -15,7 +15,12 @@ import dateutil.parser
 
 def is_bound(method):
     """
-    Decorator that asserts the model instance is bound (ie. has an ID and a manager set)
+    Decorator that asserts the model instance is bound.
+
+    Requires:
+    1. an ``id`` attribute
+    2. a ``url`` attribute
+    2. a manager set
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):

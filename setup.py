@@ -50,6 +50,7 @@ setup(
         'python-dateutil>=2,<3',
         'pytz',
         'requests>=2,<3',
+        'requests-toolbelt>=0.4,<1',
         'six>=1.9,<2',
     ],
     test_suite = 'nose.collector',

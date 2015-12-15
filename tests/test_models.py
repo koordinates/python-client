@@ -11,7 +11,12 @@ from koordinates.utils import is_bound
 
 class FooManager(base.Manager):
     TEST_LIST_URL = 'https://test.koordinates.com/services/v1/api/foo/'
-    TEST_GET_URL = 'https://test.koordinates.com/services/v1/api/foo/%s'
+    TEST_GET_URL = 'https://test.koordinates.com/services/v1/api/foo/%s/'
+    _URL_KEY = 'TEST_FOO'
+
+    def __init__(self, client, *args, **kwargs):
+        super(FooManager, self).__init__(client, *args, **kwargs)
+        self.pops = PopManager(client, self)
 
     def list(self):
         """
@@ -40,16 +45,71 @@ class FooModel(base.Model):
         ordering_attributes = ['sortable']
         filter_attributes = ['filterable', 'thing', 'other', 'b1']
         serialize_skip = ['noserialize']
+        relations = {
+            'bars': ['BarModel'],
+        }
+
+    def _deserialize(self, data, manager):
+        super(FooModel, self)._deserialize(data, manager)
+        self.pop = PopModel()._deserialize(data["pop"], manager.pops, self) if data.get("pop") else None
+        return self
 
     @is_bound
     def test_is_bound(self):
         pass
 
 
+class Foo2Model(FooModel):
+    # child model
+    class Meta:
+        manager = FooManager
+
+
+# Bar is a related model of foo (ala /foo/123/bar/456)
+class BarManager(base.Manager):
+    _URL_KEY = 'TEST_BAR'
+
+
+class BarModel(base.Model):
+    class Meta:
+        manager = BarManager
+        relations = {
+            'foo': FooModel,
+        }
+
+
+# Pop is an inner model, that lives as Foo.pop at /foo/123/
+class PopManager(base.InnerManager):
+    pass
+
+
+class PopModel(base.InnerModel):
+    class Meta:
+        manager = PopManager
+
+
 class ModelTests(unittest.TestCase):
     def setUp(self):
         self.client = Client(host='test.koordinates.com', token='test')
         self.mgr = FooManager(self.client)
+
+        self.client._register_manager(FooModel, self.mgr)
+        self.client._register_manager(BarModel, BarManager(self.client))
+
+        self.client.URL_TEMPLATES__v1.update({
+            'TEST_FOO': {
+                'GET': {
+                    'multi': 'foo/',
+                    'single': 'foo/{id}/',
+                }
+            },
+            'TEST_BAR': {
+                'GET': {
+                    'multi': 'foo/{foo_id}/bar/',
+                    'single': 'foo/{foo_id}/bar/{id}/',
+                }
+            },
+        })
 
     def test_manager_init(self):
         self.assert_(hasattr(FooModel, "_meta"))
@@ -106,6 +166,109 @@ class ModelTests(unittest.TestCase):
             'id': 1234,
         })
 
+    def test_equality(self):
+        o1 = FooModel()._deserialize({'id': '12345'}, self.mgr)
+        o2 = FooModel()._deserialize({'id': '12345'}, self.mgr)
+        o3 = FooModel()._deserialize({'id': '23456'}, self.mgr)
+
+        self.assert_(o1 == o2)
+        self.assert_(not o1 != o2)
+        self.assert_(o1 != o3)
+        self.assert_(not o1 == o3)
+
+        o4 = Foo2Model()._deserialize({'id': '12345'}, self.mgr)
+        self.assert_(o1 == o4)
+
+        o5 = BarModel()._deserialize({'id': '12345'}, BarManager(self.client))
+        self.assert_(o1 != o5)
+
+    @responses.activate
+    def test_serialize2(self):
+        FOO_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'foo',
+            'bars': FooManager.TEST_GET_URL % '12345/bars'
+        }
+        BAR_INNER_DATA = {
+            'id': 23456,
+            'url': FooManager.TEST_GET_URL % '12345/bar/23456',
+            'name': 'bar',
+            'foo': FooManager.TEST_GET_URL % 12345,
+        }
+        bar_mgr = BarManager(self.client)
+
+        o_foo = FooModel()._deserialize(FOO_DATA, self.mgr)
+        o_bar = BarModel()._deserialize(BAR_INNER_DATA, bar_mgr)
+
+        responses.add(responses.GET,
+                      FooManager.TEST_GET_URL % 12345,
+                      body='{"id": 12345}',
+                      content_type='application/json')
+        foo2 = o_bar.get_foo()
+        self.assert_(isinstance(foo2, FooModel))
+        self.assertEqual(foo2.id, 12345)
+
+        responses.add(responses.GET,
+                      FooManager.TEST_GET_URL % '12345/bars',
+                      body='[]',
+                      content_type='application/json')
+        self.assertIsInstance(o_foo.list_bars(), base.Query)
+        self.assertEqual(list(o_foo.list_bars()), [])
+
+    def test_inner_load(self):
+        FOO_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'foo',
+            'pop': {
+                'id': 3456,
+                'type': 'double-happy',
+            }
+        }
+        o_foo = FooModel()._deserialize(FOO_DATA, self.mgr)
+
+        self.assert_(isinstance(o_foo.pop, PopModel))
+        self.assertEqual(o_foo.pop.type, 'double-happy')
+        o_foo.pop.type = 'roman-candle'
+
+        z = o_foo._serialize()
+        self.assertEqual(z['pop']['type'], 'roman-candle')
+
+    def test_inner_set(self):
+        FOO_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'foo',
+            'pop': None
+        }
+        o_foo = FooModel()._deserialize(FOO_DATA, self.mgr)
+
+        p = PopModel(id=23456, type='double-happy')
+        o_foo.pop = p
+
+        self.assert_(hasattr(p, '_parent'))
+        self.assertIs(p._parent, o_foo)
+
+        z = o_foo._serialize()
+        self.assertEqual(z['pop']['type'], 'double-happy')
+
+    def test_inner_rel(self):
+        FOO_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'foo',
+            'pop': {
+                'id': 3456,
+                'type': 'double-happy',
+            }
+        }
+        o_foo = FooModel()._deserialize(FOO_DATA, self.mgr)
+        o_pop = o_foo.pop
+        self.assertIsInstance(o_pop, PopModel)
+        self.assertIs(o_pop._parent, o_foo)
+        self.assertIsInstance(o_pop._manager, PopManager)
+
     def test_init(self):
         o = FooModel()
         self.assert_(hasattr(o, 'id'))
@@ -150,19 +313,25 @@ class ModelTests(unittest.TestCase):
             class BadModel2(base.Model):
                 class Meta:
                     pass
-        except AttributeError as e:
+        except AttributeError:
             pass
         else:
             assert False, "Should have received an AttributeError for not having Meta.manager set"
 
     def test_is_bound(self):
+        url = FooManager.TEST_GET_URL % 123
+
         with self.assertRaises(ValueError):
-            # needs a manager set
+            # needs an id set
             FooModel().test_is_bound()
 
         with self.assertRaises(ValueError):
-            # needs a manager set
+            # needs a url set
             FooModel(id=123).test_is_bound()
+
+        with self.assertRaises(ValueError):
+            # needs a manager set
+            FooModel(id=123, url=url).test_is_bound()
 
         with self.assertRaises(ValueError):
             # needs 'id' set
@@ -170,8 +339,64 @@ class ModelTests(unittest.TestCase):
             f.test_is_bound()
 
         # bound
-        f = self.mgr.create_from_result({"id": 123})
+        f = self.mgr.create_from_result({"id": 123, "url": url})
         f.test_is_bound()
+
+    def test_inner_is_bound(self):
+        FOO_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'foo',
+            'pop': {
+                'id': 3456,
+                'type': 'double-happy',
+            }
+        }
+        o_foo = FooModel()._deserialize(FOO_DATA, self.mgr)
+        o_pop = o_foo.pop
+        self.assert_(o_foo._is_bound)
+        self.assert_(o_pop._is_bound)
+        o_foo.id = None
+        self.assert_(not o_pop._is_bound)
+
+    @responses.activate
+    def test_refresh(self):
+        FOO_LIST_DATA = [
+            {
+                'id': 12345,
+                'url': FooManager.TEST_GET_URL % 12345,
+                'name': 'Alpaca',
+                'age': 1,
+            }
+        ]
+        FOO_GET_DATA = {
+            'id': 12345,
+            'url': FooManager.TEST_GET_URL % 12345,
+            'name': 'Alpaca',
+            'age': 1,
+            'species': 'Vicugna pacos',
+        }
+        responses.add(responses.GET,
+                      FooManager.TEST_LIST_URL,
+                      body=json.dumps(FOO_LIST_DATA),
+                      content_type='application/json')
+
+        responses.add(responses.GET,
+                      FooManager.TEST_GET_URL % 12345,
+                      body=json.dumps(FOO_GET_DATA),
+                      content_type='application/json')
+
+        foo = self.mgr.list()[:1][0]
+        self.assertIsInstance(foo, FooModel)
+
+        self.assertRaises(AttributeError, getattr, foo, 'species')
+        foo.age = 3
+
+        f = foo.refresh()
+        self.assertIs(f, foo)
+        self.assertEqual(foo.species, 'Vicugna pacos')
+        self.assertEqual(foo.age, 1)
+
 
 class QueryTests(unittest.TestCase):
     def setUp(self):
