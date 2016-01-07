@@ -49,7 +49,7 @@ setup(
     install_requires=[
         'python-dateutil>=2,<3',
         'pytz',
-        'requests>=2,<3',
+        'requests>=2.5,<3',
         'requests-toolbelt>=0.4,<1',
         'six>=1.9,<2',
     ],
