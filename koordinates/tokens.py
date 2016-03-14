@@ -57,6 +57,8 @@ class TokenManager(base.Manager):
             post_data['scope'] = token.scope
         if getattr(token, 'expires_at', None):
             post_data['expires_at'] = token.expires_at
+        if getattr(token, 'referrers', None):
+            post_data['referrers'] = token.referrers
 
         r = self.client._raw_request('POST', target_url, json=post_data, headers={'Content-type': 'application/json'})
         return self.create_from_result(r.json())
