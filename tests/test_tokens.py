@@ -117,6 +117,7 @@ class TestTokens(unittest.TestCase):
 
         obj_tok.expires_at = datetime(2011, 1, 2, 3, 45)
         obj_tok.scopes = ['layers:read', 'layers:write']
+        obj_tok.referrers = ['*.text.com', 'www.example.com']
 
         self.assertEqual(obj_tok.scope, 'layers:read layers:write')
 
@@ -127,6 +128,7 @@ class TestTokens(unittest.TestCase):
         req = json.loads(responses.calls[1].request.body)
         self.assertEqual(req['scope'], 'layers:read layers:write')
         self.assertEqual(req['expires_at'], '2011-01-02T03:45:00')
+        self.assertEqual(req['referrers'], ['*.text.com', 'www.example.com'])
 
         # reset to server values
         self.assertEqual(len(obj_tok.scopes), 18)
