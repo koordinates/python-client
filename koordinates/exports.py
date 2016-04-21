@@ -75,7 +75,7 @@ class ExportManager(base.Manager):
     """
 
     _URL_KEY = 'EXPORT'
-    _options = None
+    _options_cache = None
 
     def create(self, export):
         """
@@ -92,6 +92,23 @@ class ExportManager(base.Manager):
         target_url = self.client.get_url(self._URL_KEY, 'POST', 'validate')
         r = self.client.request('POST', target_url, json=export._serialize())
         return export._deserialize(r.json(), self)
+
+    def _options(self):
+        """
+        Returns a raw options object
+        :rtype: dict
+        """
+        if self._options_cache is None:
+            target_url = self.client.get_url(self._URL_KEY, 'OPTIONS', 'options')
+            r = self.client.request('OPTIONS', target_url)
+            self._options_cache = r.json()
+        return self._options_cache
+
+    def get_formats(self):
+        """
+        Returns a dictionary of format options keyed by data kind.
+        """
+        return self._options()['actions']['POST']['formats']['children']
 
 
 class Export(base.Model):
