@@ -83,7 +83,10 @@ class ExportManager(base.Manager):
 
     def create(self, export):
         """
-        Creates a new Export.
+        Create and start processing a new Export.
+
+        :param Export export: The Export to create.
+        :rtype: Export
         """
         target_url = self.client.get_url(self._URL_KEY, 'POST', 'create')
         r = self.client.request('POST', target_url, json=export._serialize())
@@ -92,10 +95,13 @@ class ExportManager(base.Manager):
     def validate(self, export):
         """
         Validates an Export.
+
+        :rtype: ExportValidationResponse
         """
         target_url = self.client.get_url(self._URL_KEY, 'POST', 'validate')
+        response_object = ExportValidationResponse()
         r = self.client.request('POST', target_url, json=export._serialize())
-        return export._deserialize(r.json(), self)
+        return response_object._deserialize(r.json())
 
     def _options(self):
         """
@@ -150,6 +156,25 @@ class ExportManager(base.Manager):
         return r
 
 
+class ExportValidationResponse(base.SerializableBase):
+    """
+    TODO: Docs
+    """
+
+    def __init__(self, **kwargs):
+        self.items = []
+        super(ExportValidationResponse, self).__init__(**kwargs)
+
+    def is_valid(self):
+        """
+        Test if the entire Export was valid
+        """
+        for item in self.items:
+            if not item['valid']:
+                return False
+        return True
+
+
 class Export(base.Model):
     """
     TODO: Docs
@@ -192,7 +217,7 @@ class Export(base.Model):
 
         :param str filename: Path and filename to download the export to. If unset, defaults to 
                 the the export's name in the current working directory.
-        :param int chunk_size: Chunk size for streaming large downloads. 10MB by default
+        :param int chunk_size: Chunk size in bytes for streaming large downloads. 10MB by default
         :param function download_progress_callback: An optional callback
                     function which receives upload progress notifications. The function should take two
                     arguments: the number of bytes recieved, and the total number of bytes to recieve.
