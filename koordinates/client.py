@@ -63,7 +63,6 @@ class Client(object):
                 'catalog': catalog.CatalogManager,
                 'sources': sources.SourceManager,
                 'exports': exports.ExportManager,
-                'croplayers': exports.CropLayerManager,
             },
             private=(
                 users.GroupManager,
@@ -71,6 +70,7 @@ class Client(object):
                 sources.ScanManager,
                 sources.DatasourceManager,
                 exports.CropFeatureManager,
+                exports.CropLayerManager,
             )
         )
 

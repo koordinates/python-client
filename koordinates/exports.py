@@ -2,10 +2,10 @@
 
 """
 koordinates.exports
-==================
+===================
 
-TODO: Add description
-
+The `Exports API <https://support.koordinates.com/hc/en-us/articles/208580966>`_
+provides an interface to create exports and download data from a Koordinates site.
 """
 import logging
 
@@ -76,6 +76,10 @@ class ExportManager(base.Manager):
 
     _URL_KEY = 'EXPORT'
     _options_cache = None
+
+    @property
+    def croplayers(self):
+        return self.client.get_manager(CropLayer)
 
     def create(self, export):
         """
