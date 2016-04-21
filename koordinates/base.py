@@ -397,8 +397,90 @@ class ModelMeta(type):
         return klass
 
 
+class SerializableBase(object):
+    """
+    Base class for simple serialization.
+    """
+
+    def __setattr__(self, name, value):
+        if isinstance(value, ModelBase) and not name.startswith('_'):
+            # set the ._parent attribute on the passed-in Model instance
+            object.__setattr__(value, '_parent', self)
+        object.__setattr__(self, name, value)
+
+    def _deserialize(self, data):
+        """
+        Deserialise from JSON response data.
+
+        String items named ``*_at`` are turned into dates.
+
+        :param data dict: JSON-style object with instance data.
+        :return: this instance
+        """
+        if not isinstance(data, dict):
+            raise ValueError("Need to deserialize from a dict")
+
+        for key, value in data.items():
+            value = self._deserialize_value(key, value)
+            setattr(self, key, value)
+        return self
+
+    def _deserialize_value(self, key, value):
+        if key.endswith('_at') and isinstance(value, six.string_types):
+            value = make_date(value)
+        return value
+
+    def _serialize(self, skip_empty=True):
+        """
+        Serialise this instance into JSON-style request data.
+
+        Filters out:
+        * attribute names starting with ``_``
+        * attribute values that are ``None`` (unless ``skip_empty`` is ``False``)
+        * attribute values that are empty lists/tuples/dicts (unless ``skip_empty`` is ``False``)
+        * attribute names in ``Meta.serialize_skip``
+        * constants set on the model class
+
+        Inner :py:class:`Model` instances get :py:meth:`._serialize` called on them.
+        Date and datetime objects are converted into ISO 8601 strings.
+
+        :param bool skip_empty: whether to skip attributes where the value is ``None``
+        :rtype: dict
+        """
+        skip = set(getattr(self._meta, 'serialize_skip', []))
+
+        r = {}
+        for k, v in self.__dict__.items():
+            if k.startswith('_'):
+                continue
+            elif k in skip:
+                continue
+            elif v is None and skip_empty:
+                continue
+            elif isinstance(v, (dict, list, tuple, set)) and len(v) == 0 and skip_empty:
+                continue
+            else:
+                r[k] = self._serialize_value(v)
+        return r
+
+    def _serialize_value(self, value):
+        """
+        Called by :py:meth:`._serialize` to serialise an individual value.
+        """
+        if isinstance(value, (list, tuple, set)):
+            return [self._serialize_value(v) for v in value]
+        elif isinstance(value, dict):
+            return dict([(k, self._serialize_value(v)) for k, v in value.items()])
+        elif isinstance(value, ModelBase):
+            return value._serialize()
+        elif isinstance(value, datetime.date):  # includes datetime.datetime
+            return value.isoformat()
+        else:
+            return value
+
+
 @six.add_metaclass(ModelMeta)
-class ModelBase(object):
+class ModelBase(SerializableBase):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self)
 
@@ -448,12 +530,6 @@ class ModelBase(object):
             raise ValueError("%r must be bound to access a Client" % self)
         return self._manager.client
 
-    def __setattr__(self, name, value):
-        if isinstance(value, ModelBase) and not name.startswith('_'):
-            # set the ._parent attribute on the passed-in Model instance
-            object.__setattr__(value, '_parent', self)
-        object.__setattr__(self, name, value)
-
     def _deserialize(self, data, manager):
         """
         Deserialise from JSON response data.
@@ -464,71 +540,19 @@ class ModelBase(object):
         :param data dict: JSON-style object with instance data.
         :return: this instance
         """
-        from .users import User
-
-        if not isinstance(data, dict):
-            raise ValueError("Need to deserialize from a dict")
         if not issubclass(self.__class__, manager.model):
             raise TypeError("Manager %s is for %s, expecting %s" % (manager.__class__.__name__, manager.model.__name__, self.__class__.__name__))
 
         self._manager = manager
+        return super(ModelBase, self)._deserialize(data)
 
-        for k, v in data.items():
-            if k.endswith('_at') and isinstance(v, six.string_types):
-                v = make_date(v)
-            elif k.endswith('_by') and isinstance(v, dict):
-               v = User()._deserialize(v, manager.client.get_manager(User))
-
-            setattr(self, k, v)
-        return self
-
-    def _serialize(self, skip_empty=True):
-        """
-        Serialise this instance into JSON-style request data.
-
-        Filters out:
-        * attribute names starting with ``_``
-        * attribute values that are ``None`` (unless ``skip_empty`` is ``False``)
-        * attribute values that are empty lists/tuples/dicts (unless ``skip_empty`` is ``False``)
-        * attribute names in ``Meta.serialize_skip``
-        * constants set on the model class
-
-        Inner :py:class:`Model` instances get :py:meth:`._serialize` called on them.
-        Date and datetime objects are converted into ISO 8601 strings.
-
-        :param bool skip_empty: whether to skip attributes where the value is ``None``
-        :rtype: dict
-        """
-        skip = set(getattr(self._meta, 'serialize_skip', []))
-
-        r = {}
-        for k, v in self.__dict__.items():
-            if k.startswith('_'):
-                continue
-            elif k in skip:
-                continue
-            elif v is None and skip_empty:
-                continue
-            elif isinstance(v, (dict, list, tuple, set)) and len(v) == 0 and skip_empty:
-                continue
-            else:
-                r[k] = self._serialize_value(v)
-        return r
-
-    def _serialize_value(self, value):
-        """
-        Called by :py:meth:`._serialize` to serialise an individual value.
-        """
-        if isinstance(value, (list, tuple, set)):
-            return [self._serialize_value(v) for v in value]
-        elif isinstance(value, dict):
-            return dict([(k, self._serialize_value(v)) for k, v in value.items()])
-        elif isinstance(value, ModelBase):
-            return value._serialize()
-        elif isinstance(value, datetime.date):  # includes datetime.datetime
-            return value.isoformat()
+    def _deserialize_value(self, key, value):
+        from .users import User
+        if key.endswith('_by') and isinstance(value, dict):
+           value = User()._deserialize(value, self._manager.client.get_manager(User))
         else:
-            return value
+            value = super(ModelBase, self)._deserialize_value(key, value)
+        return value
 
 
 class Model(ModelBase):
