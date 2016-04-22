@@ -19,14 +19,20 @@ logger = logging.getLogger(__name__)
 
 class CropLayerManager(base.Manager):
     """
-    TODO: Docs
+    Accessor for querying Crop Layers.
+
+    Access via the ``exports.croplayers`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
     _URL_KEY = 'CROPLAYER'
 
     def get_feature(self, croplayer_id, cropfeature_id):
         """
-        TODO: Docs
+        Gets a crop feature
+
+        :param int croplayer_id: ID of a cropping layer
+        :param int cropfeature_id: ID of a cropping feature
+        :rtype: CropFeature
         """
         target_url = self.client.get_url('CROPFEATURE', 'GET', 'single', {'croplayer_id': croplayer_id, 'cropfeature_id': cropfeature_id})
         return self.client.get_manager(CropFeature)._get(target_url)
@@ -34,7 +40,7 @@ class CropLayerManager(base.Manager):
 
 class CropLayer(base.Model):
     """
-    TODO: Docs
+    A crop layer provides features that can be used to crop exports to a geographic extent.
     """
     class Meta:
         manager = CropLayerManager
@@ -45,14 +51,17 @@ class CropLayer(base.Model):
     @is_bound
     def get_feature(self, cropfeature_id):
         """
-        TODO: Docs
+        Gets a crop feature
+
+        :param int cropfeature_id: ID of a cropping feature
+        :rtype: CropFeature
         """
         return self._manager.get_feature(self.id, cropfeature_id)
 
 
 class CropFeatureManager(base.Manager):
     """
-    TODO: Docs
+    Accessor for querying Crop Features.
     """
 
     _URL_KEY = 'CROPFEATURE'
@@ -60,7 +69,8 @@ class CropFeatureManager(base.Manager):
 
 class CropFeature(base.Model):
     """
-    TODO: Docs
+    A crop feature provides complex pre-defined geographic extents for cropping
+    and clipping Exports.
     """
     class Meta:
         manager = CropFeatureManager
@@ -68,10 +78,15 @@ class CropFeature(base.Model):
             'layer': CropLayer,
         }
 
+    def _serialize(self):
+        return self.url
+
 
 class ExportManager(base.Manager):
     """
-    TODO: Docs
+    Accessor for querying and creating Exports.
+
+    Access via the ``exports`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
     _URL_KEY = 'EXPORT'
@@ -79,6 +94,11 @@ class ExportManager(base.Manager):
 
     @property
     def croplayers(self):
+        """
+        Returns a manager for querying and listing CropLayer models
+
+        :rtype: CropLayerManager
+        """
         return self.client.get_manager(CropLayer)
 
     def create(self, export):
@@ -96,6 +116,8 @@ class ExportManager(base.Manager):
         """
         Validates an Export.
 
+
+        :param Export export:
         :rtype: ExportValidationResponse
         """
         target_url = self.client.get_url(self._URL_KEY, 'POST', 'validate')
@@ -106,6 +128,7 @@ class ExportManager(base.Manager):
     def _options(self):
         """
         Returns a raw options object
+
         :rtype: dict
         """
         if self._options_cache is None:
@@ -158,7 +181,7 @@ class ExportManager(base.Manager):
 
 class ExportValidationResponse(base.SerializableBase):
     """
-    TODO: Docs
+    Repsonse returned by Export validation requests.
     """
 
     def __init__(self, **kwargs):
@@ -168,6 +191,8 @@ class ExportValidationResponse(base.SerializableBase):
     def is_valid(self):
         """
         Test if the entire Export was valid
+
+        :rtype: bool
         """
         for item in self.items:
             if not item['valid']:
@@ -177,7 +202,17 @@ class ExportValidationResponse(base.SerializableBase):
 
 class Export(base.Model):
     """
-    TODO: Docs
+    An export is a request to extract data from a Koordinates site into an archive for downloading
+
+    :Example:
+
+    >>> export = koordinates.Export()
+    >>> export.crs = "ESPG:4326"
+    >>> export.formats = {
+            "vector": "application/x-zipped-shp"
+        }
+    >>> export.add_item(layer)
+    >>> client.exports.create(export)
     """
     class Meta:
         manager = ExportManager
@@ -186,22 +221,19 @@ class Export(base.Model):
         self.items = []
         super(Export, self).__init__(**kwargs)
 
-    def _deserialize(self, data, manager):
-        super(Export, self)._deserialize(data, manager)
-        return self
-
-    def add_item(self, layer=None, table=None, **options):
+    def add_item(self, item, **options):
         """
-        TODO Docs
-        """
-        item = layer or table
-        assert item
+        Add a layer or table item to the export.
 
+        :param Layer|Table item: The Layer or Table to add
+        :rtype: self
+        """
         export_item = {
             "item": item.url,
         }
         export_item.update(options)
         self.items.append(export_item)
+        return self
 
     @is_bound
     def cancel(self):
