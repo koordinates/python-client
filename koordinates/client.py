@@ -16,7 +16,7 @@ import requests
 import requests_toolbelt
 import six
 
-from . import layers, licenses, publishing, sets, tokens, users, catalog, sources
+from . import layers, licenses, publishing, sets, tokens, users, catalog, sources, exports
 from . import exceptions
 
 
@@ -62,12 +62,15 @@ class Client(object):
                 'licenses': licenses.LicenseManager,
                 'catalog': catalog.CatalogManager,
                 'sources': sources.SourceManager,
+                'exports': exports.ExportManager,
             },
             private=(
                 users.GroupManager,
                 users.UserManager,
                 sources.ScanManager,
                 sources.DatasourceManager,
+                exports.CropFeatureManager,
+                exports.CropLayerManager,
             )
         )
 
@@ -348,5 +351,30 @@ class Client(object):
                 'multi': '/sources/{source_id}/datasources/',
                 'single': '/sources/{source_id}/datasources/{datasource_id}/',
             }
+        },
+        'EXPORT': {
+            'GET': {
+                'multi': '/exports/',
+                'single': '/exports/{id}/',
+            },
+            'POST': {
+                'create': '/exports/',
+                'validate': '/exports/validate/',
+            },
+            'OPTIONS': {
+                'options': '/exports/',
+            },
+        },
+        'CROPLAYER': {
+            'GET': {
+                'multi': '/exports/croplayers/',
+                'single': '/exports/croplayers/{id}/',
+            },
+        },
+        'CROPFEATURE': {
+            'GET': {
+                'multi': '/exports/croplayers/{croplayer_id}/cropfeatures/',
+                'single': '/exports/croplayers/{croplayer_id}/cropfeatures/{cropfeature_id}/',
+            },
         },
     }
