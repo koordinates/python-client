@@ -28,6 +28,7 @@ The library aims to reflect the available `Koordinates web APIs <https://help.ko
 - `Metadata API <https://help.koordinates.com/api/publisher-admin-api/metadata-api/>`_
 - `Token API <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_
 - `Data Sources API <https://help.koordinates.com/api/publisher-admin-api/data-sources-api/>`_
+- `Exports API <https://help.koordinates.com/api/publisher-admin-api/export-api/>`_
 
 We're working hard to add support for additional APIs to the library, so expect this list to grow soon.
 
