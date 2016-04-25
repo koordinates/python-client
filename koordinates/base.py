@@ -234,14 +234,20 @@ class Query(object):
 
     def __getitem__(self, k):
         """
-        Very limited slicing support ([:N] only)
+        Limited slicing support ([N] and [:N] only, for positive N)
         """
-        if not isinstance(k, slice) \
+        if isinstance(k, int) and k >= 0:
+            try:
+                return itertools.islice(self.__iter__(), k, None).next()
+            except StopIteration:
+                raise IndexError(k)
+
+        elif not isinstance(k, slice) \
                 or k.start is not None \
                 or k.step is not None \
                 or k.stop is None \
                 or k.stop <= 0:
-            raise ValueError("Only query[:N] slicing is supported.")
+            raise ValueError("Only query[:+N] or query[+N] slicing is supported.")
 
         return list(itertools.islice(self.__iter__(), k.stop))
 
