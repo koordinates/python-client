@@ -238,7 +238,7 @@ class Query(object):
         """
         if isinstance(k, int) and k >= 0:
             try:
-                return itertools.islice(self.__iter__(), k, None).next()
+                return next(itertools.islice(self.__iter__(), k, None))
             except StopIteration:
                 raise IndexError(k)
 
