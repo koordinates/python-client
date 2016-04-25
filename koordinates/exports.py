@@ -7,7 +7,15 @@ koordinates.exports
 The `Exports API <https://support.koordinates.com/hc/en-us/articles/208580966>`_
 provides an interface to create exports and download data from a Koordinates site.
 """
+import collections
 import logging
+import os
+import six
+
+if six.PY2:
+    import contextlib2 as contextlib
+else:
+    import contextlib
 
 from . import base
 from . import exceptions
@@ -125,6 +133,11 @@ class ExportManager(base.Manager):
         r = self.client.request('POST', target_url, json=export._serialize())
         return response_object._deserialize(r.json())
 
+    def cancel(self, export_id):
+        target_url = self.client.get_url(self._URL_KEY, 'DELETE', 'single', {'id': export_id})
+        r = self.client.request('DELETE', target_url)
+        return self.create_from_result(r.json())
+
     def _options(self):
         """
         Returns a raw options object
@@ -188,16 +201,18 @@ class ExportValidationResponse(base.SerializableBase):
         self.items = []
         super(ExportValidationResponse, self).__init__(**kwargs)
 
-    def is_valid(self):
-        """
-        Test if the entire Export was valid
-
-        :rtype: bool
-        """
+    def get_reasons(self):
+        r = {}
+        if self.invalid_reasons:
+            r['__all__'] = self.invalid_reasons[:]
         for item in self.items:
-            if not item['valid']:
-                return False
-        return True
+            if item['invalid_reasons']:
+                r[item['item']] = item['invalid_reasons'][:]
+        return r
+
+
+class DownloadError(exceptions.ClientError):
+    pass
 
 
 class Export(base.Model):
@@ -235,37 +250,84 @@ class Export(base.Model):
         self.items.append(export_item)
         return self
 
+    def set_formats(self, **kinds):
+        if not hasattr(self, 'formats'):
+            self.formats = {}
+
+        for kind, data_format in kinds.items():
+            if data_format:
+                self.formats[kind] = data_format
+            elif kind in self.formats:
+                del self.formats[kind]
+
+        return self.formats
+
     @is_bound
     def cancel(self):
         """
         Cancel the export processing
         """
-        r = self._client.request('DELETE', self.url)
+        return self._manage.cancel(self.id)
 
     @is_bound
-    def download(self, filename=None, chunk_size=10*1024**2, download_progress_callback=None):
+    def download(self, path, progress_callback=None, chunk_size=1024**2):
         """
         Download the export archive.
 
-        :param str filename: Path and filename to download the export to. If unset, defaults to 
+        :param str filename: Path and filename to download the export to. If unset, defaults to
                 the the export's name in the current working directory.
-        :param int chunk_size: Chunk size in bytes for streaming large downloads. 10MB by default
-        :param function download_progress_callback: An optional callback
+        :param function progress_callback: An optional callback
                     function which receives upload progress notifications. The function should take two
                     arguments: the number of bytes recieved, and the total number of bytes to recieve.
+        :param int chunk_size: Chunk size in bytes for streaming large downloads. 1MB by default
         :rtype: str
         """
-        filename = filename or "{}.zip".format(self.name)
-        progress_size = 0
+        if not self.download_url or self.state != 'complete':
+            raise DownloadError("Download not available")
 
-        r = self._manager.client.request('GET', self.download_url, stream=True)
-        total_content_length = r.headers.get('content-length', None)
+        # ignore parsing the Content-Disposition header, since we know the name
+        download_filename = "{}.zip".format(self.name)
+        fd = None
 
-        with open(filename, 'wb') as file_handle:
+        if isinstance(getattr(path, 'write', None), collections.Callable):
+            # already open file-like object
+            fd = path
+        elif os.path.isdir(path):
+            # directory to download to, using the export name
+            path = os.path.join(path, download_filename)
+            # do not allow overwriting
+            if os.path.exists(path):
+                raise DownloadError("Download file already exists: %s" % path)
+        elif path:
+            # fully qualified file path
+            # allow overwriting
+            pass
+        elif not path:
+            raise DownloadError("Empty download file path")
+
+        with contextlib.ExitStack() as stack:
+            if not fd:
+                fd = open(path, 'wb')
+                # only close a file we open
+                stack.callback(fd.close)
+
+            r = self._manager.client.request('GET', self.download_url, stream=True)
+            stack.callback(r.close)
+
+            bytes_written = 0
+            try:
+                bytes_total = int(r.headers.get('content-length', None))
+            except TypeError:
+                bytes_total = None
+
+            if progress_callback:
+                # initial callback (0%)
+                progress_callback(bytes_written, bytes_total)
+
             for chunk in r.iter_content(chunk_size=chunk_size):
-                file_handle.write(chunk)
-                progress_size += len(chunk)
-                if download_progress_callback:
-                    download_progress_callback(progress_size, total_content_length)
+                fd.write(chunk)
+                bytes_written += len(chunk)
+                if progress_callback:
+                    progress_callback(bytes_written, bytes_total)
 
-        return filename
+        return download_filename

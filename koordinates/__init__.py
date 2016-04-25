@@ -34,4 +34,4 @@ from .sets import Set
 from .sources import Source, UploadSource
 from .tokens import Token
 from .users import Group, User
-from .exports import Export, CropLayer
+from .exports import Export, CropLayer, DownloadError
