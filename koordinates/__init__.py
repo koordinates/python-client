@@ -6,7 +6,7 @@ Koordinates Python API Client Library
 :license: BSD, see LICENSE for more details.
 '''
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 from .exceptions import (
     KoordinatesException,
@@ -34,3 +34,4 @@ from .sets import Set
 from .sources import Source, UploadSource
 from .tokens import Token
 from .users import Group, User
+from .exports import Export, CropLayer, DownloadError
