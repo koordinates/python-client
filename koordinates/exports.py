@@ -274,12 +274,30 @@ class Export(base.Model):
         """
         Download the export archive.
 
-        :param str filename: Path and filename to download the export to. If unset, defaults to
-                the the export's name in the current working directory.
+        .. warning::
+
+            If you pass this function an open file-like object as the ``path``
+            parameter, the function will not close that file for you.
+
+        If a ``path`` parameter is a directory, this function will use the
+        Export name to determine the name of the file (returned). If the
+        calculated download file path already exists, this function will raise
+        a DownloadError.
+
+        You can also specify the filename as a string. This will be passed to
+        the built-in :func:`open` and we will read the content into the file.
+
+        Instead, if you want to manage the file object yourself, you need to
+        provide either a :class:`io.BytesIO` object or a file opened with the
+        `'b'` flag. See the two examples below for more details.
+
+        :param path: Either a string with the path to the location
+            to save the response content, or a file-like object expecting bytes.
         :param function progress_callback: An optional callback
-                    function which receives upload progress notifications. The function should take two
-                    arguments: the number of bytes recieved, and the total number of bytes to recieve.
-        :param int chunk_size: Chunk size in bytes for streaming large downloads. 1MB by default
+                function which receives upload progress notifications. The function should take two
+                arguments: the number of bytes recieved, and the total number of bytes to recieve.
+        :param int chunk_size: Chunk size in bytes for streaming large downloads and progress reporting. 1MB by default
+        :returns The name of the automatic filename that would be used.
         :rtype: str
         """
         if not self.download_url or self.state != 'complete':
