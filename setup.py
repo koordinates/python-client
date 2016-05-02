@@ -29,7 +29,7 @@ setup(
     keywords='koordinates api',
     license = 'BSD',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
@@ -38,6 +38,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Scientific/Engineering :: GIS',
     ],
@@ -52,6 +53,7 @@ setup(
         'requests>=2.5,<3',
         'requests-toolbelt>=0.4,<1',
         'six>=1.9,<2',
+        'contextlib2>=0.5.1,<0.6'
     ],
     test_suite = 'nose.collector',
     tests_require=[
