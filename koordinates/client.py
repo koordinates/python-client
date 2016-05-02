@@ -377,6 +377,9 @@ class Client(object):
             'OPTIONS': {
                 'options': '/exports/',
             },
+            'DELETE': {
+                'single': '/exports/{id}/',
+            }
         },
         'CROPLAYER': {
             'GET': {
