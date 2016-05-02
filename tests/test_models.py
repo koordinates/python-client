@@ -614,8 +614,13 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(i, 27)  # 0-index
         self.assertEqual(len(responses.calls), 4)
 
+        # query[0] slice
+        self.assertEqual(q[0].id, 0)
+        self.assertEqual(q[3].id, 3)
+        self.assertRaises(IndexError, lambda qq: qq[999], q)
+
         # Bad slices, we only support query[:N] where N>0
-        self.assertRaises(ValueError, lambda qq: qq[0], q)
+        self.assertRaises(ValueError, lambda qq: qq[-1], q)
         self.assertRaises(ValueError, lambda qq: qq[0:10], q)
         self.assertRaises(ValueError, lambda qq: qq[10:20], q)
         self.assertRaises(ValueError, lambda qq: qq[:10:3], q)
