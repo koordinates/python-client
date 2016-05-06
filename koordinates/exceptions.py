@@ -59,6 +59,10 @@ class ServerError(KoordinatesException):
         else:
             return super(ServerError, self).__str__()
 
+    def __repr__(self):
+        return "%s('%s')" % (self.__class__.__name__, str(self))
+
+
 class BadRequest(ServerError):
     """ Invalid request data or parameters. Check your request. (400) """
     def _get_message(self, error, response):

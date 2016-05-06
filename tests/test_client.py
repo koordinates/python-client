@@ -10,7 +10,7 @@ import unittest
 import responses
 import six
 
-from koordinates import Client
+from koordinates import Client, BadRequest
 
 if six.PY2:
     from test.test_support import EnvironmentVarGuard
@@ -83,3 +83,31 @@ class ClientTests(unittest.TestCase):
         req = responses.calls[0].request
         ua = req.headers.get('User-Agent')
         self.assert_(ua.startswith('KoordinatesPython/'))
+
+    @responses.activate
+    def test_server_error(self):
+        responses.add(responses.POST,
+                      'https://test.koordinates.com/api/v1/layers/123/versions/',
+                      body='{"autoupdate_schedule":["This field is required when autoupdate is on."]}',
+                      status=400,
+                      content_type='application/json')
+
+        with self.assertRaises(BadRequest) as cm:
+            self.client.request('POST', 'https://test.koordinates.com/api/v1/layers/123/versions/', json={})
+
+        e = cm.exception
+        self.assertEqual(str(e), 'autoupdate_schedule: This field is required when autoupdate is on.')
+        self.assertEqual(repr(e), "BadRequest('autoupdate_schedule: This field is required when autoupdate is on.')")
+
+        responses.add(responses.POST,
+                      'https://test.koordinates.com/api/v1/layers/1234/versions/',
+                      body='{"autoupdate_schedule":["This field is required when autoupdate is on."], "number":["Value must be >10", "Value must be <100"]}',
+                      status=400,
+                      content_type='application/json')
+
+        with self.assertRaises(BadRequest) as cm:
+            self.client.request('POST', 'https://test.koordinates.com/api/v1/layers/1234/versions/', json={})
+
+        e = cm.exception
+        self.assertEqual(str(e), 'number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')
+        self.assertEqual(repr(e), "BadRequest('number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')")
