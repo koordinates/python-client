@@ -68,7 +68,7 @@ class BadRequest(ServerError):
     def _get_message(self, error, response):
         try:
             messages = []
-            for field, errors in response.json().items():
+            for field, errors in sorted(response.json().items()):
                 messages.append("%s: %s" % (field, "; ".join(errors)))
             return "\n".join(messages)
         except Exception as e:
