@@ -5,8 +5,9 @@ koordinates.client
 ==================
 """
 
-import logging
 import copy
+import json
+import logging
 import os
 import re
 import sys
@@ -149,7 +150,19 @@ class Client(object):
         return r
 
     def _raw_request(self, method, url, headers, *args, **kwargs):
-        logger.info('Request: %s %s %s', method, url, headers)
+        # for the Koordinates library logging, strip auth tokens from log messages
+        # and log POST/PUT bodies if we're sending JSON.
+        # Get low-level logging via the requests.packages.urllib3 logger.
+        log_headers = headers.copy()
+        if 'Authorization' in log_headers:
+            # don't log auth tokens
+            log_headers['Authorization'] = re.sub('(?<=key )[0-9a-f]+$', lambda m: '*' * len(m.group(0)), log_headers['Authorization'])
+
+        if 'json' in kwargs:
+            logger.info('Request: %s %s headers=%s body=%s', method, url, json.dumps(log_headers), json.dumps(kwargs['json']))
+        else:
+            logger.info('Request: %s %s headers=%s', method, url, json.dumps(log_headers))
+
         try:
             r = requests.request(method,
                                  url,

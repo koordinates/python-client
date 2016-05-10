@@ -5,17 +5,31 @@ Tests for the `koordinates.catalog` module.
 """
 from __future__ import unicode_literals, absolute_import
 
+import json
+import logging
+import re
 import unittest
 
 import responses
 import six
 
 from koordinates import Client, BadRequest
+from koordinates.client import logger
 
 if six.PY2:
     from test.test_support import EnvironmentVarGuard
 else:
     from test.support import EnvironmentVarGuard
+
+
+class TestLogHandler(logging.NullHandler):
+    def __init__(self, *args, **kwargs):
+        super(TestLogHandler, self).__init__(*args, **kwargs)
+        self.records = []
+
+    def handle(self, record):
+        self.records.append(record)
+        return super(TestLogHandler, self).handle(record)
 
 
 class ClientTests(unittest.TestCase):
@@ -111,3 +125,31 @@ class ClientTests(unittest.TestCase):
         e = cm.exception
         self.assertEqual(str(e), 'number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')
         self.assertEqual(repr(e), "BadRequest('number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')")
+
+    @responses.activate
+    def test_request_logging(self):
+        log_handler = TestLogHandler()
+        logger.addHandler(log_handler)
+        try:
+            responses.add(responses.GET,
+                          'https://test.koordinates.com/api/v1/test/',
+                          body='[]', status=200,
+                          content_type='application/json')
+
+            r = self.client.request('GET', 'https://test.koordinates.com/api/v1/test/', json={'some': ['data', 1]})
+            r.raise_for_status()
+
+            lreq = log_handler.records[0]
+            lmsg = lreq.getMessage()
+            assert lmsg.startswith('Request: ')
+
+            lf = re.match('^Request: GET https://test.koordinates.com/api/v1/test/ headers=(?P<headers>.*) body=(?P<body>.*)$', lmsg)
+            print lf.group('headers'), lf.group('body')
+
+            lbody = json.loads(lf.group('body'))
+            self.assertEqual(lbody, {'some': ['data', 1]})
+
+            lheaders = json.loads(lf.group('headers'))
+            self.assertEqual(lheaders["Authorization"], "key " + ("*" * len(self.client.token)))
+        finally:
+            logger.removeHandler(log_handler)
