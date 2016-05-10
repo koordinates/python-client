@@ -123,8 +123,9 @@ class ClientTests(unittest.TestCase):
             self.client.request('POST', 'https://test.koordinates.com/api/v1/layers/1234/versions/', json={})
 
         e = cm.exception
-        self.assertEqual(str(e), 'number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')
-        self.assertEqual(repr(e), "BadRequest('number: Value must be >10; Value must be <100\nautoupdate_schedule: This field is required when autoupdate is on.')")
+        estr = set(str(e).split('\n'))
+        self.assertEqual(estr, set(['number: Value must be >10; Value must be <100', 'autoupdate_schedule: This field is required when autoupdate is on.']))
+        self.assertEqual(repr(e), "BadRequest('%s')" % str(e))
 
     @responses.activate
     def test_request_logging(self):
