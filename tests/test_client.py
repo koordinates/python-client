@@ -3,7 +3,7 @@
 """
 Tests for the `koordinates.catalog` module.
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 import logging
@@ -145,7 +145,7 @@ class ClientTests(unittest.TestCase):
             assert lmsg.startswith('Request: ')
 
             lf = re.match('^Request: GET https://test.koordinates.com/api/v1/test/ headers=(?P<headers>.*) body=(?P<body>.*)$', lmsg)
-            print lf.group('headers'), lf.group('body')
+            print(lf.group('headers'), lf.group('body'))
 
             lbody = json.loads(lf.group('body'))
             self.assertEqual(lbody, {'some': ['data', 1]})
