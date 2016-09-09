@@ -4,7 +4,7 @@ Koordinates Python API Client
 
 A BSD-licensed Python client library for a number of `Koordinates <https://koordinates.com>`_ web APIs.
 
-The library provides easy access to Koordinates web services, particularly the `Administration APIs <https://support.koordinates.com/hc/en-us/sections/200876264-Koordinates-Administration-API>`_.
+The library provides easy access to Koordinates web services, particularly the `Publisher Admin APIs <https://help.koordinates.com/api/publisher-admin-api/>`_.
 
 .. image:: https://circleci.com/gh/koordinates/python-client/tree/master.svg?style=svg
     :target: https://circleci.com/gh/koordinates/python-client/tree/master
@@ -23,7 +23,7 @@ Documentation
 =============
 
 * `Documentation for the Python library <http://koordinates-python.readthedocs.org>`_.
-* `Documentation on the APIs and available actions <https://support.koordinates.com/hc/en-us/sections/200876264-Koordinates-Administration-API>`_.
+* `Documentation on the APIs and available actions <https://help.koordinates.com/api/publisher-admin-api/>`_.
 
 
 Support & Contributions

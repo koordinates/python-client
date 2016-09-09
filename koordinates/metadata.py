@@ -1,5 +1,5 @@
 """
-The `Metadata API <https://support.koordinates.com/hc/en-us/articles/204795834-Koordinates-Metadata-API>`_
+The `Metadata API <https://help.koordinates.com/api/publisher-admin-api/metadata-api/>`_
 provides an interface for adding, inspecting and downloading
 XML metadata documents against a range of objects.
 """

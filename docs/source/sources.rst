@@ -1,7 +1,8 @@
-Sources
+Data Sources
 ===================
 .. module:: koordinates
 
+Related to the `Data Sources API <https://help.koordinates.com/api/publisher-admin-api/data-sources-api/>`_
 
 .. autoclass:: koordinates.sources.SourceManager
     :members:

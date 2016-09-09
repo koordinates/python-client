@@ -1,4 +1,4 @@
-User
+Users & Groups
 ===================
 .. module:: koordinates
 

@@ -6,7 +6,7 @@ Quick Start
 In this guide, we provide a very short overview of how the library may be used to achieve some
 common tasks.
 
-Before you begin, you'll need to know the Koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See :ref:`Authentication` for more information. You'll also need sufficient permissions on the site to take actions (for example, creating a Layer).
+Before you begin, you'll need to know the Koordinates site you're accessing (eg. `labs.koordinates.com <https://labs.koordinates.com>`_), and have a valid API token for the site, created with the scopes you need for the APIs you're using. See `Authentication`_ for more information. You'll also need sufficient permissions on the site to take actions (for example, creating a Layer).
 
 First, import the Koordinates module::
 
@@ -16,13 +16,13 @@ Prepare to use the library by creating a client::
 
     >>> client = koordinates.Client('labs.koordinates.com', 'MY_API_TOKEN')
 
-Fetch all the Layer objects via the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API#layers-&-tables-api-layers-&-tables-list>`_ and iterate over them::
+Fetch all the Layer objects via the `Layers & Tables API <https://help.koordinates.com/api/publisher-admin-api/layers-tables-api/>`_ and iterate over them::
 
     >>> for layer in client.layers.list():
     ...     print(layer.id)
     >>>
 
-Fetch filtered and sorted Layer objects via the `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_ and iterate over them::
+Fetch filtered and sorted Layer objects via the `Data Catalog API <https://help.koordinates.com/api/publisher-admin-api/data-catalog-api/>`_ and iterate over them::
 
     >>> for layer in client.catalog.list().filter(license__type='cc')\
     ...                                   .filter(type='layer')\
@@ -85,7 +85,7 @@ Publish a specific version of a Layer::
 Authentication
 ==============
 
-See the `Token API documentation <https://support.koordinates.com/hc/en-us/articles/204890044>`_ for details on creating API tokens for use with this library.
+See the `Token API documentation <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_ for details on creating API tokens for use with this library.
 
 Once you have an API token, you can either pass it into the :py:class:`koordinates.client.Client` object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable. ::
 
@@ -97,7 +97,7 @@ Once you have an API token, you can either pass it into the :py:class:`koordinat
 
 Tokens are specific to a Koordinates site. For example, a token created for ``labs.koordinates.com`` wouldn't be valid for another site, such as ``koordinates.com``.
 
-Tokens need to be `created with scopes appropriate <https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API>`_ for the APIs you are utilising. For example, to query Sets you need a token with the ``sets:read`` scope, and to create or update a Set you need a token with the ``sets:write`` scope.
+Tokens need to be `created with scopes appropriate <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_ for the APIs you are utilising. For example, to query Sets you need a token with the ``sets:read`` scope, and to create or update a Set you need a token with the ``sets:write`` scope.
 
 If a required scope isn't associated with the token, you will receive an :py:exc:`koordinates.exceptions.InvalidTokenScope` exception.
 

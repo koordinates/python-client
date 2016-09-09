@@ -4,7 +4,7 @@
 koordinates.sets
 ================
 
-The `Sets API <https://support.koordinates.com/hc/en-us/articles/205008090-Koordinates-Sets-API>`_
+The `Sets API <https://help.koordinates.com/api/publisher-admin-api/sets-api/>`_
 is used for grouping layers, tables and documents together.
 """
 

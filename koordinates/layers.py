@@ -5,7 +5,7 @@ koordinates.layers
 ==================
 
 For getting, editing and updating layers and tables, via
-the `Layers & Tables API <https://support.koordinates.com/hc/en-us/articles/204795824-Koordinates-Layers-Tables-API>`_.
+the `Layers & Tables API <https://help.koordinates.com/api/publisher-admin-api/layers-tables-api/>`_.
 
 """
 import logging

@@ -9,8 +9,8 @@ If you are looking for information on a specific function, class or method, this
 .. toctree::
    :maxdepth: 2
 
-   catalog
    client
+   catalog
    layer
    license
    metadata

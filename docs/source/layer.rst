@@ -1,7 +1,8 @@
-Layer
+Layers & Tables
 ===================
 .. module:: koordinates
 
+Related to the `Layers & Tables API <https://help.koordinates.com/api/publisher-admin-api/layers-tables-api/>`_
 
 .. autoclass:: koordinates.layers.Layer     
     :members:

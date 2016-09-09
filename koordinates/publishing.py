@@ -4,7 +4,7 @@
 koordinates.publishing
 ======================
 
-The `Group Publishing API <https://support.koordinates.com/hc/en-us/articles/204795854-Koordinates-Publishing-API>`_
+The `Group Publishing API <https://help.koordinates.com/api/publisher-admin-api/publishing-api/>`_
 allows for draft versions of versioned objects Documents,
 Layers, and Tables) to be scheduled for publishing together.
 """

@@ -6,7 +6,7 @@ koordinates.token
 
 Support for creating and managing API tokens via the `Token API`__.
 
-__ https://support.koordinates.com/hc/en-us/articles/204890044-Koordinates-Token-API
+__ https://help.koordinates.com/api/publisher-admin-api/token-api/
 
 """
 from __future__ import absolute_import

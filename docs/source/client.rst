@@ -1,4 +1,4 @@
-Client 
+API Client 
 ===================
 .. module:: koordinates
 

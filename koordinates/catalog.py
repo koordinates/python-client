@@ -4,7 +4,7 @@
 koordinates.catalog
 ===================
 
-The `Data Catalog API <https://support.koordinates.com/hc/en-us/articles/204767344-Koordinates-Data-Catalog-API>`_
+The `Data Catalog API <https://help.koordinates.com/api/publisher-admin-api/data-catalog-api/>`_
 is a read-only API for listing data from the Koordinates catalog.
 For write access to the listed items, refer to the item specific models.
 

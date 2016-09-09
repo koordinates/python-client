@@ -4,7 +4,7 @@
 koordinates.sources
 ===================
 
-The `Sources API <https://support.koordinates.com/hc/en-us/articles/204795864-Koordinates-Sources-API>`_
+The `Data Sources API <https://help.koordinates.com/api/publisher-admin-api/data-sources-api/>`_
 provides read+write access to sources, datasources and scans.
 
 A source points to a place where Koordinates can get data from. Sources can contain any number of datasources.

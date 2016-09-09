@@ -1,6 +1,8 @@
-Token
+Tokens
 ===================
 .. module:: koordinates
+
+Related to the `Token API <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_
 
 
 .. autoclass:: koordinates.tokens.TokenManager

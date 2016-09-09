@@ -4,7 +4,7 @@
 koordinates.licenses
 ===================
 
-The `License API <https://support.koordinates.com/hc/en-us/articles/205008070-Koordinates-License-API>`_
+The `License API <https://help.koordinates.com/api/publisher-admin-api/license-api/>`_
 provides access to licenses that can be applied to layers, tables, sources
 and documents. It provides access to Creative Commons API by property
 lookup, as well as custom and built-in licenses.

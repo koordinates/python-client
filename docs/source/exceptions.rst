@@ -1,4 +1,4 @@
-Exceptions
+Exception Classes
 ===================
 .. module:: koordinates.exceptions
 
