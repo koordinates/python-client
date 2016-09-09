@@ -104,7 +104,7 @@ class LayerManager(base.Manager):
         :raises Conflict: if there is already a draft version for this layer.
         """
         target_url = self.client.get_url('VERSION', 'POST', 'create', {'layer_id': layer_id})
-        r = self.client.request('POST', target_url)
+        r = self.client.request('POST', target_url, json={})
         return self.create_from_result(r.json())
 
     def start_import(self, layer_id, version_id):
@@ -113,7 +113,7 @@ class LayerManager(base.Manager):
         even if the data object hasn’t changed from the previous version.
         """
         target_url = self.client.get_url('VERSION', 'POST', 'import', {'layer_id': layer_id, 'version_id': version_id})
-        r = self.client.request('POST', target_url)
+        r = self.client.request('POST', target_url, json={})
         return self.create_from_result(r.json())
 
     def start_update(self, layer_id):
@@ -122,7 +122,7 @@ class LayerManager(base.Manager):
         Effectively the same as :py:meth:`.create_draft_version` followed by :py:meth:`.start_import`.
         """
         target_url = self.client.get_url('LAYER', 'POST', 'update', {'layer_id': layer_id})
-        r = self.client.request('POST', target_url)
+        r = self.client.request('POST', target_url, json={})
         return self.parent.create_from_result(r.json())
 
     def set_metadata(self, layer_id, version_id, fp):
@@ -231,7 +231,7 @@ class Layer(base.Model):
         :raises Conflict: if there is already a draft version for this layer.
         """
         target_url = self._client.get_url('VERSION', 'POST', 'create', {'layer_id': self.id})
-        r = self._client.request('POST', target_url)
+        r = self._client.request('POST', target_url, json={})
         return self._manager.create_from_result(r.json())
 
     @is_bound
@@ -246,7 +246,7 @@ class Layer(base.Model):
             version_id = self.version.id
 
         target_url = self._client.get_url('VERSION', 'POST', 'import', {'layer_id': self.id, 'version_id': version_id})
-        r = self._client.request('POST', target_url)
+        r = self._client.request('POST', target_url, json={})
         return self._deserialize(r.json(), self._manager)
 
     @is_bound
@@ -260,7 +260,7 @@ class Layer(base.Model):
         :raises Conflict: if there is already a draft version for this layer.
         """
         target_url = self._client.get_url('LAYER', 'POST', 'update', {'layer_id': self.id})
-        r = self._client.request('POST', target_url)
+        r = self._client.request('POST', target_url, json={})
         return self._manager.create_from_result(r.json())
 
     @is_bound
@@ -276,7 +276,7 @@ class Layer(base.Model):
             version_id = self.version.id
 
         target_url = self._client.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': version_id})
-        r = self._client.request('POST', target_url)
+        r = self._client.request('POST', target_url, json={})
         return self._client.get_manager(Publish).create_from_result(r.json())
 
     @is_bound
