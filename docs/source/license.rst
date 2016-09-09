@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Licenses
 ===================
 .. module:: koordinates
@@ -11,7 +9,7 @@ Licenses
     :show-inheritance:
     :inherited-members:
 
-.. autoclass:: koordinates.licenses License
+.. autoclass:: koordinates.licenses.License
     :members:
     :show-inheritance:
     :inherited-members:

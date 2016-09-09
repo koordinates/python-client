@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Set
 ===================
 .. module:: koordinates

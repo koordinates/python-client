@@ -46,18 +46,9 @@ User Guide
    user/intro
    user/install
    user/quickstart
-   user/api
    user/contributing
+   api
 
-API Documentation
------------------
-
- If you are looking for information on a specific function, class or method, this part of the documentation is for you.
-
- .. toctree::
-    :maxdepth: 3
-
-    api
 
 Support
 =======

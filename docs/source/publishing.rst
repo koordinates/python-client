@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Publishing
 ===================
 .. module:: koordinates

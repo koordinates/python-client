@@ -97,7 +97,7 @@ class LayerManager(base.Manager):
         Creates a new draft version.
 
         If anything in the data object has changed then an import will begin immediately.
-        Otherwise to force a re-import from the previous sources call :py:meth:`.start_import`.
+        Otherwise to force a re-import from the previous sources call :py:meth:`koordinates.layers.LayerManager.start_import`.
 
         :rtype: Layer
         :return: the new version
@@ -119,7 +119,7 @@ class LayerManager(base.Manager):
     def start_update(self, layer_id):
         """
         A shortcut to create a new version and start importing it.
-        Effectively the same as :py:meth:`.create_draft_version` followed by :py:meth:`.start_import`.
+        Effectively the same as :py:meth:`koordinates.layers.LayerManager.create_draft` followed by :py:meth:`koordinates.layers.LayerManager.start_import`.
         """
         target_url = self.client.get_url('LAYER', 'POST', 'update', {'layer_id': layer_id})
         r = self.client.request('POST', target_url, json={})
@@ -224,7 +224,7 @@ class Layer(base.Model):
         Creates a new draft version from this model content.
 
         If anything in the data object has changed then an import will begin immediately.
-        Otherwise to force a re-import from the previous sources call :py:meth:`.start_import`.
+        Otherwise to force a re-import from the previous sources call :py:meth:`koordinates.layers.Layer.start_import`.
 
         :rtype: Layer
         :return: the new version
@@ -253,7 +253,7 @@ class Layer(base.Model):
     def start_update(self):
         """
         A shortcut to create a new version and start importing it.
-        Effectively the same as :py:meth:`.create_draft_version` followed by :py:meth:`.start_import`.
+        Effectively the same as :py:meth:`.create_draft_version` followed by :py:meth:`koordinates.layers.Layer.start_import`.
 
         :rtype: Layer
         :return: the new version

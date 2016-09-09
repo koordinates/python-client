@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Metadata
 ===================
 .. module:: koordinates
@@ -11,7 +9,7 @@ Metadata
     :show-inheritance:
     :inherited-members:
 
-.. autoclass:: koordinates.metadata.Metadata(base.InnerModel):
+.. autoclass:: koordinates.metadata.Metadata
     :members:
     :show-inheritance:
     :inherited-members:

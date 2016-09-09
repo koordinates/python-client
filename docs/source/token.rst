@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Token
 ===================
 .. module:: koordinates

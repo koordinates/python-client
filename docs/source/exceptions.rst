@@ -1,24 +1,22 @@
-:doc:`api` 
-
 Exceptions
 ===================
-.. module:: koordinates
+.. module:: koordinates.exceptions
 
 
-.. autoexception:: exceptions.KoordinatesException
-.. autoexception:: exceptions.ClientError
-.. autoexception:: exceptions.ClientValidationError
-.. autoexception:: exceptions.InvalidAPIVersion
-.. autoexception:: exceptions.ServerError
-.. autoexception:: exceptions.BadRequest
-.. autoexception:: exceptions.AuthenticationError
-.. autoexception:: exceptions.Forbidden
-.. autoexception:: exceptions.NotFound
-.. autoexception:: exceptions.NotAllowed
-.. autoexception:: exceptions.Conflict
-.. autoexception:: exceptions.RateLimitExceeded
-.. autoexception:: exceptions.InternalServerError
-.. autoexception:: exceptions.ServiceUnvailable
+.. autoexception:: KoordinatesException
+.. autoexception:: ClientError
+.. autoexception:: ClientValidationError
+.. autoexception:: InvalidAPIVersion
+.. autoexception:: ServerError
+.. autoexception:: BadRequest
+.. autoexception:: AuthenticationError
+.. autoexception:: Forbidden
+.. autoexception:: NotFound
+.. autoexception:: NotAllowed
+.. autoexception:: Conflict
+.. autoexception:: RateLimitExceeded
+.. autoexception:: InternalServerError
+.. autoexception:: ServiceUnvailable
 
 
 

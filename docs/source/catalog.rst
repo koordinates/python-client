@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Catalog
 ===================
 .. module:: koordinates

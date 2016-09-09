@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Client 
 ===================
 .. module:: koordinates

@@ -1,5 +1,3 @@
-:doc:`api` 
-
 User
 ===================
 .. module:: koordinates

@@ -1,5 +1,3 @@
-:doc:`api` 
-
 Sources
 ===================
 .. module:: koordinates
