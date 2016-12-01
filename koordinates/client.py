@@ -72,6 +72,14 @@ class Client(object):
             )
         )
 
+        self._session = requests.Session()
+        self._session.headers.update({
+            'Accept': 'application/json',
+            'User-Agent': self._user_agent,
+        })
+        if self.token:
+            self._session.headers['Authorization'] = 'key {token}'.format(token=self.token)
+
         super(self.__class__, self).__init__()
 
     def _init_managers(self, public, private):
@@ -119,12 +127,6 @@ class Client(object):
 
         headers = copy.deepcopy(user_headers or {})
 
-        if self.token:
-            headers['Authorization'] = 'key {token}'.format(token=self.token)
-
-        headers.setdefault('Accept', 'application/json')
-        headers.setdefault('User-Agent', self._user_agent)
-
         if method not in ('GET', 'HEAD'):
             headers.setdefault('Content-Type', 'application/json')
 
@@ -153,22 +155,13 @@ class Client(object):
         # for the Koordinates library logging, strip auth tokens from log messages
         # and log POST/PUT bodies if we're sending JSON.
         # Get low-level logging via the requests.packages.urllib3 logger.
-        log_headers = headers.copy()
-        if 'Authorization' in log_headers:
-            # don't log auth tokens
-            log_headers['Authorization'] = re.sub('(?<=key )[0-9a-f]+$', lambda m: '*' * len(m.group(0)), log_headers['Authorization'])
-
         if 'json' in kwargs:
-            logger.info('Request: %s %s headers=%s body=%s', method, url, json.dumps(log_headers), json.dumps(kwargs['json']))
+            logger.info('Request: %s %s headers=%s body=%s', method, url, json.dumps(headers), json.dumps(kwargs['json']))
         else:
-            logger.info('Request: %s %s headers=%s', method, url, json.dumps(log_headers))
+            logger.info('Request: %s %s headers=%s', method, url, json.dumps(headers))
 
         try:
-            r = requests.request(method,
-                                 url,
-                                 headers=headers,
-                                 *args,
-                                 **kwargs)
+            r = self._session.request(method, url, headers=headers, *args, **kwargs)
             logger.info('Response: %d %s in %s', r.status_code, r.reason, r.elapsed)
             logger.debug('Response: headers=%s', r.headers)
             r.raise_for_status()
