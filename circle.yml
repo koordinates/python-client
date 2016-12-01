@@ -5,7 +5,8 @@ machine:
 dependencies:
   pre:
     - pyenv install -s 3.4.2
-    - pyenv global 2.7.6 3.4.2
+    - pyenv install -s 3.5.2
+    - pyenv global 2.7.6 3.4.2 3.5.2
 
   post:
     - make docs
