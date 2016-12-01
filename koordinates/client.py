@@ -341,6 +341,7 @@ class Client(object):
                 'single': '/sources/{source_id}/scans/{scan_id}/',
                 'multi': '/sources/{source_id}/scans/',
                 'log': '/sources/{source_id}/scans/{scan_id}/log/',
+                'all': '/sources/scans/',
             },
             'DELETE': {
                 'cancel': '/sources/{source_id}/scans/{scan_id}/',
