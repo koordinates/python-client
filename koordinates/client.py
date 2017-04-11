@@ -64,6 +64,7 @@ class Client(object):
                 'catalog': catalog.CatalogManager,
                 'sources': sources.SourceManager,
                 'layer_permissions': permissions.LayerPermissionManager,
+                'set_permissions': permissions.SetPermissionManager,
             },
             private=(
                 users.GroupManager,

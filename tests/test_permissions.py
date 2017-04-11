@@ -2,9 +2,10 @@ import unittest
 
 import responses
 
-from koordinates import LayerPermission, Client, Group
+from koordinates import SetPermission, LayerPermission, Client, Group, User
 
-from response_data.responses_10 import layer_list_permissions_good_simulated_response
+from response_data.responses_10 import (layer_list_permissions_good_simulated_response,
+    set_list_permissions_good_simulated_response)
 
 
 class TestSets(unittest.TestCase):
@@ -32,3 +33,26 @@ class TestSets(unittest.TestCase):
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
+
+    @responses.activate
+    def test_get_set_permissions_by_id(self, id=1):
+        the_response = set_list_permissions_good_simulated_response
+
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'set', {'set_id': id}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        cnt_permissions_returned = 0
+        for obj in self.client.set_permissions.list(id):
+            self.assert_(isinstance(obj, SetPermission))
+            self.assertIn(obj.permission, ["admin", "view"])
+            if obj.group:
+                self.assert_(isinstance(obj.group, Group))
+                self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
+            elif obj.user:
+                self.assert_(isinstance(obj.user, User))
+                self.assertEqual(obj.user.url, "https://koordinates.com/services/api/v1/users/%s/" % obj.user.id)
+            cnt_permissions_returned += 1
+
+        self.assertEqual(cnt_permissions_returned, 3)

@@ -110,7 +110,7 @@ class BasePermission(object):
     def _deserialize(self, data, manager):
         super(BasePermission, self)._deserialize(data, manager)
         self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
-        self.user = User()._deserialize(data["user"], manager._metadata, self) if data.get("user") else None
+        self.user = User()._deserialize(data["user"],  manager.client.get_manager(User)) if data.get("user") else None
         return self
 
 
