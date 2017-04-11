@@ -74,3 +74,14 @@ source_list_permissions_good_simulated_response = '''[{
             "country": null
         }
     }]'''
+
+layer_permission_simulated_response = '''{
+        "id": "group.108",
+        "group": {
+            "id": 108,
+            "url": "https://koordinates.com/services/api/v1/groups/108/",
+            "name": "Example Group",
+            "country": "NZ"
+        },
+        "permission": "edit"
+    }'''

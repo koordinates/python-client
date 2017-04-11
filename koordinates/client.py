@@ -364,6 +364,7 @@ class Client(object):
         'PERMISSION': {
             'GET': {
                 'layer': '/layers/{layer_id}/permissions/',
+                'layer_single': '/layers/{layer_id}/permissions/{id}/',
                 'source': '/sources/{source_id}/permissions/',
                 'table': '/tables/{table_id}/permissions/',
                 'document': '/documents/{document_id}/permissions/',

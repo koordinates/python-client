@@ -31,6 +31,13 @@ class BasePermissionManager(base.Manager):
         target_url = self.client.get_url(self._URL_KEY, 'GET', object_type, {'%s_id' % object_type: object_id})
         return base.Query(self, target_url)
 
+    def get(self, object_id, object_type, permission_id, expand=[]):
+        target_url = self.client.get_url(
+            self._URL_KEY, 'GET',
+            '%s_single' % object_type,
+            {'%s_id' % object_type: object_id, 'id': permission_id})
+        return self._get(target_url, expand=expand)
+
 
 class LayerPermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'layer'
@@ -46,6 +53,12 @@ class LayerPermissionManager(BasePermissionManager):
         List a Layer Permissions.
         """
         return super(LayerPermissionManager, self).list(layer_id, self._OBJECT_TYPE)
+
+    def get(self, layer_id, id, expand=[]):
+        """
+        Get a specific Permission
+        """
+        return super(LayerPermissionManager, self).get(layer_id, self._OBJECT_TYPE, id, expand)
 
 
 class SourcePermissionManager(BasePermissionManager):

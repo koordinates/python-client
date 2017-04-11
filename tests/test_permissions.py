@@ -8,7 +8,7 @@ from koordinates import Client, Group, User
 from response_data.responses_10 import *
 
 
-class TestSets(unittest.TestCase):
+class TestPermissions(unittest.TestCase):
     def setUp(self):
         self.client = Client('koordinates.com', token='test')
 
@@ -122,3 +122,23 @@ class TestSets(unittest.TestCase):
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
+
+    @responses.activate
+    def test_layer_permissions_create(self, id=4):
+        responses.add(responses.POST,
+                      self.client.get_url('PERMISSION', 'POST', 'layer', {'layer_id': id}),
+                      body=layer_permission_simulated_response, status=201,
+                      adding_headers={"Location": "https://koordinates.com/services/api/v1/layers/%s/permissions/%s/" % (id, "108")})
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'layer_single', {'layer_id': id, 'id': 108}),
+                      body=layer_permission_simulated_response, status=200)
+        permission = LayerPermission()
+        permission.group = "group.108"
+        permission.permission = "download"
+        response = self.client.layer_permissions.create(id, permission)
+
+        self.assertEqual(response.id, permission.id)
+        self.assertEqual(response.permission, permission.permission)
+        self.assert_(isinstance(response, LayerPermission))
+        self.assert_(isinstance(response.group, Group))
+        self.assertEqual(108, permission.group.id)
