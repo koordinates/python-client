@@ -17,7 +17,7 @@ import requests
 import requests_toolbelt
 import six
 
-from . import layers, licenses, publishing, sets, tokens, users, catalog, sources
+from . import layers, licenses, publishing, sets, tokens, users, catalog, sources, permissions
 from . import exceptions
 
 
@@ -63,6 +63,7 @@ class Client(object):
                 'licenses': licenses.LicenseManager,
                 'catalog': catalog.CatalogManager,
                 'sources': sources.SourceManager,
+                'layer_permissions': permissions.LayerPermissionManager,
             },
             private=(
                 users.GroupManager,
@@ -355,5 +356,28 @@ class Client(object):
                 'multi': '/sources/{source_id}/datasources/',
                 'single': '/sources/{source_id}/datasources/{datasource_id}/',
             }
+        },
+        'PERMISSION': {
+            'GET': {
+                'layer': '/layers/{layer_id}/permissions/',
+                'source': '/sources/{source_id}/permissions/',
+                'table': '/tables/{table_id}/permissions/',
+                'document': '/documents/{document_id}/permissions/',
+                'set': '/sets/{set_id}/permissions/',
+            },
+            'POST': {
+                'layer': '/layers/{layer_id}/permissions/',
+                'source': '/sources/{source_id}/permissions/',
+                'table': '/tables/{table_id}/permissions/',
+                'document': '/documents/{document_id}/permissions/',
+                'set': '/sets/{set_id}/permissions/',
+            },
+            'PUT': {
+                'layer': '/layers/{layer_id}/permissions/',
+                'source': '/sources/{source_id}/permissions/',
+                'table': '/tables/{table_id}/permissions/',
+                'document': '/documents/{document_id}/permissions/',
+                'set': '/sets/{set_id}/permissions/',
+            },
         },
     }

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 class UserManager(base.Manager):
     _URL_KEY = 'USER'
 
+
 class User(base.Model):
     ''' Represents a Koordinates User '''
     class Meta:
