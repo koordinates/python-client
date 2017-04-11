@@ -85,3 +85,47 @@ layer_permission_simulated_response = '''{
         },
         "permission": "edit"
     }'''
+
+table_permission_simulated_response = '''{
+        "id": "group.123",
+        "group": {
+            "id": 123,
+            "url": "https://koordinates.com/services/api/v1/groups/123/",
+            "name": "Edit Group",
+            "country": "ES"
+        },
+        "permission": "edit"
+    }'''
+
+set_permission_simulated_response = '''{
+        "id": "group.34",
+        "group": {
+            "id": 34,
+            "url": "https://koordinates.com/services/api/v1/groups/34/",
+            "name": "Magic Group",
+            "country": "AR"
+        },
+        "permission": "edit"
+    }'''
+
+source_permission_simulated_response = '''{
+        "id": "group.67",
+        "group": {
+            "id": 67,
+            "url": "https://koordinates.com/services/api/v1/groups/67/",
+            "name": "Exclusive Group",
+            "country": "AR"
+        },
+        "permission": "view"
+    }'''
+
+document_permission_simulated_response = '''{
+        "id": "group.22",
+        "group": {
+            "id": 22,
+            "url": "https://koordinates.com/services/api/v1/groups/22/",
+            "name": "Download Group",
+            "country": "AR"
+        },
+        "permission": "download"
+    }'''

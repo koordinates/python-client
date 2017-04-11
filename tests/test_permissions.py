@@ -142,3 +142,83 @@ class TestPermissions(unittest.TestCase):
         self.assert_(isinstance(response, LayerPermission))
         self.assert_(isinstance(response.group, Group))
         self.assertEqual(108, permission.group.id)
+
+    @responses.activate
+    def test_table_permissions_create(self, id=6):
+        responses.add(responses.POST,
+                      self.client.get_url('PERMISSION', 'POST', 'table', {'table_id': id}),
+                      body=table_permission_simulated_response, status=201,
+                      adding_headers={"Location": "https://koordinates.com/services/api/v1/tables/%s/permissions/%s/" % (id, "123")})
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'table_single', {'table_id': id, 'id': 123}),
+                      body=table_permission_simulated_response, status=200)
+        permission = TablePermission()
+        permission.group = "group.123"
+        permission.permission = "edit"
+        response = self.client.table_permissions.create(id, permission)
+
+        self.assertEqual(response.id, permission.id)
+        self.assertEqual(response.permission, permission.permission)
+        self.assert_(isinstance(response, TablePermission))
+        self.assert_(isinstance(response.group, Group))
+        self.assertEqual(123, permission.group.id)
+
+    @responses.activate
+    def test_set_permissions_create(self, id=9):
+        responses.add(responses.POST,
+                      self.client.get_url('PERMISSION', 'POST', 'set', {'set_id': id}),
+                      body=set_permission_simulated_response, status=201,
+                      adding_headers={"Location": "https://koordinates.com/services/api/v1/sets/%s/permissions/%s/" % (id, "34")})
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'set_single', {'set_id': id, 'id': 34}),
+                      body=set_permission_simulated_response, status=200)
+        permission = SetPermission()
+        permission.group = "group.34"
+        permission.permission = "edit"
+        response = self.client.set_permissions.create(id, permission)
+
+        self.assertEqual(response.id, permission.id)
+        self.assertEqual(response.permission, permission.permission)
+        self.assert_(isinstance(response, SetPermission))
+        self.assert_(isinstance(response.group, Group))
+        self.assertEqual(34, permission.group.id)
+
+    @responses.activate
+    def test_source_permissions_create(self, id=89):
+        responses.add(responses.POST,
+                      self.client.get_url('PERMISSION', 'POST', 'source', {'source_id': id}),
+                      body=source_permission_simulated_response, status=201,
+                      adding_headers={"Location": "https://koordinates.com/services/api/v1/sources/%s/permissions/%s/" % (id, "67")})
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'source_single', {'source_id': id, 'id': 67}),
+                      body=source_permission_simulated_response, status=200)
+        permission = SourcePermission()
+        permission.group = "group.67"
+        permission.permission = "edit"
+        response = self.client.source_permissions.create(id, permission)
+
+        self.assertEqual(response.id, permission.id)
+        self.assertEqual(response.permission, permission.permission)
+        self.assert_(isinstance(response, SourcePermission))
+        self.assert_(isinstance(response.group, Group))
+        self.assertEqual(67, permission.group.id)
+
+    @responses.activate
+    def test_document_permissions_create(self, id=99):
+        responses.add(responses.POST,
+                      self.client.get_url('PERMISSION', 'POST', 'document', {'document_id': id}),
+                      body=document_permission_simulated_response, status=201,
+                      adding_headers={"Location": "https://koordinates.com/services/api/v1/documents/%s/permissions/%s/" % (id, "22")})
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'document_single', {'document_id': id, 'id': 22}),
+                      body=document_permission_simulated_response, status=200)
+        permission = DocumentPermission()
+        permission.group = "group.22"
+        permission.permission = "edit"
+        response = self.client.document_permissions.create(id, permission)
+
+        self.assertEqual(response.id, permission.id)
+        self.assertEqual(response.permission, permission.permission)
+        self.assert_(isinstance(response, DocumentPermission))
+        self.assert_(isinstance(response.group, Group))
+        self.assertEqual(22, permission.group.id)

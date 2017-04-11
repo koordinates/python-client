@@ -366,9 +366,13 @@ class Client(object):
                 'layer': '/layers/{layer_id}/permissions/',
                 'layer_single': '/layers/{layer_id}/permissions/{id}/',
                 'source': '/sources/{source_id}/permissions/',
+                'source_single': '/sources/{source_id}/permissions/{id}/',
                 'table': '/tables/{table_id}/permissions/',
+                'table_single': '/tables/{table_id}/permissions/{id}/',
                 'document': '/documents/{document_id}/permissions/',
+                'document_single': '/documents/{document_id}/permissions/{id}/',
                 'set': '/sets/{set_id}/permissions/',
+                'set_single': '/sets/{set_id}/permissions/{id}/',
             },
             'POST': {
                 'layer': '/layers/{layer_id}/permissions/',
