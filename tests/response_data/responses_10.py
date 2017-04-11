@@ -52,3 +52,14 @@ table_list_permissions_good_simulated_response = '''[{
             "country": null
         }
     }]'''
+
+document_list_permissions_good_simulated_response = '''[{
+        "permission": "view",
+        "id": "group.everyone",
+        "group": {
+            "id": 1,
+            "url": "https://koordinates.com/services/api/v1/groups/1/",
+            "name": "Everyone",
+            "country": null
+        }
+    }]'''

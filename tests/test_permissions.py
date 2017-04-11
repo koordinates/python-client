@@ -6,7 +6,8 @@ from koordinates import SourcePermission, DocumentPermission, TablePermission, S
 from koordinates import Client, Group, User
 
 from response_data.responses_10 import (layer_list_permissions_good_simulated_response,
-    set_list_permissions_good_simulated_response, table_list_permissions_good_simulated_response)
+    set_list_permissions_good_simulated_response, table_list_permissions_good_simulated_response,
+    document_list_permissions_good_simulated_response)
 
 
 class TestSets(unittest.TestCase):
@@ -72,6 +73,28 @@ class TestSets(unittest.TestCase):
             self.assert_(isinstance(obj, TablePermission))
             self.assert_(isinstance(obj.group, Group))
             self.assertEqual(obj.permission, "download")
+            self.assertEqual(obj.id, "group.everyone")
+            self.assertEqual(obj.group.id, 1)
+            self.assertEqual(obj.group.name, "Everyone")
+            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/1/")
+            cnt_permissions_returned += 1
+
+        self.assertEqual(cnt_permissions_returned, 1)
+
+    @responses.activate
+    def test_get_document_permissions_by_id(self, id=1):
+        the_response = document_list_permissions_good_simulated_response
+
+        responses.add(responses.GET,
+                      self.client.get_url('PERMISSION', 'GET', 'document', {'document_id': id}),
+                      body=the_response, status=200,
+                      content_type='application/json')
+
+        cnt_permissions_returned = 0
+        for obj in self.client.document_permissions.list(id):
+            self.assert_(isinstance(obj, DocumentPermission))
+            self.assert_(isinstance(obj.group, Group))
+            self.assertEqual(obj.permission, "view")
             self.assertEqual(obj.id, "group.everyone")
             self.assertEqual(obj.group.id, 1)
             self.assertEqual(obj.group.name, "Everyone")
