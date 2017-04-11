@@ -65,6 +65,9 @@ class Client(object):
                 'sources': sources.SourceManager,
                 'layer_permissions': permissions.LayerPermissionManager,
                 'set_permissions': permissions.SetPermissionManager,
+                'table_permissions': permissions.TablePermissionManager,
+                'document_permissions': permissions.DocumentPermissionManager,
+                'source_permissions': permissions.SourcePermissionManager,
             },
             private=(
                 users.GroupManager,
