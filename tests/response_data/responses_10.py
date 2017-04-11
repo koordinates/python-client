@@ -63,3 +63,14 @@ document_list_permissions_good_simulated_response = '''[{
             "country": null
         }
     }]'''
+
+source_list_permissions_good_simulated_response = '''[{
+        "permission": "admin",
+        "id": "group.administrators",
+        "group": {
+            "id": 3,
+            "url": "https://koordinates.com/services/api/v1/groups/3/",
+            "name": "Site Administrators",
+            "country": null
+        }
+    }]'''
