@@ -22,107 +22,44 @@ class BasePermissionManager(base.Manager):
     _URL_KEY = 'PERMISSION'
     _OBJECT_TYPE = None
 
-    def create(self, object_id, object_type, permission):
-        target_url = self.client.get_url(self._URL_KEY, 'POST', object_type, {'%s_id' % object_type: object_id})
+    def create(self, object_id, permission):
+        target_url = self.client.get_url(self._URL_KEY, 'POST', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
         r = self.client.request('POST', target_url, json=permission._serialize())
         return permission._deserialize(r.json(), self)
 
-    def list(self, object_id, object_type):
-        target_url = self.client.get_url(self._URL_KEY, 'GET', object_type, {'%s_id' % object_type: object_id})
-        return base.Query(self, target_url)
-
-    def get(self, object_id, object_type, permission_id, expand=[]):
+    def list(self, object_id):
         target_url = self.client.get_url(
             self._URL_KEY, 'GET',
-            '%s_single' % object_type,
-            {'%s_id' % object_type: object_id, 'id': permission_id})
+            self._OBJECT_TYPE,
+            {'%s_id' % self._OBJECT_TYPE: object_id})
+        return base.Query(self, target_url)
+
+    def get(self, object_id, permission_id, expand=[]):
+        target_url = self.client.get_url(
+            self._URL_KEY, 'GET',
+            '%s_single' % self._OBJECT_TYPE,
+            {'%s_id' % self._OBJECT_TYPE: object_id, 'id': permission_id})
         return self._get(target_url, expand=expand)
 
 
 class LayerPermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'layer'
 
-    def create(self, layer_id, permission):
-        """
-        Creates a new Layer Permission.
-        """
-        return super(LayerPermissionManager, self).create(layer_id, self._OBJECT_TYPE, permission)
-
-    def list(self, layer_id):
-        """
-        List a Layer Permissions.
-        """
-        return super(LayerPermissionManager, self).list(layer_id, self._OBJECT_TYPE)
-
-    def get(self, layer_id, id, expand=[]):
-        """
-        Get a specific Permission
-        """
-        return super(LayerPermissionManager, self).get(layer_id, self._OBJECT_TYPE, id, expand)
-
 
 class SourcePermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'source'
-
-    def create(self, source_id, permission):
-        """
-        Creates a new Source Permission.
-        """
-        return super(SourcePermissionManager, self).create(source_id, self._OBJECT_TYPE, permission)
-
-    def list(self, source_id):
-        """
-        List a Source Permissions.
-        """
-        return super(SourcePermissionManager, self).list(source_id, self._OBJECT_TYPE)
 
 
 class TablePermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'table'
 
-    def create(self, table_id, permission):
-        """
-        Creates a new Table Permission.
-        """
-        return super(TablePermissionManager, self).create(table_id, self._OBJECT_TYPE, permission)
-
-    def list(self, table_id):
-        """
-        List a Table Permissions.
-        """
-        return super(TablePermissionManager, self).list(table_id, self._OBJECT_TYPE)
-
 
 class DocumentPermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'document'
 
-    def create(self, document_id, permission):
-        """
-        Creates a new Document Permission.
-        """
-        return super(DocumentPermissionManager, self).create(document_id, self._OBJECT_TYPE, permission)
-
-    def list(self, document_id):
-        """
-        List a Layer Permissions.
-        """
-        return super(DocumentPermissionManager, self).list(document_id, self._OBJECT_TYPE)
-
 
 class SetPermissionManager(BasePermissionManager):
     _OBJECT_TYPE = 'set'
-
-    def create(self, set_id, permission):
-        """
-        Creates a new Set Permission.
-        """
-        return super(SetPermissionManager, self).create(set_id, self._OBJECT_TYPE, permission)
-
-    def list(self, set_id):
-        """
-        List a Layer Permissions.
-        """
-        return super(SetPermissionManager, self).list(set_id, self._OBJECT_TYPE)
 
 
 class BasePermission(object):
