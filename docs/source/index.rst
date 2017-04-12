@@ -1,7 +1,7 @@
 Koordinates Python API Client
 =============================
 
-Release v\ |version|. 
+Release v\ |version|.
 
 A BSD-licensed Python client library for a number of `Koordinates <https://koordinates.com>`_ web APIs.
 
@@ -28,6 +28,8 @@ The library aims to reflect the available `Koordinates web APIs <https://help.ko
 - `Metadata API <https://help.koordinates.com/api/publisher-admin-api/metadata-api/>`_
 - `Token API <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_
 - `Data Sources API <https://help.koordinates.com/api/publisher-admin-api/data-sources-api/>`_
+- `Permissions API <https://help.koordinates.com/api/publisher-admin-api/permissions-api/>`_
+
 
 We're working hard to add support for additional APIs to the library, so expect this list to grow soon.
 

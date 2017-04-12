@@ -20,3 +20,4 @@ If you are looking for information on a specific function, class or method, this
    user
    sources
    exceptions
+   permission
