@@ -1,4 +1,3 @@
-import json
 import responses
 import unittest
 
@@ -10,7 +9,7 @@ from response_data.responses_10 import *
 
 class TestPermissions(unittest.TestCase):
     def setUp(self):
-        self.client = Client('koordinates.com', token='test')
+        self.client = Client(token='test', host='test.koordinates.com')
 
     @responses.activate
     def test_get_layer_permissions_by_id(self, id=4):
@@ -29,7 +28,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.everyone")
             self.assertEqual(obj.group.id, 4)
             self.assertEqual(obj.group.name, "Everyone")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/4/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/4/")
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
@@ -49,10 +48,10 @@ class TestPermissions(unittest.TestCase):
             self.assertIn(obj.permission, ["admin", "view"])
             if obj.group:
                 self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
+                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
             elif obj.user:
                 self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://koordinates.com/services/api/v1/users/%s/" % obj.user.id)
+                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 3)
@@ -74,7 +73,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.everyone")
             self.assertEqual(obj.group.id, 1)
             self.assertEqual(obj.group.name, "Everyone")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/1/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/1/")
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
@@ -96,7 +95,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.everyone")
             self.assertEqual(obj.group.id, 1)
             self.assertEqual(obj.group.name, "Everyone")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/1/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/1/")
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
@@ -118,7 +117,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.administrators")
             self.assertEqual(obj.group.id, 3)
             self.assertEqual(obj.group.name, "Site Administrators")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/3/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/3/")
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
@@ -128,7 +127,7 @@ class TestPermissions(unittest.TestCase):
         responses.add(responses.POST,
                       self.client.get_url('PERMISSION', 'POST', 'layer', {'layer_id': id}),
                       body=layer_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://koordinates.com/services/api/v1/layers/%s/permissions/%s/" % (id, "108")})
+                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/layers/%s/permissions/%s/" % (id, "108")})
         responses.add(responses.GET,
                       self.client.get_url('PERMISSION', 'GET', 'layer_single', {'layer_id': id, 'id': 108}),
                       body=layer_permission_simulated_response, status=200)
@@ -148,7 +147,7 @@ class TestPermissions(unittest.TestCase):
         responses.add(responses.POST,
                       self.client.get_url('PERMISSION', 'POST', 'table', {'table_id': id}),
                       body=table_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://koordinates.com/services/api/v1/tables/%s/permissions/%s/" % (id, "123")})
+                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/tables/%s/permissions/%s/" % (id, "123")})
         responses.add(responses.GET,
                       self.client.get_url('PERMISSION', 'GET', 'table_single', {'table_id': id, 'id': 123}),
                       body=table_permission_simulated_response, status=200)
@@ -168,7 +167,7 @@ class TestPermissions(unittest.TestCase):
         responses.add(responses.POST,
                       self.client.get_url('PERMISSION', 'POST', 'set', {'set_id': id}),
                       body=set_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://koordinates.com/services/api/v1/sets/%s/permissions/%s/" % (id, "34")})
+                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sets/%s/permissions/%s/" % (id, "34")})
         responses.add(responses.GET,
                       self.client.get_url('PERMISSION', 'GET', 'set_single', {'set_id': id, 'id': 34}),
                       body=set_permission_simulated_response, status=200)
@@ -188,7 +187,7 @@ class TestPermissions(unittest.TestCase):
         responses.add(responses.POST,
                       self.client.get_url('PERMISSION', 'POST', 'source', {'source_id': id}),
                       body=source_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://koordinates.com/services/api/v1/sources/%s/permissions/%s/" % (id, "67")})
+                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sources/%s/permissions/%s/" % (id, "67")})
         responses.add(responses.GET,
                       self.client.get_url('PERMISSION', 'GET', 'source_single', {'source_id': id, 'id': 67}),
                       body=source_permission_simulated_response, status=200)
@@ -208,7 +207,7 @@ class TestPermissions(unittest.TestCase):
         responses.add(responses.POST,
                       self.client.get_url('PERMISSION', 'POST', 'document', {'document_id': id}),
                       body=document_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://koordinates.com/services/api/v1/documents/%s/permissions/%s/" % (id, "22")})
+                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/documents/%s/permissions/%s/" % (id, "22")})
         responses.add(responses.GET,
                       self.client.get_url('PERMISSION', 'GET', 'document_single', {'document_id': id, 'id': 22}),
                       body=document_permission_simulated_response, status=200)
@@ -296,10 +295,10 @@ class TestPermissions(unittest.TestCase):
             self.assertIn(obj.permission, ["admin", "view"])
             if obj.group:
                 self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
+                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
             elif obj.user:
                 self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://koordinates.com/services/api/v1/users/%s/" % obj.user.id)
+                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 3)
@@ -327,7 +326,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.everyone")
             self.assertEqual(obj.group.id, 1)
             self.assertEqual(obj.group.name, "Everyone")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/1/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/1/")
             cnt_permissions_returned += 1
 
     @responses.activate
@@ -353,7 +352,7 @@ class TestPermissions(unittest.TestCase):
             self.assertEqual(obj.id, "group.administrators")
             self.assertEqual(obj.group.id, 3)
             self.assertEqual(obj.group.name, "Site Administrators")
-            self.assertEqual(obj.group.url, "https://koordinates.com/services/api/v1/groups/3/")
+            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/3/")
             cnt_permissions_returned += 1
 
         self.assertEqual(cnt_permissions_returned, 1)
