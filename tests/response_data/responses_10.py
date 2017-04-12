@@ -4,7 +4,7 @@ layer_list_permissions_good_simulated_response = '''[{
         "id": "group.everyone",
         "group": {
             "id": 4,
-            "url": "https://koordinates.com/services/api/v1/groups/1/",
+            "url": "https://koordinates.com/services/api/v1/groups/4/",
             "name": "Everyone",
             "country": null
         }
@@ -128,4 +128,8 @@ document_permission_simulated_response = '''{
             "country": "AR"
         },
         "permission": "download"
+    }'''
+
+layer_update_permmission_simulated_response = '''{
+
     }'''

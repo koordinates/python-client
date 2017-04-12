@@ -8,6 +8,8 @@ For getting, editing and updating permissions via
 the `Permissions API <https://help.koordinates.com/api/publisher-admin-api/permissions-api/>`_.
 
 """
+import json
+
 from koordinates.users import Group, User
 
 import logging
@@ -23,11 +25,18 @@ class BasePermissionManager(base.Manager):
     _OBJECT_TYPE = None
 
     def create(self, object_id, permission):
-        target_url = self.client.get_url(self._URL_KEY, 'POST', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
+        '''
+        Create permission
+        '''
+        target_url = self.client.get_url(
+            self._URL_KEY, 'POST', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
         r = self.client.request('POST', target_url, json=permission._serialize())
         return permission._deserialize(r.json(), self)
 
     def list(self, object_id):
+        '''
+        List permissions
+        '''
         target_url = self.client.get_url(
             self._URL_KEY, 'GET',
             self._OBJECT_TYPE,
@@ -35,11 +44,23 @@ class BasePermissionManager(base.Manager):
         return base.Query(self, target_url)
 
     def get(self, object_id, permission_id, expand=[]):
+        '''
+        List a specific permisison
+        '''
         target_url = self.client.get_url(
             self._URL_KEY, 'GET',
             '%s_single' % self._OBJECT_TYPE,
             {'%s_id' % self._OBJECT_TYPE: object_id, 'id': permission_id})
         return self._get(target_url, expand=expand)
+
+    def save(self, object_id, permissions):
+        '''
+        Replace direct permissions
+        '''
+        target_url = self.client.get_url(
+            self._URL_KEY, 'PUT', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
+        self.client.request('PUT', target_url, json.dumps(permissions))
+        return self.list(object_id)
 
 
 class LayerPermissionManager(BasePermissionManager):
@@ -65,8 +86,8 @@ class SetPermissionManager(BasePermissionManager):
 class BasePermission(object):
     def _deserialize(self, data, manager):
         super(BasePermission, self)._deserialize(data, manager)
-        self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get("group") else None
-        self.user = User()._deserialize(data["user"],  manager.client.get_manager(User)) if data.get("user") else None
+        self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get('group') else None
+        self.user = User()._deserialize(data['user'],  manager.client.get_manager(User)) if data.get('user') else None
         return self
 
 
