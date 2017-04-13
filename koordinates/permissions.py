@@ -59,7 +59,7 @@ class BasePermissionManager(base.Manager):
         '''
         target_url = self.client.get_url(
             self._URL_KEY, 'PUT', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
-        self.client.request('PUT', target_url, json.dumps(permissions))
+        r = self.client.request('PUT', target_url, json=permissions)
         return self.list(object_id)
 
 
