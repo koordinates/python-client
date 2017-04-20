@@ -77,11 +77,15 @@ class SourceManager(base.Manager):
         target_url = self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': source_id, 'datasource_id': datasource_id})
         return self.client.get_manager(Datasource)._get(target_url)
 
-    def list_scans(self, source_id):
+    def list_scans(self, source_id=None):
         """
-        Filterable list of Scans for a Source, always ordered newest to oldest.
+        Filterable list of Scans for a Source.
+        Ordered newest to oldest by default
         """
-        target_url = self.client.get_url('SCAN', 'GET', 'multi', {'source_id': source_id})
+        if source_id:
+            target_url = self.client.get_url('SCAN', 'GET', 'multi', {'source_id': source_id})
+        else:
+            target_url = self.client.get_ulr('SCAN', 'GET', 'all')
         return base.Query(self.client.get_manager(Scan), target_url)
 
     def get_scan(self, source_id, scan_id):
@@ -110,7 +114,6 @@ class SourceManager(base.Manager):
         target_url = self.client.get_url('SCAN', 'POST', 'create', {'source_id': source_id})
         r = self.client.request('POST', target_url, json={})
         return self.client.get_manager(Scan).create_from_result(r.json())
-
 
 
 class Source(base.Model):
@@ -165,6 +168,20 @@ class Source(base.Model):
     @is_bound
     def get_datasource(self, datasource_id):
         return self._manager.get_datasource(self.id, datasource_id)
+
+    @is_bound
+    def list_datasources(self):
+        return self._manager.list_datasources(self.id)
+
+    @is_bound
+    def list_scans(self):
+        return self._manager.list_scans(self.id)
+
+    @is_bound
+    def get_latest_scan(self):
+        results = self._manager.list_scans(self.id).expand()[:1]
+        if results:
+            return results[0]
 
     @is_bound
     def get_scan(self, scan_id):
@@ -297,6 +314,12 @@ class Scan(base.Model):
         relations = {
             'source': Source,
         }
+        filter_attributes = (
+            'status', 'started_at', 'completed_at',
+        )
+        ordering_attributes = (
+            'id', 'started_at', 'completed_at',
+        )
 
     @is_bound
     def cancel(self):

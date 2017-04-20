@@ -268,6 +268,29 @@ class TestSources(unittest.TestCase):
         self.assertIsInstance(r[0], Scan)
 
     @responses.activate
+    def test_source_scan_list(self):
+        responses.add(responses.GET,
+                      self.client.get_url('SOURCE', 'GET', 'single', {'id':21836}),
+                      body=source_detail, status=200,
+                      content_type='application/json')
+        responses.add(responses.GET,
+            self.client.get_url('SCAN', 'GET', 'multi', {'source_id': 21836}),
+            body=source_scan_list, status=200,
+            content_type='application/json')
+
+
+        source = self.client.sources.get(21836)
+
+        self.assert_(isinstance(source, Source))
+        self.assert_(source._is_bound)
+
+        r = source.list_scans()
+        self.assertIsInstance(r, Query)
+        r = list(r)
+        self.assertEqual(len(r), 1)
+        self.assertIsInstance(r[0], Scan)
+
+    @responses.activate
     def test_scan_detail(self):
         responses.add(responses.GET,
             self.client.get_url('SCAN', 'GET', 'single', {'source_id': 44, 'scan_id': 41}),
@@ -332,6 +355,30 @@ class TestSources(unittest.TestCase):
             content_type='application/json')
 
         r = self.client.sources.list_datasources(21838)
+        self.assertIsInstance(r, Query)
+        r = list(r)
+        self.assertEqual(len(r), 1)
+        ds = r[0]
+        self.assertIsInstance(ds, Datasource)
+        self.assertEqual(ds.id, 144187)
+
+    @responses.activate
+    def test_source_datasource_list(self):
+        responses.add(responses.GET,
+                      self.client.get_url('SOURCE', 'GET', 'single', {'id':21836}),
+                      body=source_detail, status=200,
+                      content_type='application/json')
+        responses.add(responses.GET,
+            self.client.get_url('DATASOURCE', 'GET', 'multi', {'source_id': 21836}),
+            body=datasource_list, status=200,
+            content_type='application/json')
+
+        source = self.client.sources.get(21836)
+
+        self.assert_(isinstance(source, Source))
+        self.assert_(source._is_bound)
+
+        r = source.list_datasources()
         self.assertIsInstance(r, Query)
         r = list(r)
         self.assertEqual(len(r), 1)

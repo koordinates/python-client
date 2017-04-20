@@ -372,27 +372,38 @@ class ModelMeta(type):
             #
             # -> mymodel.get_foo()
             # -> mymodel.list_bars()
+
+            # method factories to workaround late-binding in loops
+            def build_multi_getter(r_class, r_attr):
+                @is_bound
+                def _getter(self):
+                    rel_url = getattr(self, r_attr)
+                    rel_mgr = self._manager.client.get_manager(r_class)
+                    return Query(rel_mgr, rel_url)
+                return _getter
+
+            def build_single_getter(r_class, r_attr):
+                @is_bound
+                def _getter(self):
+                    rel_url = getattr(self, r_attr, None)
+                    if rel_url:
+                        rel_mgr = self._manager.client.get_manager(r_class)
+                        return rel_mgr._get(rel_url)
+                    else:
+                        return None
+                return _getter
+
+
             for ref_attr, ref_class in getattr(klass._meta, 'relations', {}).items():
                 if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
                     # multiple relation
                     ref_method = 'list_%s' % ref_attr
                     ref_class = ref_class[0]
-                    @is_bound
-                    def ref_getter(self):
-                        rel_url = getattr(self, ref_attr)
-                        rel_mgr = self._manager.client.get_manager(ref_class)
-                        return Query(rel_mgr, rel_url)
+                    ref_getter = build_multi_getter(ref_class, ref_attr)
                 else:
                     # single relation
                     ref_method = 'get_%s' % ref_attr
-                    @is_bound
-                    def ref_getter(self):
-                        rel_url = getattr(self, ref_attr, None)
-                        if rel_url:
-                            rel_mgr = self._manager.client.get_manager(ref_class)
-                            return rel_mgr._get(rel_url)
-                        else:
-                            return None
+                    ref_getter = build_single_getter(ref_class, ref_attr)
 
                     setattr(klass, ref_method, ref_getter)
 

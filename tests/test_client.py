@@ -137,7 +137,7 @@ class ClientTests(unittest.TestCase):
                           body='[]', status=200,
                           content_type='application/json')
 
-            r = self.client.request('GET', 'https://test.koordinates.com/api/v1/test/', json={'some': ['data', 1]})
+            r = self.client.request('GET', 'https://test.koordinates.com/api/v1/test/', json={'some': ['data', 1]}, headers={"FooHeader": "Bar"})
             r.raise_for_status()
 
             lreq = log_handler.records[0]
@@ -151,6 +151,7 @@ class ClientTests(unittest.TestCase):
             self.assertEqual(lbody, {'some': ['data', 1]})
 
             lheaders = json.loads(lf.group('headers'))
-            self.assertEqual(lheaders["Authorization"], "key " + ("*" * len(self.client.token)))
+            self.assertIn('FooHeader', lheaders)
+            self.assertNotIn('Authorization', lheaders)
         finally:
             logger.removeHandler(log_handler)
