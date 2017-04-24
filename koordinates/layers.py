@@ -14,6 +14,7 @@ from .utils import make_date
 from . import base
 from .licenses import License
 from .metadata import Metadata, MetadataManager
+from .permissions import Permission, PermissionObjectMixin
 from .publishing import Publish
 from .users import Group
 from .utils import is_bound
@@ -37,6 +38,7 @@ class LayerManager(base.Manager):
         self.versions = LayerVersionManager(client, self)
         self._data = LayerDataManager(client, self)
         self._metadata = MetadataManager(client, self)
+        # self._permissions = PermissionManager(client, self)
 
     def list_drafts(self):
         """
@@ -136,10 +138,11 @@ class LayerManager(base.Manager):
         self._metadata.set(base_url, fp)
 
 
-class Layer(base.Model):
+class Layer(base.Model, PermissionObjectMixin):
     '''
     Represents a version of a single Layer or Table.
     '''
+
     class Meta:
         manager = LayerManager
         filter_attributes = (
@@ -348,9 +351,9 @@ class LayerVersion(base.InnerModel):
         manager = LayerVersionManager
 
 
-
 class LayerDataManager(base.InnerManager):
     _URL_KEY = 'DATA'
+
 
 class LayerData(base.InnerModel):
     """

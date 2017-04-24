@@ -63,11 +63,6 @@ class Client(object):
                 'licenses': licenses.LicenseManager,
                 'catalog': catalog.CatalogManager,
                 'sources': sources.SourceManager,
-                'layer_permissions': permissions.LayerPermissionManager,
-                'set_permissions': permissions.SetPermissionManager,
-                'table_permissions': permissions.TablePermissionManager,
-                'document_permissions': permissions.DocumentPermissionManager,
-                'source_permissions': permissions.SourcePermissionManager,
             },
             private=(
                 users.GroupManager,
@@ -361,32 +356,17 @@ class Client(object):
                 'single': '/sources/{source_id}/datasources/{datasource_id}/',
             }
         },
+        # InnerManager, so relative to a parent object
         'PERMISSION': {
             'GET': {
-                'layer': '/layers/{layer_id}/permissions/',
-                'layer_single': '/layers/{layer_id}/permissions/{id}/',
-                'source': '/sources/{source_id}/permissions/',
-                'source_single': '/sources/{source_id}/permissions/{id}/',
-                'table': '/tables/{table_id}/permissions/',
-                'table_single': '/tables/{table_id}/permissions/{id}/',
-                'document': '/documents/{document_id}/permissions/',
-                'document_single': '/documents/{document_id}/permissions/{id}/',
-                'set': '/sets/{set_id}/permissions/',
-                'set_single': '/sets/{set_id}/permissions/{id}/',
+                'multi': 'permissions/',
+                'single': 'permissions/{permission_id}/',
             },
             'POST': {
-                'layer': '/layers/{layer_id}/permissions/',
-                'source': '/sources/{source_id}/permissions/',
-                'table': '/tables/{table_id}/permissions/',
-                'document': '/documents/{document_id}/permissions/',
-                'set': '/sets/{set_id}/permissions/',
+                'single': 'permissions/',
             },
             'PUT': {
-                'layer': '/layers/{layer_id}/permissions/',
-                'source': '/sources/{source_id}/permissions/',
-                'table': '/tables/{table_id}/permissions/',
-                'document': '/documents/{document_id}/permissions/',
-                'set': '/sets/{set_id}/permissions/',
+                'multi': 'permissions/',
             },
         },
     }

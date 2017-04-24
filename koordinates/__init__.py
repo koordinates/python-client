@@ -34,4 +34,4 @@ from .sets import Set
 from .sources import Source, UploadSource
 from .tokens import Token
 from .users import Group, User
-from .permissions import LayerPermission, SourcePermission, TablePermission, DocumentPermission, SetPermission
+from .permissions import Permission

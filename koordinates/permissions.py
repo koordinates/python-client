@@ -8,124 +8,94 @@ For getting, editing and updating permissions via
 the `Permissions API <https://help.koordinates.com/api/publisher-admin-api/permissions-api/>`_.
 
 """
-import json
-
 from koordinates.users import Group, User
 
 import logging
 
 from . import base
+from . import exceptions
 
 
 logger = logging.getLogger(__name__)
 
 
-class BasePermissionManager(base.Manager):
-    _URL_KEY = 'PERMISSION'
-    _OBJECT_TYPE = None
+class PermissionManager(base.InnerManager):
+    """
+    Accessor for querying and updating permissions.
 
-    def create(self, object_id, permission):
+    Access via the ``permissions`` property of :py:class:`koordinates.layers.Layer`
+    or :py:class:`koordinates.sets.Set` instances.
+    """
+
+    _URL_KEY = 'PERMISSION'
+
+    def __init__(self, client, parent_object):
+        super(PermissionManager, self).__init__(client, parent_object._manager)
+        self.parent_object = parent_object
+
+    def create(self, permission):
         '''
-        Create permission
+        Create single permission
+        :param permission: A single Permission object to be set.
         '''
-        target_url = self.client.get_url(
-            self._URL_KEY, 'POST', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
+        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
+        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'POST', 'single')
         r = self.client.request('POST', target_url, json=permission._serialize())
         return permission._deserialize(r.json(), self)
 
-    def list(self, object_id):
+    def set(self, permissions):
+        '''
+        If the parent object already has permissions, they will be overwritten.
+
+        :param permissions: A group of Permission objects to be set.
+        '''
+        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
+        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'PUT', 'multi')
+        r = self.client.request('PUT', target_url, json=permissions)
+        if r.status_code != 201:
+            raise exceptions.ServerError("Expected 201 response, got %s: %s" % (r.status_code, target_url))
+        return self.list()
+
+    def list(self):
         '''
         List permissions
         '''
-        target_url = self.client.get_url(
-            self._URL_KEY, 'GET',
-            self._OBJECT_TYPE,
-            {'%s_id' % self._OBJECT_TYPE: object_id})
+        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
+        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'GET', 'multi')
         return base.Query(self, target_url)
 
-    def get(self, object_id, permission_id, expand=[]):
+    def get(self, permission_id, expand=[]):
         '''
         List a specific permisison
+        :param permission_id: the id of the Permissions to be listed.
         '''
-        target_url = self.client.get_url(
-            self._URL_KEY, 'GET',
-            '%s_single' % self._OBJECT_TYPE,
-            {'%s_id' % self._OBJECT_TYPE: object_id, 'id': permission_id})
+        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
+        target_url = parent_url + self.client.get_url_path(
+            self._URL_KEY, 'GET', 'single', {'permission_id': permission_id})
         return self._get(target_url, expand=expand)
 
-    def save(self, object_id, permissions):
-        '''
-        Replace direct permissions
-        '''
-        target_url = self.client.get_url(
-            self._URL_KEY, 'PUT', self._OBJECT_TYPE, {'%s_id' % self._OBJECT_TYPE: object_id})
-        r = self.client.request('PUT', target_url, json=permissions)
-        return self.list(object_id)
 
+class Permission(base.InnerModel):
 
-class LayerPermissionManager(BasePermissionManager):
-    _OBJECT_TYPE = 'layer'
-
-
-class SourcePermissionManager(BasePermissionManager):
-    _OBJECT_TYPE = 'source'
-
-
-class TablePermissionManager(BasePermissionManager):
-    _OBJECT_TYPE = 'table'
-
-
-class DocumentPermissionManager(BasePermissionManager):
-    _OBJECT_TYPE = 'document'
-
-
-class SetPermissionManager(BasePermissionManager):
-    _OBJECT_TYPE = 'set'
-
-
-class BasePermission(object):
     def _deserialize(self, data, manager):
-        super(BasePermission, self)._deserialize(data, manager)
+        super(Permission, self)._deserialize(data, manager, manager.parent_object)
         self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get('group') else None
         self.user = User()._deserialize(data['user'],  manager.client.get_manager(User)) if data.get('user') else None
         return self
 
-
-class LayerPermission(BasePermission, base.Model):
-    '''
-    Represents a single Permission applied on a Layer.
-    '''
     class Meta:
-        manager = LayerPermissionManager
+        manager = PermissionManager
 
 
-class SourcePermission(BasePermission, base.Model):
-    '''
-    Represents a single Permission applied on a Source.
-    '''
-    class Meta:
-        manager = SourcePermissionManager
+class PermissionObjectMixin(object):
+    """
+    Mixin to be used in any Koordinates Object class that supports permissions.
+    """
 
+    _permissions = None
 
-class TablePermission(BasePermission, base.Model):
-    '''
-    Represents a single Permission applied on a Table.
-    '''
-    class Meta:
-        manager = TablePermissionManager
-
-
-class DocumentPermission(BasePermission, base.Model):
-    '''
-    Represents a single Permission applied on a Document.
-    '''
-    class Meta:
-        manager = DocumentPermissionManager
-
-
-class SetPermission(BasePermission, base.Model):
-    '''
-    Represents a single Permission applied on a Set.
-    '''
-    class Meta:
-        manager = SetPermissionManager
+    @property
+    def permissions(self):
+        if not self._permissions:
+            self._permissions = PermissionManager(self._client, self)
+        return self._permissions
