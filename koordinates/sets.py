@@ -11,6 +11,7 @@ is used for grouping layers, tables and documents together.
 import logging
 
 #from .users import Group
+from koordinates.permissions import PermissionObjectMixin
 from koordinates.users import Group
 from koordinates.metadata import Metadata, MetadataManager
 from koordinates import base
@@ -52,7 +53,7 @@ class SetManager(base.Manager):
         self._metadata.set(base_url, fp)
 
 
-class Set(base.Model):
+class Set(base.Model, PermissionObjectMixin):
     '''
     Represents a single set grouping of layers, tables, and documents.
     '''

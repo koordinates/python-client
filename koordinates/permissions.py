@@ -92,10 +92,10 @@ class PermissionObjectMixin(object):
     Mixin to be used in any Koordinates Object class that supports permissions.
     """
 
-    _permissions = None
+    _perms = None
 
     @property
-    def permissions(self):
-        if not self._permissions:
-            self._permissions = PermissionManager(self._client, self)
-        return self._permissions
+    def _permissions(self):
+        if not self._perms:
+            self._perms = PermissionManager(self._client, self)
+        return self._perms

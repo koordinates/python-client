@@ -463,6 +463,7 @@ class ModelBase(object):
         if isinstance(value, ModelBase) and not name.startswith('_'):
             # set the ._parent attribute on the passed-in Model instance
             object.__setattr__(value, '_parent', self)
+        print(name)
         object.__setattr__(self, name, value)
 
     def _deserialize(self, data, manager):

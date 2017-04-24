@@ -14,7 +14,7 @@ from .utils import make_date
 from . import base
 from .licenses import License
 from .metadata import Metadata, MetadataManager
-from .permissions import Permission, PermissionObjectMixin
+from .permissions import PermissionObjectMixin
 from .publishing import Publish
 from .users import Group
 from .utils import is_bound
@@ -38,7 +38,6 @@ class LayerManager(base.Manager):
         self.versions = LayerVersionManager(client, self)
         self._data = LayerDataManager(client, self)
         self._metadata = MetadataManager(client, self)
-        # self._permissions = PermissionManager(client, self)
 
     def list_drafts(self):
         """
