@@ -56,7 +56,7 @@ class TestLayerPermissions(unittest.TestCase):
                       target_url,
                       body=layer_permission_simulated_response, status=200)
         permission = Permission()
-        permission.group = "group.108"
+        permission.group = "108"
         permission.permission = "download"
         response = self.layer._permissions.create(permission)
 
@@ -82,7 +82,7 @@ class TestLayerPermissions(unittest.TestCase):
 
         data = {
             "permission": "download",
-            "id": "group.everyone"
+            "group": "everyone"
         }
 
         for obj in self.layer._permissions.set(data):
@@ -158,7 +158,7 @@ class TestSetPermissions(unittest.TestCase):
                       body=set_permission_simulated_response, status=200)
 
         permission = Permission()
-        permission.group = "group.34"
+        permission.group = "34"
         permission.permission = "edit"
         response = self.set._permissions.create(permission)
 
@@ -185,15 +185,15 @@ class TestSetPermissions(unittest.TestCase):
         data = [
             {
                 "permission": "admin",
-                "id": "user.4"
+                "user": "4"
             },
             {
                 "permission": "admin",
-                "id": "group.administrators"
+                "group": "administrators"
             },
             {
                 "permission": "view",
-                "id": "group.everyone"
+                "group": "everyone"
             },
         ]
 
