@@ -10,7 +10,6 @@ is used for grouping layers, tables and documents together.
 
 import logging
 
-#from .users import Group
 from koordinates.permissions import PermissionObjectMixin
 from koordinates.users import Group
 from koordinates.metadata import Metadata, MetadataManager

@@ -17,7 +17,7 @@ import requests
 import requests_toolbelt
 import six
 
-from . import layers, licenses, publishing, sets, tokens, users, catalog, sources, permissions
+from . import layers, licenses, publishing, sets, tokens, users, catalog, sources
 from . import exceptions
 
 
