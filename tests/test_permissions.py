@@ -80,10 +80,10 @@ class TestLayerPermissions(unittest.TestCase):
                       body=layer_list_permissions_good_simulated_response, status=200,
                       content_type='application/json')
 
-        data = {
+        data = [{
             "permission": "download",
             "group": "everyone"
-        }
+        }]
 
         for obj in self.layer._permissions.set(data):
             self.assert_(isinstance(obj, Permission))
