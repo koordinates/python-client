@@ -45,7 +45,7 @@ class PermissionManager(base.InnerManager):
 
     def set(self, permissions):
         """
-        Set the object perimissions. If the parent object already has permissions, they will be overwritten.
+        Set the object permissions. If the parent object already has permissions, they will be overwritten.
 
         :param [] permissions: A group of Permission objects to be set.
         """
