@@ -472,6 +472,9 @@ class ModelBase(object):
         String items named ``*_at`` are turned into dates.
         Dict items named ``_by`` are turned into Users.
 
+        Filters out:
+        * attribute names in ``Meta.deserialize_skip``
+
         :param data dict: JSON-style object with instance data.
         :return: this instance
         """
@@ -484,13 +487,16 @@ class ModelBase(object):
 
         self._manager = manager
 
-        for k, v in data.items():
-            if k.endswith('_at') and isinstance(v, six.string_types):
-                v = make_date(v)
-            elif k.endswith('_by') and isinstance(v, dict):
-               v = User()._deserialize(v, manager.client.get_manager(User))
+        skip = set(getattr(self._meta, 'deserialize_skip', []))
 
-            setattr(self, k, v)
+        for k, v in data.items():
+            if k not in skip:
+                if k.endswith('_at') and isinstance(v, six.string_types):
+                    v = make_date(v)
+                elif k.endswith('_by') and isinstance(v, dict):
+                   v = User()._deserialize(v, manager.client.get_manager(User))
+
+                setattr(self, k, v)
         return self
 
     def _serialize(self, skip_empty=True):
@@ -562,6 +568,8 @@ class Model(ModelBase):
                 filter_attributes = []
                 # For the default implementation of ._serialize(), attributes to skip.
                 serialize_skip = []
+                # For the default implementation of ._deserialize(), attributes to skip.
+                deserialize_skip = []
             ...
     """
 

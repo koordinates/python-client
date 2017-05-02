@@ -58,6 +58,8 @@ class Set(base.Model, PermissionObjectMixin):
     '''
     class Meta:
         manager = SetManager
+        serialize_skip = ('permissions',)
+        deserialize_skip = ('permissions',)
 
     def _deserialize(self, data, manager):
         super(Set, self)._deserialize(data, manager)

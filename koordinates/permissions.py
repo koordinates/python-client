@@ -22,7 +22,7 @@ class PermissionManager(base.InnerManager):
     """
     Accessor for querying and updating permissions.
 
-    Access via the ``_permissions`` property of :py:class:`koordinates.layers.Layer`
+    Access via the ``permissions`` property of :py:class:`koordinates.layers.Layer`
     or :py:class:`koordinates.sets.Set` instances.
     """
 
@@ -93,13 +93,19 @@ class Permission(base.InnerModel):
 
 class PermissionObjectMixin(object):
     """
-    Mixin to be used in any Koordinates Object class that supports permissions.
+    Mixin to be used in any Koordinates Object class that supports permissions. Also remember to set the Meta
+    required fields:
+    ```
+        class Meta:
+            serialize_skip = ('permissions',)
+            deserialize_skip = ('permissions',)
+    ```
     """
 
     _perms = None
 
     @property
-    def _permissions(self):
+    def permissions(self):
         if not self._perms:
             self._perms = PermissionManager(self._client, self)
         return self._perms

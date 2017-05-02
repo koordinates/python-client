@@ -149,6 +149,8 @@ class Layer(base.Model, PermissionObjectMixin):
             'geotag', 'tag', 'q', 'created_at', 'updated_at',
         )
         ordering_attributes = ('name', 'created_at', 'updated_at', 'popularity',)
+        serialize_skip = ('permissions',)
+        deserialize_skip = ('permissions',)
 
     def _serialize(self, with_data=True):
         o = super(Layer, self)._serialize()

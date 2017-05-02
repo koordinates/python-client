@@ -30,7 +30,7 @@ class TestLayerPermissions(unittest.TestCase):
                       content_type='application/json')
 
         cnt_permissions_returned = 0
-        for obj in self.layer._permissions.list():
+        for obj in self.layer.permissions.list():
             self.assert_(isinstance(obj, Permission))
             self.assert_(isinstance(obj.group, Group))
             self.assertEqual(obj.permission, "download")
@@ -58,7 +58,7 @@ class TestLayerPermissions(unittest.TestCase):
         permission = Permission()
         permission.group = "108"
         permission.permission = "download"
-        response = self.layer._permissions.create(permission)
+        response = self.layer.permissions.create(permission)
 
         self.assertEqual(response.id, permission.id)
         self.assertEqual(response.permission, permission.permission)
@@ -85,7 +85,7 @@ class TestLayerPermissions(unittest.TestCase):
             "group": "everyone"
         }]
 
-        for obj in self.layer._permissions.set(data):
+        for obj in self.layer.permissions.set(data):
             self.assert_(isinstance(obj, Permission))
             self.assert_(isinstance(obj.group, Group))
             self.assertEqual(obj.permission, "download")
@@ -99,7 +99,7 @@ class TestLayerPermissions(unittest.TestCase):
                       target_url,
                       body=layer_permission_simulated_response, status=200)
 
-        response = self.layer._permissions.get(108)
+        response = self.layer.permissions.get(108)
 
         self.assertEqual(response.id, "group.108")
         self.assert_(isinstance(response, Permission))
@@ -129,7 +129,7 @@ class TestSetPermissions(unittest.TestCase):
                       content_type='application/json')
 
         cnt_permissions_returned = 0
-        for obj in self.set._permissions.list():
+        for obj in self.set.permissions.list():
             self.assert_(isinstance(obj, Permission))
             self.assertIn(obj.permission, ["admin", "view"])
             if obj.group:
@@ -160,7 +160,7 @@ class TestSetPermissions(unittest.TestCase):
         permission = Permission()
         permission.group = "34"
         permission.permission = "edit"
-        response = self.set._permissions.create(permission)
+        response = self.set.permissions.create(permission)
 
         self.assertEqual(response.id, permission.id)
         self.assertEqual(response.permission, permission.permission)
@@ -198,7 +198,7 @@ class TestSetPermissions(unittest.TestCase):
         ]
 
         cnt_permissions_returned = 0
-        for obj in self.set._permissions.set(data):
+        for obj in self.set.permissions.set(data):
             self.assert_(isinstance(obj, Permission))
             self.assertIn(obj.permission, ["admin", "view"])
             if obj.group:
@@ -219,7 +219,7 @@ class TestSetPermissions(unittest.TestCase):
                       target_url,
                       body=set_permission_simulated_response, status=200)
 
-        response = self.set._permissions.get(34)
+        response = self.set.permissions.get(34)
 
         self.assertEqual(response.id, "group.34")
         self.assert_(isinstance(response, Permission))
