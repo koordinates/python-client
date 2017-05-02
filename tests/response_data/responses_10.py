@@ -42,6 +42,8 @@ set_list_permissions_good_simulated_response = '''[{
         }
     }]'''
 
+source_list_permissions_good_simulated_response = set_list_permissions_good_simulated_response
+
 layer_permission_simulated_response = '''{
         "id": "group.108",
         "group": {
@@ -62,5 +64,16 @@ set_permission_simulated_response = '''{
             "country": "AR"
         },
         "permission": "edit"
+    }'''
+
+source_permission_simulated_response = '''{
+        "id": "group.85",
+        "group": {
+            "id": 85,
+            "url": "https://test.koordinates.com/services/api/v1/groups/85/",
+            "name": "aliBaba Group",
+            "country": "FR"
+        },
+        "permission": "download"
     }'''
 
