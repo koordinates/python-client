@@ -10,7 +10,7 @@ The client includes a suite of unit and functional tests. These should be used t
 
 To run the tests you need to::
 
-    $ pip install -r requirements.txt
+    $ pip install -r requirements-test.txt
     $ tox
 
 Patches
@@ -48,7 +48,7 @@ Preparations
 
    .. note::
 
-    Tox will use the :file:`requirements.txt` to setup the virtualenvs, so make sure
+    Tox will use the :file:`requirements-test.txt` to setup the virtualenvs, so make sure
     you've updated it.
 
 #. Build the Sphinx docs. Make sure there are no errors and undefined references.
@@ -56,6 +56,10 @@ Preparations
    .. code-block:: bash
 
     $ make clean docs
+
+    .. note::
+
+    You will need to install dev dependancies in :file:`requirements-dev.txt` to build documentation.
 
 #. Check the `CircleCI build <https://circleci.com/gh/koordinates/python-client>`_ is passing.
 
