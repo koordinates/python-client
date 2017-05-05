@@ -55,9 +55,9 @@ setup(
         'six>=1.10.0,<2',
         'contextlib2>=0.5.1,<0.6'
     ],
-    test_suite = 'nose.collector',
     tests_require=[
-        'nose>=1.3,<2',
+        'pytest',
+        'pytest-catchlog',
         'responses>=0.3',
         'coverage>=3.7,<4',
     ],

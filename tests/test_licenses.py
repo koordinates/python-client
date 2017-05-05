@@ -1,75 +1,78 @@
-import unittest
-
+import pytest
 import responses
 
 from koordinates import Client, License, ClientValidationError
 
-from response_data.licenses import license_list, license_cc_10
-from response_data.responses_5 import layers_version_single_good_simulated_response
+from .response_data.licenses import license_list, license_cc_10
+from .response_data.responses_5 import layers_version_single_good_simulated_response
 
 
-class LicenseTests(unittest.TestCase):
-    def setUp(self):
-        self.client = Client(token='test', host="test.koordinates.com")
+@pytest.fixture
+def client():
+    return Client(token='test', host='test.koordinates.com')
 
-    @responses.activate
-    def test_list(self):
-        responses.add(responses.GET,
-                      self.client.get_url('LICENSE', 'GET', 'multi'),
-                      body=license_list, status=200,
-                      content_type='application/json')
 
-        licenses = list(self.client.licenses.list())
+@responses.activate
+def test_list(client):
+    responses.add(responses.GET,
+                  client.get_url('LICENSE', 'GET', 'multi'),
+                  body=license_list, status=200,
+                  content_type='application/json')
 
-        self.assertEqual(len(licenses), 23)
-        self.assertEqual(len(responses.calls), 1)
+    licenses = list(client.licenses.list())
 
-    @responses.activate
-    def test_list_cc(self):
-        responses.add(responses.GET,
-                      self.client.get_url('LICENSE', 'GET', 'cc', {'slug': 'cc-by-nc', 'jurisdiction': ''}),
-                      body=license_cc_10, status=200,
-                      content_type='application/json')
+    assert len(licenses) == 23
+    assert len(responses.calls) == 1
 
-        responses.add(responses.GET,
-                      self.client.get_url('LICENSE', 'GET', 'cc', {'slug': 'cc-by-nc', 'jurisdiction': 'au'}),
-                      body=license_cc_10, status=200,
-                      content_type='application/json')
 
-        license = self.client.licenses.get_creative_commons('cc-by-nc')
-        self.assert_(isinstance(license, License))
-        license = self.client.licenses.get_creative_commons('cc-by-nc', 'au')
-        self.assert_(isinstance(license, License))
+@responses.activate
+def test_list_cc(client):
+    responses.add(responses.GET,
+                  client.get_url('LICENSE', 'GET', 'cc', {'slug': 'cc-by-nc', 'jurisdiction': ''}),
+                  body=license_cc_10, status=200,
+                  content_type='application/json')
 
-        with self.assertRaises(ClientValidationError):
-            self.client.licenses.get_creative_commons('nc', 'au')
+    responses.add(responses.GET,
+                  client.get_url('LICENSE', 'GET', 'cc', {'slug': 'cc-by-nc', 'jurisdiction': 'au'}),
+                  body=license_cc_10, status=200,
+                  content_type='application/json')
 
-        self.assertEqual(len(responses.calls), 2)
+    license = client.licenses.get_creative_commons('cc-by-nc')
+    assert isinstance(license, License)
+    license = client.licenses.get_creative_commons('cc-by-nc', 'au')
+    assert isinstance(license, License)
 
-    @responses.activate
-    def test_get(self):
-        responses.add(responses.GET,
-                      self.client.get_url('LICENSE', 'GET', 'single', {'id': 10}),
-                      body=license_cc_10, status=200,
-                      content_type='application/json')
+    with pytest.raises(ClientValidationError):
+        client.licenses.get_creative_commons('nc', 'au')
 
-        license = self.client.licenses.get(10)
-        self.assert_(isinstance(license, License))
-        self.assertEqual(license.id, 10)
-        self.assertEqual(license.type, 'cc-by-nd')
-        self.assertEqual(license.jurisdiction, 'nz')
+    assert len(responses.calls) == 2
 
-        self.assertEqual(str(license), "10 - Creative Commons Attribution-No Derivative Works 3.0 New Zealand")
 
-    @responses.activate
-    def test_layer(self):
-        responses.add(responses.GET,
-                      self.client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                      body=layers_version_single_good_simulated_response, status=200,
-                      content_type='application/json')
+@responses.activate
+def test_get(client):
+    responses.add(responses.GET,
+                  client.get_url('LICENSE', 'GET', 'single', {'id': 10}),
+                  body=license_cc_10, status=200,
+                  content_type='application/json')
 
-        layer = self.client.layers.get(1474)
-        self.assert_(isinstance(layer.license, License))
+    license = client.licenses.get(10)
+    assert isinstance(license, License)
+    assert license.id == 10
+    assert license.type == 'cc-by-nd'
+    assert license.jurisdiction == 'nz'
 
-        license = layer.license
-        self.assertEqual(license.id, 9)
+    assert str(license) == "10 - Creative Commons Attribution-No Derivative Works 3.0 New Zealand"
+
+
+@responses.activate
+def test_layer(client):
+    responses.add(responses.GET,
+                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
+                  body=layers_version_single_good_simulated_response, status=200,
+                  content_type='application/json')
+
+    layer = client.layers.get(1474)
+    assert isinstance(layer.license, License)
+
+    license = layer.license
+    assert license.id == 9
