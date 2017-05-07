@@ -7,6 +7,7 @@ dependencies:
     - pyenv install -s 3.4.4
     - pyenv install -s 3.5.1
     - pyenv global 2.7.11 3.4.4 3.5.1
+    - pip install -r requirements-dev.txt
 
   post:
     - make docs
