@@ -19,5 +19,6 @@ If you are looking for information on a specific function, class or method, this
    token
    user
    sources
+   exports
    exceptions
    permission
