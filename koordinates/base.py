@@ -431,15 +431,24 @@ class SerializableBase(object):
 
         String items named ``*_at`` are turned into dates.
 
+        Filters out:
+        * attribute names in ``Meta.deserialize_skip``
+
         :param data dict: JSON-style object with instance data.
         :return: this instance
         """
         if not isinstance(data, dict):
             raise ValueError("Need to deserialize from a dict")
 
+        try:
+            skip = set(getattr(self._meta, 'deserialize_skip', []))
+        except AttributeError:  # _meta not available
+            skip = []
+
         for key, value in data.items():
-            value = self._deserialize_value(key, value)
-            setattr(self, key, value)
+            if key not in skip:
+                value = self._deserialize_value(key, value)
+                setattr(self, key, value)
         return self
 
     def _deserialize_value(self, key, value):
@@ -592,6 +601,8 @@ class Model(ModelBase):
                 filter_attributes = []
                 # For the default implementation of ._serialize(), attributes to skip.
                 serialize_skip = []
+                # For the default implementation of ._deserialize(), attributes to skip.
+                deserialize_skip = []
             ...
     """
 

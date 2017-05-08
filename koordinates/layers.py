@@ -14,6 +14,7 @@ from .utils import make_date
 from . import base
 from .licenses import License
 from .metadata import Metadata, MetadataManager
+from .permissions import PermissionObjectMixin
 from .publishing import Publish
 from .users import Group
 from .utils import is_bound
@@ -136,10 +137,11 @@ class LayerManager(base.Manager):
         self._metadata.set(base_url, fp)
 
 
-class Layer(base.Model):
+class Layer(base.Model, PermissionObjectMixin):
     '''
     Represents a version of a single Layer or Table.
     '''
+
     class Meta:
         manager = LayerManager
         filter_attributes = (
@@ -147,6 +149,8 @@ class Layer(base.Model):
             'geotag', 'tag', 'q', 'created_at', 'updated_at',
         )
         ordering_attributes = ('name', 'created_at', 'updated_at', 'popularity',)
+        serialize_skip = ('permissions',)
+        deserialize_skip = ('permissions',)
 
     def _serialize(self, with_data=True):
         o = super(Layer, self)._serialize()
@@ -348,9 +352,9 @@ class LayerVersion(base.InnerModel):
         manager = LayerVersionManager
 
 
-
 class LayerDataManager(base.InnerManager):
     _URL_KEY = 'DATA'
+
 
 class LayerData(base.InnerModel):
     """

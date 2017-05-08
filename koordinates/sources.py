@@ -27,6 +27,7 @@ import six
 from . import base
 from .exceptions import ClientValidationError
 from .metadata import Metadata, MetadataManager
+from .permissions import PermissionObjectMixin
 from .users import Group, User
 from .utils import is_bound
 
@@ -116,7 +117,7 @@ class SourceManager(base.Manager):
         return self.client.get_manager(Scan).create_from_result(r.json())
 
 
-class Source(base.Model):
+class Source(base.Model, PermissionObjectMixin):
     """
     A source points to a place where Koordinates can get data from. Sources can contain any number
     of datasources.
@@ -127,6 +128,8 @@ class Source(base.Model):
             'scans': ['Scan'],
             'datasources': ['Datasource'],
         }
+        serialize_skip = ('permissions',)
+        deserialize_skip = ('permissions',)
 
     TYPE_INFO = 'info'
     TYPE_UPLOAD = 'upload'

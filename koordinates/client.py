@@ -359,6 +359,19 @@ class Client(object):
                 'single': '/sources/{source_id}/datasources/{datasource_id}/',
             }
         },
+        # InnerManager, so relative to a parent object
+        'PERMISSION': {
+            'GET': {
+                'multi': 'permissions/',
+                'single': 'permissions/{permission_id}/',
+            },
+            'POST': {
+                'single': 'permissions/',
+            },
+            'PUT': {
+                'multi': 'permissions/',
+            }
+        },
         'EXPORT': {
             'GET': {
                 'multi': '/exports/',
