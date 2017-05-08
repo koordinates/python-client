@@ -1,4 +1,3 @@
-#
 layer_list_permissions_good_simulated_response = '''[{
         "permission": "download",
         "id": "group.everyone",
