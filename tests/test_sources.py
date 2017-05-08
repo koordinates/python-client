@@ -65,7 +65,6 @@ class TestSources(unittest.TestCase):
         self.assertEqual(source.title, "nzdf-built-up-area-area-feature-SHP.zip")
         self.assertEqual(source.license, None)
         self.assertEqual(source.publish_to_catalog_services, False)
-        # self.assertEqual(source.permissions, "https://test.koordinates.com/services/api/v1/sources/21836/permissions/")
         self.assertEqual(source.description, "Upload: nzdf-built-up-area-area-feature-SHP.zip")
         self.assertEqual(source.description_html, "<p>Upload: nzdf-built-up-area-area-feature-SHP.zip</p>")
         self.assertEqual(source.categories, [])

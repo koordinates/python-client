@@ -52,7 +52,7 @@ setup(
         'pytz',
         'requests>=2.5,<3',
         'requests-toolbelt>=0.4,<1',
-        'six>=1.9,<2',
+        'six>=1.10.0,<2',
         'contextlib2>=0.5.1,<0.6'
     ],
     test_suite = 'nose.collector',
