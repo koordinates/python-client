@@ -5,55 +5,54 @@ Tests for the `koordinates.catalog` module.
 """
 from __future__ import unicode_literals, absolute_import
 
-import unittest
-
+import pytest
 import responses
 
 from koordinates import Client, Table, Layer, Set
 from koordinates.catalog import CatalogEntry
 
-from response_data.catalog import response_1
+from .response_data.catalog import response_1
 
 
-class CatalogTests(unittest.TestCase):
+@pytest.fixture
+def client():
+    return Client(token='test', host='test.koordinates.com')
 
-    def setUp(self):
-        self.client = Client(token='test', host='test.koordinates.com')
 
-    @responses.activate
-    def test_result_classes(self):
-        responses.add(responses.GET,
-                      self.client.get_url('CATALOG', 'GET', 'multi'),
-                      body=response_1, status=200,
-                      content_type='application/json')
+@responses.activate
+def test_result_classes(client):
+    responses.add(responses.GET,
+                  client.get_url('CATALOG', 'GET', 'multi'),
+                  body=response_1, status=200,
+                  content_type='application/json')
 
-        results = list(self.client.catalog.list())
-        self.assertEqual(len(results), 14)
+    results = list(client.catalog.list())
+    assert len(results) == 14
 
-        self.assert_(isinstance(results[0], Table))
-        self.assert_(isinstance(results[2], Layer))
-        # TODO: Document
-        self.assert_(isinstance(results[7], dict))
-        self.assert_("/documents/" in results[7]["url"])
-        self.assert_(isinstance(results[12], Set))
+    assert isinstance(results[0], Table)
+    assert isinstance(results[2], Layer)
+    # TODO: Document
+    assert isinstance(results[7], dict)
+    assert "/documents/" in results[7]["url"]
+    assert isinstance(results[12], Set)
 
-    @responses.activate
-    def test_latest(self):
-        responses.add(responses.GET,
-                      self.client.get_url('CATALOG', 'GET', 'latest'),
-                      body=response_1, status=200,
-                      content_type='application/json')
+@responses.activate
+def test_latest(client):
+    responses.add(responses.GET,
+                  client.get_url('CATALOG', 'GET', 'latest'),
+                  body=response_1, status=200,
+                  content_type='application/json')
 
-        results = list(self.client.catalog.list_latest())
-        self.assertEqual(len(results), 14)
+    results = list(client.catalog.list_latest())
+    assert len(results) == 14
 
-        results = list(self.client.catalog.list_latest().filter(version__status='importing'))
-        self.assertEqual(len(results), 14)
+    results = list(client.catalog.list_latest().filter(version__status='importing'))
+    assert len(results) == 14
 
-    def test_nocreate(self):
-        with self.assertRaises(TypeError):
-            CatalogEntry()
+def test_nocreate():
+    with pytest.raises(TypeError):
+        CatalogEntry()
 
-    def test_no_get(self):
-        with self.assertRaises(NotImplementedError):
-            self.client.catalog.get(1)
+def test_no_get(client):
+    with pytest.raises(NotImplementedError):
+        client.catalog.get(1)

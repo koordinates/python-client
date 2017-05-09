@@ -1,349 +1,357 @@
-import responses
-import unittest
+import pytest
 
 from koordinates import Permission
 from koordinates import Client, Group, User
 
-from response_data.responses_10 import layer_list_permissions_good_simulated_response, layer_permission_simulated_response
-from response_data.responses_10 import set_permission_simulated_response, set_list_permissions_good_simulated_response
-from response_data.responses_10 import source_permission_simulated_response, source_list_permissions_good_simulated_response
-from response_data.sources import source_detail
-from response_data.responses_5 import layers_version_single_good_simulated_response
-from response_data.responses_3 import sets_single_good_simulated_response
+from .response_data.responses_10 import layer_list_permissions_good_simulated_response, layer_permission_simulated_response
+from .response_data.responses_10 import set_permission_simulated_response, set_list_permissions_good_simulated_response
+from .response_data.responses_10 import source_permission_simulated_response, source_list_permissions_good_simulated_response
+from .response_data.sources import source_detail
+from .response_data.responses_5 import layers_version_single_good_simulated_response
+from .response_data.responses_3 import sets_single_good_simulated_response
 
 
-class TestLayerPermissions(unittest.TestCase):
-    @responses.activate
-    def setUp(self):
-        self.client = Client(token='test', host='test.koordinates.com')
-        responses.add(responses.GET,
-                      self.client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                      body=layers_version_single_good_simulated_response, status=200,
-                      content_type='application/json')
-        self.layer = self.client.layers.get(1474)
+# FIXTURES
 
-    @responses.activate
-    def test_list_layer_permissions(self):
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
-        responses.add(responses.GET,
-                      target_url,
-                      body=layer_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
+@pytest.fixture
+def responses():
+    import responses
+    with responses.RequestsMock() as rsps:
+        yield rsps
 
-        cnt_permissions_returned = 0
-        for obj in self.layer.permissions.list():
-            self.assert_(isinstance(obj, Permission))
-            self.assert_(isinstance(obj.group, Group))
-            self.assertEqual(obj.permission, "download")
-            self.assertEqual(obj.id, "group.everyone")
-            self.assertEqual(obj.group.id, 4)
-            self.assertEqual(obj.group.name, "Everyone")
-            self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/4/")
-            cnt_permissions_returned += 1
 
-        self.assertEqual(cnt_permissions_returned, 1)
+@pytest.fixture
+def client():
+    return Client(token='test', host='test.koordinates.com')
 
-    @responses.activate
-    def test_create_layer_permission(self):
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'POST', 'single')
-        responses.add(responses.POST,
-                      target_url,
-                      body=layer_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/layers/%s/permissions/%s/" % (self.layer.id, "108")})
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 108})
-        responses.add(responses.GET,
-                      target_url,
-                      body=layer_permission_simulated_response, status=200)
-        permission = Permission()
-        permission.group = "108"
-        permission.permission = "download"
-        response = self.layer.permissions.create(permission)
 
-        self.assertEqual(response.id, permission.id)
-        self.assertEqual(response.permission, permission.permission)
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(108, permission.group.id)
+@pytest.fixture
+def layer(responses, client):
+    responses.add(responses.GET,
+        client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
+        body=layers_version_single_good_simulated_response, status=200,
+        content_type='application/json')
 
-    @responses.activate
-    def test_set_layer_permissions(self):
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'PUT', 'multi')
-        responses.add(responses.PUT,
-                      target_url,
-                      body=layer_list_permissions_good_simulated_response, status=201)
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
-        responses.add(responses.GET,
-                      target_url,
-                      body=layer_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
+    yield client.layers.get(1474)
 
-        data = [{
-            "permission": "download",
+
+@pytest.fixture
+def set_(responses, client):
+    responses.add(responses.GET,
+                  client.get_url('SET', 'GET', 'single', {'id': 933}),
+                  body=sets_single_good_simulated_response, status=200,
+                  content_type='application/json')
+    yield client.sets.get(933)
+
+
+@pytest.fixture
+def source(responses, client):
+    responses.add(responses.GET,
+                  client.get_url('SOURCE', 'GET', 'single', {'id': 21836}),
+                  body=source_detail, status=200,
+                  content_type='application/json')
+    yield client.sources.get(21836)
+
+
+# TESTS
+
+def test_list_layer_permissions(responses, client, layer):
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
+    responses.add(responses.GET,
+                  target_url,
+                  body=layer_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
+
+    cnt_permissions_returned = 0
+    for obj in layer.permissions.list():
+        assert isinstance(obj, Permission)
+        assert isinstance(obj.group, Group)
+        assert obj.permission == "download"
+        assert obj.id == "group.everyone"
+        assert obj.group.id == 4
+        assert obj.group.name == "Everyone"
+        assert obj.group.url == "https://test.koordinates.com/services/api/v1/groups/4/"
+        cnt_permissions_returned += 1
+
+    assert cnt_permissions_returned == 1
+
+
+def test_create_layer_permission(responses, client, layer):
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'POST', 'single')
+    responses.add(responses.POST,
+                  target_url,
+                  body=layer_permission_simulated_response, status=201,
+                  adding_headers={"Location": "https://test.koordinates.com/services/api/v1/layers/%s/permissions/%s/" % (layer.id, "108")})
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 108})
+    responses.add(responses.GET,
+                  target_url,
+                  body=layer_permission_simulated_response, status=200)
+    permission = Permission()
+    permission.group = "108"
+    permission.permission = "download"
+    response = layer.permissions.create(permission)
+
+    assert response.id == permission.id
+    assert response.permission == permission.permission
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 108 == permission.group.id
+
+
+def test_set_layer_permissions(responses, client, layer):
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'PUT', 'multi')
+    responses.add(responses.PUT,
+                  target_url,
+                  body=layer_list_permissions_good_simulated_response, status=201)
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
+    responses.add(responses.GET,
+                  target_url,
+                  body=layer_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
+
+    data = [{
+        "permission": "download",
+        "group": "everyone"
+    }]
+
+    for obj in layer.permissions.set(data):
+        assert isinstance(obj, Permission)
+        assert isinstance(obj.group, Group)
+        assert obj.permission == "download"
+        assert obj.id == "group.everyone"
+
+
+def test_get_layer_permission(responses, client, layer):
+    base_url = client.get_url('LAYER', 'GET', 'single', {'id': layer.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 108})
+    responses.add(responses.GET,
+                  target_url,
+                  body=layer_permission_simulated_response, status=200)
+
+    response = layer.permissions.get(108)
+
+    assert response.id == "group.108"
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 108 == response.group.id
+
+
+def test_list_set_permissions(responses, client, set_):
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
+
+    responses.add(responses.GET,
+                  target_url,
+                  body=set_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
+
+    cnt_permissions_returned = 0
+    for obj in set_.permissions.list():
+        assert isinstance(obj, Permission)
+        assert obj.permission in ["admin", "view"]
+        if obj.group:
+            assert isinstance(obj.group, Group)
+            assert obj.group.url == "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id
+        elif obj.user:
+            assert isinstance(obj.user, User)
+            assert obj.user.url == "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id
+        cnt_permissions_returned += 1
+
+    assert cnt_permissions_returned == 3
+
+
+def test_create_set_permission(responses, client, set_):
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'POST', 'single')
+    responses.add(responses.POST,
+                  target_url,
+                  body=set_permission_simulated_response, status=201,
+                  adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sets/%s/permissions/%s/" % (set_.id, "34")})
+
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 34})
+    responses.add(responses.GET,
+                  target_url,
+                  body=set_permission_simulated_response, status=200)
+
+    permission = Permission()
+    permission.group = "34"
+    permission.permission = "edit"
+    response = set_.permissions.create(permission)
+
+    assert response.id == permission.id
+    assert response.permission == permission.permission
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 34 == permission.group.id
+
+
+def test_set_set_permissions(responses, client, set_):
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'PUT', 'multi')
+    responses.add(responses.PUT,
+                  target_url,
+                  body=set_list_permissions_good_simulated_response, status=201)
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
+    responses.add(responses.GET,
+                  target_url,
+                  body=set_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
+
+    data = [
+        {
+            "permission": "admin",
+            "user": "4"
+        },
+        {
+            "permission": "admin",
+            "group": "administrators"
+        },
+        {
+            "permission": "view",
             "group": "everyone"
-        }]
+        },
+    ]
 
-        for obj in self.layer.permissions.set(data):
-            self.assert_(isinstance(obj, Permission))
-            self.assert_(isinstance(obj.group, Group))
-            self.assertEqual(obj.permission, "download")
-            self.assertEqual(obj.id, "group.everyone")
+    cnt_permissions_returned = 0
+    for obj in set_.permissions.set(data):
+        assert isinstance(obj, Permission)
+        assert obj.permission in ["admin", "view"]
+        if obj.group:
+            assert isinstance(obj.group, Group)
+            assert obj.group.url == "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id
+        elif obj.user:
+            assert isinstance(obj.user, User)
+            assert obj.user.url == "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id
+        cnt_permissions_returned += 1
 
-    @responses.activate
-    def test_get_layer_permission(self):
-        base_url = self.client.get_url('LAYER', 'GET', 'single', {'id': self.layer.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 108})
-        responses.add(responses.GET,
-                      target_url,
-                      body=layer_permission_simulated_response, status=200)
-
-        response = self.layer.permissions.get(108)
-
-        self.assertEqual(response.id, "group.108")
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(108, response.group.id)
+    assert cnt_permissions_returned == 3
 
 
-class TestSetPermissions(unittest.TestCase):
-    @responses.activate
-    def setUp(self):
-        self.client = Client(token='test', host='test.koordinates.com')
-        responses.add(responses.GET,
-                      self.client.get_url('SET', 'GET', 'single', {'id': 933}),
-                      body=sets_single_good_simulated_response, status=200,
-                      content_type='application/json')
-        self.set = self.client.sets.get(933)
+def test_get_set_permission(responses, client, set_):
+    base_url = client.get_url('SET', 'GET', 'single', {'id': set_.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 34})
+    responses.add(responses.GET,
+                  target_url,
+                  body=set_permission_simulated_response, status=200)
 
-    @responses.activate
-    def test_list_set_permissions(self):
+    response = set_.permissions.get(34)
 
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
-
-        responses.add(responses.GET,
-                      target_url,
-                      body=set_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
-
-        cnt_permissions_returned = 0
-        for obj in self.set.permissions.list():
-            self.assert_(isinstance(obj, Permission))
-            self.assertIn(obj.permission, ["admin", "view"])
-            if obj.group:
-                self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
-            elif obj.user:
-                self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
-            cnt_permissions_returned += 1
-
-        self.assertEqual(cnt_permissions_returned, 3)
-
-    @responses.activate
-    def test_create_set_permission(self):
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'POST', 'single')
-        responses.add(responses.POST,
-                      target_url,
-                      body=set_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sets/%s/permissions/%s/" % (self.set.id, "34")})
-
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 34})
-        responses.add(responses.GET,
-                      target_url,
-                      body=set_permission_simulated_response, status=200)
-
-        permission = Permission()
-        permission.group = "34"
-        permission.permission = "edit"
-        response = self.set.permissions.create(permission)
-
-        self.assertEqual(response.id, permission.id)
-        self.assertEqual(response.permission, permission.permission)
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(34, permission.group.id)
-
-    @responses.activate
-    def test_set_set_permissions(self):
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'PUT', 'multi')
-        responses.add(responses.PUT,
-                      target_url,
-                      body=set_list_permissions_good_simulated_response, status=201)
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
-        responses.add(responses.GET,
-                      target_url,
-                      body=set_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
-
-        data = [
-            {
-                "permission": "admin",
-                "user": "4"
-            },
-            {
-                "permission": "admin",
-                "group": "administrators"
-            },
-            {
-                "permission": "view",
-                "group": "everyone"
-            },
-        ]
-
-        cnt_permissions_returned = 0
-        for obj in self.set.permissions.set(data):
-            self.assert_(isinstance(obj, Permission))
-            self.assertIn(obj.permission, ["admin", "view"])
-            if obj.group:
-                self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
-            elif obj.user:
-                self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
-            cnt_permissions_returned += 1
-
-        self.assertEqual(cnt_permissions_returned, 3)
-
-    @responses.activate
-    def test_set_layer_permission(self):
-        base_url = self.client.get_url('SET', 'GET', 'single', {'id': self.set.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 34})
-        responses.add(responses.GET,
-                      target_url,
-                      body=set_permission_simulated_response, status=200)
-
-        response = self.set.permissions.get(34)
-
-        self.assertEqual(response.id, "group.34")
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(34, response.group.id)
+    assert response.id == "group.34"
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 34 == response.group.id
 
 
-class TestSourcePermissions(unittest.TestCase):
-    @responses.activate
-    def setUp(self):
-        self.client = Client(token='test', host='test.koordinates.com')
-        responses.add(responses.GET,
-                      self.client.get_url('SOURCE', 'GET', 'single', {'id': 21836}),
-                      body=source_detail, status=200,
-                      content_type='application/json')
-        self.source = self.client.sources.get(21836)
+def test_list_source_permissions(responses, client, source):
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
 
-    @responses.activate
-    def test_list_source_permissions(self):
+    responses.add(responses.GET,
+                  target_url,
+                  body=source_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
 
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
+    cnt_permissions_returned = 0
+    for obj in source.permissions.list():
+        assert isinstance(obj, Permission)
+        assert obj.permission in ["admin", "view"]
+        if obj.group:
+            assert isinstance(obj.group, Group)
+            assert obj.group.url == "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id
+        elif obj.user:
+            assert isinstance(obj.user, User)
+            assert obj.user.url == "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id
+        cnt_permissions_returned += 1
 
-        responses.add(responses.GET,
-                      target_url,
-                      body=source_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
+    assert cnt_permissions_returned == 3
 
-        cnt_permissions_returned = 0
-        for obj in self.source.permissions.list():
-            self.assert_(isinstance(obj, Permission))
-            self.assertIn(obj.permission, ["admin", "view"])
-            if obj.group:
-                self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
-            elif obj.user:
-                self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
-            cnt_permissions_returned += 1
 
-        self.assertEqual(cnt_permissions_returned, 3)
+def test_create_source_permission(responses, client, source):
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'POST', 'single')
+    responses.add(responses.POST,
+                  target_url,
+                  body=source_permission_simulated_response, status=201,
+                  adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sources/%s/permissions/%s/" % (source.id, "85")})
 
-    @responses.activate
-    def test_create_source_permission(self):
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'POST', 'single')
-        responses.add(responses.POST,
-                      target_url,
-                      body=source_permission_simulated_response, status=201,
-                      adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sources/%s/permissions/%s/" % (self.source.id, "85")})
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 85})
+    responses.add(responses.GET,
+                  target_url,
+                  body=source_permission_simulated_response, status=200)
 
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 85})
-        responses.add(responses.GET,
-                      target_url,
-                      body=source_permission_simulated_response, status=200)
+    permission = Permission()
+    permission.group = "85"
+    permission.permission = "download"
+    response = source.permissions.create(permission)
 
-        permission = Permission()
-        permission.group = "85"
-        permission.permission = "download"
-        response = self.source.permissions.create(permission)
+    assert response.id == permission.id
+    assert response.permission == permission.permission
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 85 == permission.group.id
 
-        self.assertEqual(response.id, permission.id)
-        self.assertEqual(response.permission, permission.permission)
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(85, permission.group.id)
 
-    @responses.activate
-    def test_source_set_permissions(self):
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'PUT', 'multi')
-        responses.add(responses.PUT,
-                      target_url,
-                      body=source_list_permissions_good_simulated_response, status=201)
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'multi')
-        responses.add(responses.GET,
-                      target_url,
-                      body=source_list_permissions_good_simulated_response, status=200,
-                      content_type='application/json')
+def test_source_set_permissions(responses, client, source):
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'PUT', 'multi')
+    responses.add(responses.PUT,
+                  target_url,
+                  body=source_list_permissions_good_simulated_response, status=201)
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'multi')
+    responses.add(responses.GET,
+                  target_url,
+                  body=source_list_permissions_good_simulated_response, status=200,
+                  content_type='application/json')
 
-        data = [
-            {
-                "permission": "admin",
-                "user": "4"
-            },
-            {
-                "permission": "admin",
-                "group": "administrators"
-            },
-            {
-                "permission": "view",
-                "group": "everyone"
-            },
-        ]
+    data = [
+        {
+            "permission": "admin",
+            "user": "4"
+        },
+        {
+            "permission": "admin",
+            "group": "administrators"
+        },
+        {
+            "permission": "view",
+            "group": "everyone"
+        },
+    ]
 
-        cnt_permissions_returned = 0
-        for obj in self.source.permissions.set(data):
-            self.assert_(isinstance(obj, Permission))
-            self.assertIn(obj.permission, ["admin", "view"])
-            if obj.group:
-                self.assert_(isinstance(obj.group, Group))
-                self.assertEqual(obj.group.url, "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id)
-            elif obj.user:
-                self.assert_(isinstance(obj.user, User))
-                self.assertEqual(obj.user.url, "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id)
-            cnt_permissions_returned += 1
+    cnt_permissions_returned = 0
+    for obj in source.permissions.set(data):
+        assert isinstance(obj, Permission)
+        assert obj.permission in ["admin", "view"]
+        if obj.group:
+            assert isinstance(obj.group, Group)
+            assert obj.group.url == "https://test.koordinates.com/services/api/v1/groups/%s/" % obj.group.id
+        elif obj.user:
+            assert isinstance(obj.user, User)
+            assert obj.user.url == "https://test.koordinates.com/services/api/v1/users/%s/" % obj.user.id
+        cnt_permissions_returned += 1
 
-        self.assertEqual(cnt_permissions_returned, 3)
+    assert cnt_permissions_returned == 3
 
-    @responses.activate
-    def test_source_layer_permission(self):
-        base_url = self.client.get_url('SOURCE', 'GET', 'single', {'id': self.source.id})
-        target_url = base_url + self.client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 85})
-        responses.add(responses.GET,
-                      target_url,
-                      body=source_permission_simulated_response, status=200)
 
-        response = self.source.permissions.get(85)
+def test_source_layer_permission(responses, client, source):
+    base_url = client.get_url('SOURCE', 'GET', 'single', {'id': source.id})
+    target_url = base_url + client.get_url_path('PERMISSION', 'GET', 'single', {'permission_id': 85})
+    responses.add(responses.GET,
+                  target_url,
+                  body=source_permission_simulated_response, status=200)
 
-        self.assertEqual(response.id, "group.85")
-        self.assert_(isinstance(response, Permission))
-        self.assert_(isinstance(response.group, Group))
-        self.assertEqual(85, response.group.id)
+    response = source.permissions.get(85)
+
+    assert response.id == "group.85"
+    assert isinstance(response, Permission)
+    assert isinstance(response.group, Group)
+    assert 85 == response.group.id

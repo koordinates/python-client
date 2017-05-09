@@ -20,9 +20,9 @@ test:
   override:
     - tox --
       --verbose
-      --with-xunit
-      --cover-package=koordinates
-      --cover-html
-      --cover-html-dir=${CIRCLE_ARTIFACTS}/coverage/
+      -p no:sugar
+      --cov=koordinates
+      --cov-report html:${CIRCLE_ARTIFACTS}/coverage/
+      tests/
   post:
-    - cp nosetests.*.xml ${CIRCLE_TEST_REPORTS}/junit/
+    - cp pytest.*.xml ${CIRCLE_TEST_REPORTS}/junit/

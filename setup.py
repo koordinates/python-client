@@ -53,11 +53,15 @@ setup(
         'requests>=2.5,<3',
         'requests-toolbelt>=0.4,<1',
         'six>=1.10.0,<2',
-        'contextlib2>=0.5.1,<0.6'
     ],
-    test_suite = 'nose.collector',
+    extras_require={
+        ':python_version=="2.7"': [
+            'contextlib2',
+        ],
+    },
     tests_require=[
-        'nose>=1.3,<2',
+        'pytest',
+        'pytest-catchlog',
         'responses>=0.3',
         'coverage>=3.7,<4',
     ],

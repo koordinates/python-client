@@ -9,167 +9,162 @@ Tests for the `koordinates.publishing` module.
 """
 from __future__ import unicode_literals, absolute_import
 
-import unittest
-
+import pytest
 import responses
 
 #from koordinates import api
 from koordinates import exceptions
 from koordinates import Client, Publish
 
-from response_data.responses_1 import layers_multiple_good_simulated_response
-from response_data.responses_2 import layers_single_good_simulated_response
-from response_data.responses_3 import sets_single_good_simulated_response
-from response_data.responses_4 import sets_multiple_good_simulated_response
-from response_data.responses_5 import layers_version_single_good_simulated_response
-from response_data.responses_6 import layers_version_multiple_good_simulated_response
-from response_data.responses_7 import publish_single_good_simulated_response
-from response_data.responses_7 import publish_multiple_get_simulated_response
+from .response_data.responses_5 import layers_version_single_good_simulated_response
+from .response_data.responses_7 import publish_single_good_simulated_response
+from .response_data.responses_7 import publish_multiple_get_simulated_response
 
 
-class TestKoordinatesPublishing(unittest.TestCase):
+@pytest.fixture
+def client():
+    return Client(token='test', host='koordinates.com')
 
-    def contains_substring(self, strtosearch, strtosearchfor):
-        return strtosearch.lower().find(strtosearchfor) > -1
 
-    def setUp(self):
-        self.client = Client(token='test', host='koordinates.com')
-        self.testclient = Client(token='test', host="test.koordinates.com")
+def testclient():
+    return Client(token='test', host="test.koordinates.com")
 
-    @responses.activate
-    def test_publish_get_by_id(self):
-        the_response = publish_single_good_simulated_response
 
-        publish_id = 2054
-        responses.add(responses.GET,
-          self.client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
-          body=the_response, status=200,
-          content_type='application/json')
+@responses.activate
+def test_publish_get_by_id(client):
+    the_response = publish_single_good_simulated_response
 
-        obj = self.client.publishing.get(publish_id)
+    publish_id = 2054
+    responses.add(responses.GET,
+      client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
+      body=the_response, status=200,
+      content_type='application/json')
 
-        self.assertEqual(obj.state, "completed")
-        self.assertEqual(obj.created_by.id, 18504)
-        self.assertEqual(len(obj.items), 1)
-        self.assertEqual(obj.items[0],
-            'https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/')
-        self.assertEqual(obj.created_at.year, 2015)
-        self.assertEqual(obj.created_at.month,   6)
-        self.assertEqual(obj.created_at.day,     8)
-        self.assertEqual(obj.created_at.hour,    3)
-        self.assertEqual(obj.created_at.minute, 40)
-        self.assertEqual(obj.created_at.second, 40)
-        self.assertEqual(obj.created_by.id, 18504)
+    obj = client.publishing.get(publish_id)
 
-    @responses.activate
-    def test_publish_get_all_rows(self):
-        the_response = publish_multiple_get_simulated_response
+    assert obj.state == "completed"
+    assert obj.created_by.id == 18504
+    assert len(obj.items) == 1
+    assert obj.items[0] == 'https://test.koordinates.com/services/api/v1/layers/8092/versions/9822/'
+    assert obj.created_at.year == 2015
+    assert obj.created_at.month == 6
+    assert obj.created_at.day == 8
+    assert obj.created_at.hour == 3
+    assert obj.created_at.minute == 40
+    assert obj.created_at.second == 40
+    assert obj.created_by.id == 18504
 
-        responses.add(responses.GET,
-          self.client.get_url('PUBLISH', 'GET', 'multi'),
-          body=the_response, status=200,
-          content_type='application/json')
+@responses.activate
+def test_publish_get_all_rows(client):
+    the_response = publish_multiple_get_simulated_response
 
-        cnt_of_publish_records_returned = 0
+    responses.add(responses.GET,
+      client.get_url('PUBLISH', 'GET', 'multi'),
+      body=the_response, status=200,
+      content_type='application/json')
 
-        for pub_record in self.client.publishing.list():
-            if cnt_of_publish_records_returned == 0:
-                self.assertEqual(pub_record.id, 2054)
-                self.assertEqual(pub_record.error_strategy, 'abort')
-            cnt_of_publish_records_returned += 1
+    cnt_of_publish_records_returned = 0
 
-        self.assertEqual(cnt_of_publish_records_returned, 7)
+    for pub_record in client.publishing.list():
+        if cnt_of_publish_records_returned == 0:
+            assert pub_record.id == 2054
+            assert pub_record.error_strategy == 'abort'
+        cnt_of_publish_records_returned += 1
 
-    @unittest.skip("FIXME")
-    @responses.activate
-    def test_multipublish_resource_specification(self):
-        the_response = '''{}'''
-        responses.add(responses.POST,
-          self.testclient.get_url('PUBLISH', 'POST', 'create'),
-          body=the_response, status=500,
-          content_type='application/json')
+    assert cnt_of_publish_records_returned == 7
 
-        pr = Publish()
-        pr.items = [
-            'https://test.koordinates.com/services/api/v1/layers/100/versions/1000/',
-            'https://test.koordinates.com/services/api/v1/layers/101/versions/1001/',
-            'https://test.koordinates.com/services/api/v1/layers/102/versions/1002/',
-            'https://test.koordinates.com/services/api/v1/tables/200/versions/2000/',
-            'https://test.koordinates.com/services/api/v1/tables/201/versions/2001/',
-            'https://test.koordinates.com/services/api/v1/tables/202/versions/2002/',
-        ]
+@pytest.mark.skip("FIXME")
+@responses.activate
+def test_multipublish_resource_specification(testclient):
+    the_response = '''{}'''
+    responses.add(responses.POST,
+      testclient.get_url('PUBLISH', 'POST', 'create'),
+      body=the_response, status=500,
+      content_type='application/json')
 
-        with self.assertRaises(exceptions.ServerError):
-            #the Responses mocking will result in a 999 being returned
-            self.testclient.publishing.create(pr)
+    pr = Publish()
+    pr.items = [
+        'https://test.koordinates.com/services/api/v1/layers/100/versions/1000/',
+        'https://test.koordinates.com/services/api/v1/layers/101/versions/1001/',
+        'https://test.koordinates.com/services/api/v1/layers/102/versions/1002/',
+        'https://test.koordinates.com/services/api/v1/tables/200/versions/2000/',
+        'https://test.koordinates.com/services/api/v1/tables/201/versions/2001/',
+        'https://test.koordinates.com/services/api/v1/tables/202/versions/2002/',
+    ]
 
-    @unittest.skip("FIXME")
-    @responses.activate
-    def test_multipublish_bad_args(self):
-        the_response = '''{}'''
+    with pytest.raises(exceptions.ServerError):
+        #the Responses mocking will result in a 999 being returned
+        testclient.publishing.create(pr)
 
-        responses.add(responses.POST,
-          self.testclient.get_url('PUBLISH', 'POST', 'create'),
-          body=the_response, status=500,
-          content_type='application/json')
+@pytest.mark.skip("FIXME")
+@responses.activate
+def test_multipublish_bad_args(testclient):
+    the_response = '''{}'''
 
-        pr = Publish()
-        with self.assertRaises(exceptions.ServerError):
-            #the Responses mocking will result in a 999 being returned
-            self.testclient.publishing.create(pr)
+    responses.add(responses.POST,
+      testclient.get_url('PUBLISH', 'POST', 'create'),
+      body=the_response, status=500,
+      content_type='application/json')
 
-        pr = Publish(publish_strategy=Publish.PUBLISH_STRATEGY_TOGETHER)
-        with self.assertRaises(exceptions.ServerError):
-            #the Responses mocking will result in a 999 being returned
-            self.testclient.publishing.create(pr)
+    pr = Publish()
+    with pytest.raises(exceptions.ServerError):
+        #the Responses mocking will result in a 999 being returned
+        testclient.publishing.create(pr)
 
-        pr = Publish(publish_strategy=Publish.PUBLISH_STRATEGY_TOGETHER, error_strategy=Publish.ERROR_STRATEGY_ABORT)
-        with self.assertRaises(exceptions.ServerError):
-            #the Responses mocking will result in a 999 being returned
-            self.testclient.publishing.create(pr)
+    pr = Publish(publish_strategy=Publish.PUBLISH_STRATEGY_TOGETHER)
+    with pytest.raises(exceptions.ServerError):
+        #the Responses mocking will result in a 999 being returned
+        testclient.publishing.create(pr)
 
-    @responses.activate
-    def test_publish_single_layer_version(self, layer_id=1474, version_id=4067):
-        the_response = layers_version_single_good_simulated_response
-        responses.add(responses.GET,
-          self.client.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id}),
-          body=the_response, status=200,
-          content_type='application/json')
+    pr = Publish(publish_strategy=Publish.PUBLISH_STRATEGY_TOGETHER, error_strategy=Publish.ERROR_STRATEGY_ABORT)
+    with pytest.raises(exceptions.ServerError):
+        #the Responses mocking will result in a 999 being returned
+        testclient.publishing.create(pr)
 
-        lv = self.client.layers.get_version(1474, 4067)
 
-        self.assertEqual(lv.id, 1474)
-        self.assertEqual(lv.version.id, 4067)
+@responses.activate
+def test_publish_single_layer_version(client):
+    the_response = layers_version_single_good_simulated_response
+    responses.add(responses.GET,
+      client.get_url('VERSION', 'GET', 'single', {'layer_id': 1474, 'version_id': 4067}),
+      body=the_response, status=200,
+      content_type='application/json')
 
-        the_response = '''{"id": 2057, "url": "https://test.koordinates.com/services/api/v1/publish/2057/", "state": "publishing", "created_at": "2015-06-08T10:39:44.823Z", "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, "error_strategy": "abort", "publish_strategy": "together", "publish_at": null, "items": ["https://test.koordinates.com/services/api/v1/layers/1474/versions/4067/"]}'''
-        publish_url = "https://test.koordinates.com/services/api/v1/publish/2057/"
+    lv = client.layers.get_version(1474, 4067)
 
-        responses.add(responses.POST,
-          self.client.get_url('VERSION', 'POST', 'publish', {'layer_id': layer_id, 'version_id': version_id}),
-          body="", status=201, adding_headers={"Location": publish_url},
-          content_type='application/json')
-        responses.add(responses.GET,
-          publish_url,
-          body=the_response, status=200,
-          content_type='application/json')
+    assert lv.id == 1474
+    assert lv.version.id == 4067
 
-        p = lv.publish()
-        self.assert_(isinstance(p, Publish))
-        self.assertEquals(p.id, 2057)
+    the_response = '''{"id": 2057, "url": "https://test.koordinates.com/services/api/v1/publish/2057/", "state": "publishing", "created_at": "2015-06-08T10:39:44.823Z", "created_by": {"id": 18504, "url": "https://test.koordinates.com/services/api/v1/users/18504/", "first_name": "Richard", "last_name": "Shea", "country": "NZ"}, "error_strategy": "abort", "publish_strategy": "together", "publish_at": null, "items": ["https://test.koordinates.com/services/api/v1/layers/1474/versions/4067/"]}'''
+    publish_url = "https://test.koordinates.com/services/api/v1/publish/2057/"
 
-    @responses.activate
-    def test_cancel(self):
-        publish_id = 2054
+    responses.add(responses.POST,
+      client.get_url('VERSION', 'POST', 'publish', {'layer_id': 1474, 'version_id': 4067}),
+      body="", status=201, adding_headers={"Location": publish_url},
+      content_type='application/json')
+    responses.add(responses.GET,
+      publish_url,
+      body=the_response, status=200,
+      content_type='application/json')
 
-        responses.add(responses.GET,
-          self.client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
-          body=publish_single_good_simulated_response, status=200,
-          content_type='application/json')
+    p = lv.publish()
+    assert isinstance(p, Publish)
+    assert p.id == 2057
 
-        responses.add(responses.DELETE,
-          self.client.get_url('PUBLISH', 'DELETE', 'single', {'id': publish_id}),
-          body="", status=204,
-          content_type='application/json')
 
-        obj = self.client.publishing.get(publish_id)
-        obj.cancel()
+@responses.activate
+def test_cancel(client):
+    publish_id = 2054
+
+    responses.add(responses.GET,
+      client.get_url('PUBLISH', 'GET', 'single', {'id': publish_id}),
+      body=publish_single_good_simulated_response, status=200,
+      content_type='application/json')
+
+    responses.add(responses.DELETE,
+      client.get_url('PUBLISH', 'DELETE', 'single', {'id': publish_id}),
+      body="", status=204,
+      content_type='application/json')
+
+    obj = client.publishing.get(publish_id)
+    obj.cancel()
