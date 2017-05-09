@@ -53,8 +53,12 @@ setup(
         'requests>=2.5,<3',
         'requests-toolbelt>=0.4,<1',
         'six>=1.10.0,<2',
-        'contextlib2>=0.5.1,<0.6'
     ],
+    extras_require={
+        ':python_version=="2.7"': [
+            'contextlib2',
+        ],
+    },
     tests_require=[
         'pytest',
         'pytest-catchlog',

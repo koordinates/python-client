@@ -2,6 +2,5 @@ python-dateutil==2.4.2
 pytz==2015.4
 requests==2.7.0
 requests-toolbelt==0.4.0
-responses==0.4.0
 six==1.10.0
-contextlib2==0.5.5
+contextlib2==0.5.5; python_version<'3.0'

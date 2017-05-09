@@ -1,6 +1,7 @@
 -r requirements.txt
 
 mock==1.0.1
+responses
 pytest
 pytest-cov
 pytest-sugar
