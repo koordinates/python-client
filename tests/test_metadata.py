@@ -140,6 +140,15 @@ def test_layer_set_xml_manager(client):
 
     assert isinstance(responses.calls[0].request.body, six.StringIO)
     assert responses.calls[0].request.body.getvalue() == "<test>"
+    assert responses.calls[0].request.headers == {
+      'Accept': 'application/json',
+      'Accept-Encoding': 'gzip, deflate',
+      'User-Agent': client._user_agent,
+      'Content-Type': 'text/xml',
+      'Authorization': 'key test',
+      'Connection': 'keep-alive',
+      'Content-Length': '6'
+    }
 
     assert r is None
 
