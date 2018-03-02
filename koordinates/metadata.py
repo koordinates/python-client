@@ -31,8 +31,8 @@ class MetadataManager(base.InnerManager):
         """
         url = parent_url + self.client.get_url_path('METADATA', 'POST', 'set', {})
         r = self.client.request('POST', url, data=fp, headers={'Content-type': 'text/xml'})
-        if r.status_code != 204:
-            raise exceptions.ServerError("Expected 204 response, got %s: %s" % (r.status_code, url))
+        if r.status_code not in [200, 201]:
+            raise exceptions.ServerError("Expected success response, got %s: %s" % (r.status_code, url))
 
 
 class Metadata(base.InnerModel):
