@@ -60,8 +60,7 @@ setup(
         ],
     },
     tests_require=[
-        'pytest',
-        'pytest-catchlog',
+        'pytest~=3.4.0',
         'responses>=0.3',
         'coverage>=3.7,<4',
     ],
