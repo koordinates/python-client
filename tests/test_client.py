@@ -100,6 +100,8 @@ def test_user_agent(client):
 
 @responses.activate
 def test_server_error(client):
+
+    # Form / field errors:
     responses.add(responses.POST,
                   'https://test.koordinates.com/api/v1/layers/123/versions/',
                   body='{"autoupdate_schedule":["This field is required when autoupdate is on."]}',
@@ -129,6 +131,19 @@ def test_server_error(client):
         'autoupdate_schedule: This field is required when autoupdate is on.',
     }
     assert repr(e) == "BadRequest('%s')" % str(e)
+
+    # Other detail errors:
+    responses.add(responses.POST,
+                  'https://test.koordinates.com/api/v1/layers/123/versions/123/import/',
+                  body='{"detail": "No valid datasources to import"}',
+                  status=400,
+                  content_type='application/json')
+    with pytest.raises(BadRequest) as cm:
+        client.request('POST', 'https://test.koordinates.com/api/v1/layers/123/versions/123/import/')
+
+    e = cm.value
+    assert str(e) == "detail: No valid datasources to import"
+    assert repr(e) == "BadRequest('detail: No valid datasources to import')"
 
 
 @responses.activate

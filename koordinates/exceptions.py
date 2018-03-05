@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from six import string_types
 
 class KoordinatesException(Exception):
     """ Base class for all koordinates module errors """
@@ -69,7 +70,8 @@ class BadRequest(ServerError):
         try:
             messages = []
             for field, errors in sorted(response.json().items()):
-                messages.append("%s: %s" % (field, "; ".join(errors)))
+                errors = errors if isinstance(errors, string_types) else "; ".join(errors)
+                messages.append("%s: %s" % (field, errors))
             return "\n".join(messages)
         except Exception as e:
             return super(BadRequest, self)._get_message(error, response)
