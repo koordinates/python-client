@@ -25,7 +25,6 @@ setup(
     author='Koordinates Limited',
     author_email='support@koordinates.com',
     url='https://github.com/koordinates/python-client',
-    download_url = 'https://github.com/koordinates/python-client/tarball/0.1',
     keywords='koordinates api',
     license = 'BSD',
     classifiers=[
@@ -39,6 +38,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Scientific/Engineering :: GIS',
     ],
