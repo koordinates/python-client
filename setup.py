@@ -60,7 +60,7 @@ setup(
         ],
     },
     tests_require=[
-        'pytest~=3.4.0',
+        'pytest>=3.3',
         'responses>=0.3',
         'coverage>=3.7,<4',
     ],
