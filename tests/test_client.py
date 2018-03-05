@@ -7,6 +7,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 import re
+import logging
 
 import pytest
 import responses
@@ -23,7 +24,6 @@ else:
 @pytest.fixture
 def client():
     return Client(host='test.koordinates.com', token='12345abcde')
-
 
 def test_token_from_env():
     with EnvironmentVarGuard() as env:
@@ -132,7 +132,9 @@ def test_server_error(client):
 
 
 @responses.activate
-def test_request_logging(client, caplog):
+def test_request_logging(caplog, client):
+    caplog.set_level(logging.DEBUG)
+
     responses.add(responses.GET,
                   'https://test.koordinates.com/api/v1/test/',
                   body='[]', status=200,
