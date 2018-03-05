@@ -16,6 +16,7 @@ import six
 from koordinates import Client, Metadata
 
 from .response_data.responses_5 import layers_version_single_good_simulated_response
+from .response_data.metadata import layers_version_metadata_post_response
 
 @pytest.fixture
 def client():
@@ -96,7 +97,7 @@ def test_layer_set_xml(client):
 
     responses.add(responses.POST,
                   lv_url + 'metadata/',
-                  body="", status=204,
+                  body=layers_version_metadata_post_response, status=200,
                   adding_headers={"Location": lv_url + 'metadata/'})
 
     layer = client.layers.get_version(1474, 4067)
@@ -128,7 +129,7 @@ def test_layer_set_xml_manager(client):
 
     responses.add(responses.POST,
                   lv_url + 'metadata/',
-                  body="", status=204,
+                  body=layers_version_metadata_post_response, status=200,
                   adding_headers={"Location": lv_url + 'metadata/'})
 
 
@@ -139,6 +140,15 @@ def test_layer_set_xml_manager(client):
 
     assert isinstance(responses.calls[0].request.body, six.StringIO)
     assert responses.calls[0].request.body.getvalue() == "<test>"
+    assert responses.calls[0].request.headers == {
+      'Accept': 'application/json',
+      'Accept-Encoding': 'gzip, deflate',
+      'User-Agent': client._user_agent,
+      'Content-Type': 'text/xml',
+      'Authorization': 'key test',
+      'Connection': 'keep-alive',
+      'Content-Length': '6'
+    }
 
     assert r is None
 

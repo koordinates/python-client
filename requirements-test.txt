@@ -2,7 +2,6 @@
 
 mock==1.0.1
 responses
-pytest
+pytest>=3.3
 pytest-cov
 pytest-sugar
-pytest-catchlog
