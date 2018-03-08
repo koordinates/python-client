@@ -57,7 +57,7 @@ Preparations
 
     $ make clean docs
 
-    .. note::
+   .. note::
 
     You will need to install dev dependancies in :file:`requirements-dev.txt` to build documentation.
 
