@@ -113,21 +113,18 @@ Build and release
         test
 
     [test]
-    repository = https://testpypi.python.org/pypi
-    username = <test username>
-    password = <test password>
+    repository: https://test.pypi.org/legacy/
+    username: <test username>
+    password: <test password>
 
     [pypi]
-    repository = http://pypi.python.org/pypi
-    username = <production username>
-    password = <production password>
+    username: <production username>
+    password: <production password>
 
 #. Upload the distributions for the new version to the test server and test the
    installation again:
 
    .. code-block:: bash
-
-    $ python setup.py register -r test
     $ python setup.py sdist upload -r test
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
@@ -141,7 +138,6 @@ Build and release
 
    .. code-block:: bash
 
-    $ python setup.py register -r pypi
     $ python setup.py sdist upload -r pypi
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
@@ -167,4 +163,4 @@ Post release
 
 #. Make the `Github release <https://github.com/koordinates/python-client/releases>`_ public.
 
-#. Update related Zendesk pages if necessary.
+#. Update related Help pages if necessary.
