@@ -1,0 +1,48 @@
+steps:
+  - label: build docs
+    command:
+      - "pip install . && pip install -r requirements-dev.txt && make zipdocs"
+    plugins:
+      docker#v1.4.0:
+        image: "${ECR}/ci-tools:latest"
+        workdir: /app
+    artifact_paths: "docs/build/docs.zip"
+
+  - label: "run tests (python 3.6)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      docker#v1.4.0:
+        image: "python:3.6-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  - label: "run tests (python 3.5)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      docker#v1.4.0:
+        image: "python:3.5-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  - label: "run tests (python 2.7)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      docker#v1.4.0:
+        image: "python:2.7-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  # Record test failures
+  - wait: ~
+    continue_on_failure: true
+
+  - label: "record test failures"
+    plugins:
+      junit-annotate#v1.4.1:
+        artifacts: "pytest*.xml"
