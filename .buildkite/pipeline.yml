@@ -1,5 +1,5 @@
 steps:
-  - label: build everything
+  - label: ":building_construction: build everything"
     command:
       - python setup.py sdist bdist_wheel
       - pip install dist/*.whl
@@ -15,7 +15,7 @@ steps:
 
   - wait
 
-  - label: "run tests (python 3.6)"
+  - label: ":pytest: run tests (:python: 3.6)"
     command:
       - ./.buildkite/test.sh
     plugins:
@@ -27,7 +27,7 @@ steps:
         shell: false
     artifact_paths: "./pytest*.xml"
 
-  - label: "run tests (python 3.5)"
+  - label: ":pytest: run tests (:python: 3.5)"
     command:
       - ./.buildkite/test.sh
     plugins:
@@ -39,7 +39,7 @@ steps:
         shell: false
     artifact_paths: "./pytest*.xml"
 
-  - label: "run tests (python 2.7)"
+  - label: ":pytest: run tests (:python: 2.7)"
     command:
       - ./.buildkite/test.sh
     plugins:
