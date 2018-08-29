@@ -5,44 +5,60 @@ Tests for the `koordinates.catalog` module.
 """
 from __future__ import unicode_literals, absolute_import, print_function
 
+import contextlib
 import json
+import os
 import re
 import logging
 
 import pytest
 import responses
-import six
 
 from koordinates import Client, BadRequest
 
-if six.PY2:
-    from test.test_support import EnvironmentVarGuard
-else:
-    from test.support import EnvironmentVarGuard
+
+def _env_set(key, value):
+    if value is None:
+        os.environ.pop(key, None)
+    else:
+        os.environ[key] = value
+
+
+@contextlib.contextmanager
+def env_override(key, value):
+    """
+    Contextmanager. Temporarily override an environment variable.
+    """
+    orig = os.environ.get(key)
+    _env_set(key, value)
+    try:
+        yield
+    finally:
+        # Put it back the way it was
+        _env_set(key, orig)
 
 
 @pytest.fixture
 def client():
     return Client(host='test.koordinates.com', token='12345abcde')
 
+
 def test_token_from_env():
-    with EnvironmentVarGuard() as env:
-        env.unset("KOORDINATES_TOKEN")
+    with env_override("KOORDINATES_TOKEN", None):
         with pytest.raises(KeyError):
             Client(host='test.koordinates.com')
 
-        env.set("KOORDINATES_TOKEN", 'abcde12345')
+    with env_override("KOORDINATES_TOKEN", 'abcde12345'):
         client = Client(host='test.koordinates.com')
         assert client.token == 'abcde12345'
 
 
 def test_token_from_param():
-    with EnvironmentVarGuard() as env:
-        env.unset("KOORDINATES_TOKEN")
+    with env_override("KOORDINATES_TOKEN", None):
         client = Client(host='test.koordinates.com', token='12345abcde')
         assert client.token == '12345abcde'
 
-        env.set("KOORDINATES_TOKEN", "don't use me")
+    with env_override("KOORDINATES_TOKEN", "don't use me"):
         client = Client(host='test.koordinates.com', token='12345abcde')
         assert client.token == '12345abcde'
 
@@ -157,7 +173,6 @@ def test_request_logging(caplog, client):
 
     r = client.request('GET', 'https://test.koordinates.com/api/v1/test/', json={'some': ['data', 1]}, headers={"FooHeader": "Bar"})
     r.raise_for_status()
-
 
     lreq = caplog.records[0]
     lmsg = lreq.getMessage()

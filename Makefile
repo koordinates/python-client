@@ -43,6 +43,9 @@ docs:
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 
+zipdocs: docs
+	cd docs/build/html && zip -r ../docs.zip *
+
 #docs-hide:
 #	rm -f docs/tagweed.rst
 #	rm -f docs/modules.rst

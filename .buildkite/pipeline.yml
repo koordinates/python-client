@@ -1,0 +1,81 @@
+steps:
+  - label: ":building_construction: build everything"
+    command:
+      - python setup.py sdist bdist_wheel
+      - pip install dist/*.whl
+      - pip install -r requirements-dev.txt
+      - make zipdocs
+    plugins:
+      docker#v1.4.0:
+        image: "${ECR}/ci-tools:latest"
+        workdir: /app
+    artifact_paths: 
+      - dist/*
+      - docs/build/docs.zip
+
+  - wait
+
+  - label: ":pytest: run tests (:python: 3.6)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*.whl"
+      docker#v1.4.0:
+        image: "python:3.6-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  - label: ":pytest: run tests (:python: 3.5)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*.whl"
+      docker#v1.4.0:
+        image: "python:3.5-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  - label: ":pytest: run tests (:python: 2.7)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*.whl"
+      docker#v1.4.0:
+        image: "python:2.7-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  # Record test failures
+  - wait: ~
+    continue_on_failure: true
+
+  - label: "record test failures"
+    plugins:
+      junit-annotate#v1.4.1:
+        artifacts: "pytest*.xml"
+
+  # Release steps below only run on 'v1.2.3' tags.
+  - block: "Release"
+    prompt: "Release ${BUILDKITE_TAG} to PyPI?"
+    branches: "v*.*.*"
+
+  - label: ":rocket:"
+    command:
+      - pip install twine
+      - twine upload dist/*
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*"
+      docker#v1.4.0:
+        image: "${ECR}/ci-tools:latest"
+        workdir: /app
+        environment:
+          - TWINE_USERNAME
+          - TWINE_PASSWORD
+    branches: "v*.*.*"
