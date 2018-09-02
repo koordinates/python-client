@@ -6,8 +6,8 @@ A BSD-licensed Python client library for a number of `Koordinates <https://koord
 
 The library provides easy access to Koordinates web services, particularly the `Publisher Admin APIs <https://help.koordinates.com/api/publisher-admin-api/>`_.
 
-.. image:: https://circleci.com/gh/koordinates/python-client/tree/master.svg?style=svg
-    :target: https://circleci.com/gh/koordinates/python-client/tree/master
+.. image:: https://badge.buildkite.com/5ce9ace71272791038722b9443fd4bb23620aec8041c10ea46.svg?branch=master
+    :target: https://buildkite.com/koordinates/python-client
 
 Installation
 ============
