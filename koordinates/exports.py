@@ -222,7 +222,7 @@ class Export(base.Model):
     :Example:
 
     >>> export = koordinates.Export()
-    >>> export.crs = "ESPG:4326"
+    >>> export.crs = "EPSG:4326"
     >>> export.formats = {
             "vector": "application/x-zipped-shp"
         }
