@@ -17,7 +17,7 @@ import requests
 import requests_toolbelt
 import six
 
-from . import layers, licenses, publishing, sets, tokens, users, catalog, sources, exports
+from . import layers, licenses, publishing, sets, users, catalog, sources, exports
 from . import exceptions
 
 
@@ -57,7 +57,6 @@ class Client(object):
         self._init_managers(public={
                 'sets': sets.SetManager,
                 'publishing': publishing.PublishManager,
-                'tokens': tokens.TokenManager,
                 'layers': layers.LayerManager,
                 'tables': layers.TableManager,
                 'licenses': licenses.LicenseManager,
@@ -295,21 +294,6 @@ class Client(object):
             'DELETE': {
                 'single': '/publish/{id}/',
             }
-        },
-        'TOKEN': {
-            'GET': {
-                'single': '/tokens/{id}/',
-                'multi': '/tokens/',
-            },
-            'POST': {
-                'create': '/tokens/',
-            },
-            'PUT': {
-                'update': '/tokens/{id}/',
-            },
-            'DELETE': {
-                'single': '/tokens/{id}/',
-            },
         },
         'LICENSE': {
             'GET': {
