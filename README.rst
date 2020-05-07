@@ -32,3 +32,15 @@ Support & Contributions
 Please report bugs as `Github issues <https://github.com/koordinates/python-client/issues>`_. For general technical support for the APIs and libraries, please contact us via `support.koordinates.com <https://support.koordinates.com>`_.
 
 We welcome contributions as pull requests - please open a new issue to start a discussion around a feature idea or bug. See the `Contributing notes <http://koordinates-python.readthedocs.org/en/latest/user/contributing.html>`_ for more details.
+
+Code formatting
+===============
+
+We use [Black](https://github.com/psf/black) to ensure consistent code formatting. We recommend integrating black with your editor:
+
+* Sublime Text: install [sublack](https://packagecontrol.io/packages/sublack) via Package Control
+* VSCode [instructions](https://code.visualstudio.com/docs/python/editing#_formatting)
+
+We use the default settings, and target python 2.7 and 3.3+.
+
+One easy solution is to install [pre-commit](https://pre-commit.com), run `pre-commit install --install-hooks` and it'll automatically validate your changes code as a git pre-commit hook.
