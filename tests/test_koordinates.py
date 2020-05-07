@@ -24,17 +24,17 @@ from .response_data.responses_9 import good_multi_layers_drafts_response
 
 @pytest.fixture
 def client():
-    return Client(token='test', host='test.koordinates.com')
+    return Client(token="test", host="test.koordinates.com")
 
 
 @pytest.fixture
 def test_client():
-    return Client(token='test', host="test.koordinates.com")
+    return Client(token="test", host="test.koordinates.com")
 
 
 @pytest.fixture
 def bad_client():
-    return Client(token='bad', host='koordinates.com')
+    return Client(token="bad", host="koordinates.com")
 
 
 def contains_substring(strtosearch, strtosearchfor):
@@ -42,7 +42,9 @@ def contains_substring(strtosearch, strtosearchfor):
 
 
 def test_instantiate_group_class():
-    g = koordinates.Group(id=99, url="http//example.com", name="Group Name", country="NZ")
+    g = koordinates.Group(
+        id=99, url="http//example.com", name="Group Name", country="NZ"
+    )
     assert g.id == 99
     assert contains_substring(g.url, "example")
     assert g.name == "Group Name"
@@ -50,10 +52,7 @@ def test_instantiate_group_class():
 
 
 def test_instantiate_data_class():
-    d = layers.LayerData(encoding=None,
-                        crs="EPSG:2193",
-                        geometry_field="GEOMETRY"
-    )
+    d = layers.LayerData(encoding=None, crs="EPSG:2193", geometry_field="GEOMETRY")
     assert d.encoding == None
     assert d.crs == "EPSG:2193"
     assert d.geometry_field == "GEOMETRY"
@@ -68,32 +67,38 @@ def test_instantiate_field_class():
 
 @responses.activate
 def test_get_layerset_bad_auth_check_status(bad_client):
-    the_response = '''{"detail": "Authentication credentials were not provided."}'''
+    the_response = """{"detail": "Authentication credentials were not provided."}"""
 
-    responses.add(responses.GET,
-                  bad_client.get_url('LAYER', 'GET', 'multi'),
-                  body=the_response, status=401,
-                  content_type='application/json')
-
+    responses.add(
+        responses.GET,
+        bad_client.get_url("LAYER", "GET", "multi"),
+        body=the_response,
+        status=401,
+        content_type="application/json",
+    )
 
     with pytest.raises(exceptions.AuthenticationError):
         for layer in bad_client.layers.list():
             pass
 
+
 @responses.activate
 def test_create_layer(client):
     the_response = layer_create_good_simulated_response
 
-    responses.add(responses.POST,
-                  client.get_url('LAYER', 'POST', 'create'),
-                  body=the_response, status=201,
-                  content_type='application/json')
+    responses.add(
+        responses.POST,
+        client.get_url("LAYER", "POST", "create"),
+        body=the_response,
+        status=201,
+        content_type="application/json",
+    )
 
     obj_lyr = koordinates.Layer()
     obj_lyr.name = "A Test Layer Name for Unit Testing"
 
     obj_lyr.group = 263
-    obj_lyr.data = layers.LayerData(datasources = [144355])
+    obj_lyr.data = layers.LayerData(datasources=[144355])
 
     result_layer = client.layers.create(obj_lyr)
     assert result_layer is obj_lyr
@@ -111,27 +116,35 @@ def test_create_layer(client):
     # assert obj_lyr.group.name == "Wellington City Council"
     # assert obj_lyr.group.country == "NZ"
 
+
 @responses.activate
 def test_get_layerset_bad_auth_check_exception(bad_client):
-    the_response = '''{"detail": "Authentication credentials were not provided."}'''
+    the_response = """{"detail": "Authentication credentials were not provided."}"""
 
-    responses.add(responses.GET,
-                  bad_client.get_url('LAYER', 'GET', 'multi'),
-                  body=the_response, status=401,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        bad_client.get_url("LAYER", "GET", "multi"),
+        body=the_response,
+        status=401,
+        content_type="application/json",
+    )
 
     with pytest.raises(exceptions.AuthenticationError):
         for layer in bad_client.layers.list():
             pass
 
+
 @responses.activate
 def test_get_layerset_returns_all_rows(client):
     the_response = layers_multiple_good_simulated_response
 
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'multi'),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "multi"),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     cnt_of_layers_returned = 0
 
@@ -140,14 +153,18 @@ def test_get_layerset_returns_all_rows(client):
 
     assert cnt_of_layers_returned == 100
 
+
 @responses.activate
 def test_get_draft_layerset_returns_all_rows(client):
     the_response = good_multi_layers_drafts_response
 
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'multidraft'),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "multidraft"),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     cnt_of_draft_layers_returned = 0
 
@@ -156,18 +173,22 @@ def test_get_draft_layerset_returns_all_rows(client):
 
     assert cnt_of_draft_layers_returned == 12
 
+
 @responses.activate
 def test_get_draft_layerset_test_characteristics_of_response(client):
     the_response = good_multi_layers_drafts_response
 
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'multidraft'),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "multidraft"),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     cnt_of_draft_layers_returned = 0
 
-    #import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     for layer in client.layers.list_drafts():
         if cnt_of_draft_layers_returned == 0:
             assert layer.id == 7955
@@ -208,26 +229,29 @@ def test_get_draft_layerset_test_characteristics_of_response(client):
 
 @responses.activate
 def test_get_layerset_filter(client):
-    q = client.layers.list().filter(kind='vector')
+    q = client.layers.list().filter(kind="vector")
     parsedurl = urllib.parse.urlparse(q._to_url())
-    assert contains_substring(parsedurl.query, 'kind=vector')
+    assert contains_substring(parsedurl.query, "kind=vector")
 
 
 @responses.activate
 def test_get_layerset_sort(client):
-    q = client.layers.list().order_by('name')
+    q = client.layers.list().order_by("name")
     parsedurl = urllib.parse.urlparse(q._to_url())
-    assert contains_substring(parsedurl.query, 'sort=name')
+    assert contains_substring(parsedurl.query, "sort=name")
 
 
 @responses.activate
 def test_get_layer_with_timeout(client):
 
     the_response = "{}"
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=504,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=504,
+        content_type="application/json",
+    )
 
     with pytest.raises(exceptions.ServiceUnvailable):
         client.layers.get(1474)
@@ -237,10 +261,13 @@ def test_get_layer_with_timeout(client):
 def test_get_layer_with_rate_limiting(client):
 
     the_response = "{}"
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=429,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=429,
+        content_type="application/json",
+    )
 
     with pytest.raises(exceptions.RateLimitExceeded):
         client.layers.get(1474)
@@ -251,10 +278,18 @@ def test_layer_import(test_client):
     the_response = layers_single_good_simulated_response
     layer_id = 999
     version_id = 998
-    responses.add(responses.POST,
-                  test_client.get_url('VERSION', 'POST', 'import', {'version_id': version_id,'layer_id': layer_id}),
-                  body=the_response, status=202,
-                  content_type='application/json')
+    responses.add(
+        responses.POST,
+        test_client.get_url(
+            "VERSION",
+            "POST",
+            "import",
+            {"version_id": version_id, "layer_id": layer_id},
+        ),
+        body=the_response,
+        status=202,
+        content_type="application/json",
+    )
 
     test_client.layers.start_import(layer_id, version_id)
 
@@ -262,26 +297,32 @@ def test_layer_import(test_client):
 @responses.activate
 def test_layer_hierarchy_of_classes(client):
     the_response = layers_single_good_simulated_response
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     obj = client.layers.get(1474)
-    assert obj.categories[0]['slug'] == "cadastral"
+    assert obj.categories[0]["slug"] == "cadastral"
     assert obj.data.crs == "EPSG:2193"
-    assert obj.data.fields[0]['type'] == "geometry"
-    assert set(obj.tags) == {'building', 'footprint', 'outline', 'structure'}
+    assert obj.data.fields[0]["type"] == "geometry"
+    assert set(obj.tags) == {"building", "footprint", "outline", "structure"}
 
 
 @responses.activate
 def test_layer_date_conversion(client):
 
     the_response = layers_single_good_simulated_response
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     obj = client.layers.get(1474)
     assert obj.first_published_at.year == 2010
@@ -312,17 +353,20 @@ def test_get_layerset_bad_filter_and_sort(client):
 @responses.activate
 def test_get_layerset_bad_sort(client):
     with pytest.raises(exceptions.ClientValidationError):
-        client.layers.list().order_by('bad_attribute')
+        client.layers.list().order_by("bad_attribute")
 
 
 @responses.activate
 def test_get_layer_by_id_bad_auth(bad_client):
-    the_response = '''{"detail": "Authentication credentials were not provided."}'''
+    the_response = """{"detail": "Authentication credentials were not provided."}"""
 
-    responses.add(responses.GET,
-            bad_client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=401,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        bad_client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=401,
+        content_type="application/json",
+    )
 
     try:
         bad_client.layers.get(1474)
@@ -338,10 +382,13 @@ def test_get_layer_by_id(client):
 
     the_response = layers_single_good_simulated_response
 
-    responses.add(responses.GET,
-                  client.get_url('LAYER', 'GET', 'single', {'id': 1474}),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("LAYER", "GET", "single", {"id": 1474}),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     obj = client.layers.get(1474)
 
@@ -352,10 +399,13 @@ def test_get_layer_by_id(client):
 def test_get_all_layer_version_by_layer_id(client):
     the_response = single_layer_all_versions_good_response
 
-    responses.add(responses.GET,
-                  client.get_url('VERSION','GET', 'multi', {'layer_id':1474}),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url("VERSION", "GET", "multi", {"layer_id": 1474}),
+        body=the_response,
+        status=200,
+        content_type="application/json",
+    )
 
     cnt_of_versions_returned = 0
 

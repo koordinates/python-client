@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Koordinates Python API Client Library
 
 :copyright: (c) Koordinates Limited.
 :license: BSD, see LICENSE for more details.
-'''
+"""
 
-__version__ = '0.4.1'
+__version__ = "0.4.1"
 
 from .exceptions import (
     KoordinatesException,

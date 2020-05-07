@@ -32,7 +32,7 @@ class CropLayerManager(base.Manager):
     Access via the ``exports.croplayers`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'CROPLAYER'
+    _URL_KEY = "CROPLAYER"
 
     def get_feature(self, croplayer_id, cropfeature_id):
         """
@@ -42,7 +42,12 @@ class CropLayerManager(base.Manager):
         :param int cropfeature_id: ID of a cropping feature
         :rtype: CropFeature
         """
-        target_url = self.client.get_url('CROPFEATURE', 'GET', 'single', {'croplayer_id': croplayer_id, 'cropfeature_id': cropfeature_id})
+        target_url = self.client.get_url(
+            "CROPFEATURE",
+            "GET",
+            "single",
+            {"croplayer_id": croplayer_id, "cropfeature_id": cropfeature_id},
+        )
         return self.client.get_manager(CropFeature)._get(target_url)
 
 
@@ -50,10 +55,11 @@ class CropLayer(base.Model):
     """
     A crop layer provides features that can be used to crop exports to a geographic extent.
     """
+
     class Meta:
         manager = CropLayerManager
         relations = {
-            'features': ['CropFeature'],
+            "features": ["CropFeature"],
         }
 
     @is_bound
@@ -72,7 +78,7 @@ class CropFeatureManager(base.Manager):
     Accessor for querying Crop Features.
     """
 
-    _URL_KEY = 'CROPFEATURE'
+    _URL_KEY = "CROPFEATURE"
 
 
 class CropFeature(base.Model):
@@ -80,10 +86,11 @@ class CropFeature(base.Model):
     A crop feature provides complex pre-defined geographic extents for cropping
     and clipping Exports.
     """
+
     class Meta:
         manager = CropFeatureManager
         relations = {
-            'layer': CropLayer,
+            "layer": CropLayer,
         }
 
     def _serialize(self):
@@ -97,7 +104,7 @@ class ExportManager(base.Manager):
     Access via the ``exports`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'EXPORT'
+    _URL_KEY = "EXPORT"
     _options_cache = None
 
     @property
@@ -116,8 +123,8 @@ class ExportManager(base.Manager):
         :param Export export: The Export to create.
         :rtype: Export
         """
-        target_url = self.client.get_url(self._URL_KEY, 'POST', 'create')
-        r = self.client.request('POST', target_url, json=export._serialize())
+        target_url = self.client.get_url(self._URL_KEY, "POST", "create")
+        r = self.client.request("POST", target_url, json=export._serialize())
         return export._deserialize(r.json(), self)
 
     def validate(self, export):
@@ -128,14 +135,16 @@ class ExportManager(base.Manager):
         :param Export export:
         :rtype: ExportValidationResponse
         """
-        target_url = self.client.get_url(self._URL_KEY, 'POST', 'validate')
+        target_url = self.client.get_url(self._URL_KEY, "POST", "validate")
         response_object = ExportValidationResponse()
-        r = self.client.request('POST', target_url, json=export._serialize())
+        r = self.client.request("POST", target_url, json=export._serialize())
         return response_object._deserialize(r.json())
 
     def cancel(self, export_id):
-        target_url = self.client.get_url(self._URL_KEY, 'DELETE', 'single', {'id': export_id})
-        r = self.client.request('DELETE', target_url)
+        target_url = self.client.get_url(
+            self._URL_KEY, "DELETE", "single", {"id": export_id}
+        )
+        r = self.client.request("DELETE", target_url)
         return self.create_from_result(r.json())
 
     def _options(self):
@@ -145,8 +154,8 @@ class ExportManager(base.Manager):
         :rtype: dict
         """
         if self._options_cache is None:
-            target_url = self.client.get_url(self._URL_KEY, 'OPTIONS', 'options')
-            r = self.client.request('OPTIONS', target_url)
+            target_url = self.client.get_url(self._URL_KEY, "OPTIONS", "options")
+            r = self.client.request("OPTIONS", target_url)
             self._options_cache = r.json()
         return self._options_cache
 
@@ -185,10 +194,10 @@ class ExportManager(base.Manager):
 
         :rtype: dict
         """
-        format_opts = self._options()['actions']['POST']['formats']['children']
+        format_opts = self._options()["actions"]["POST"]["formats"]["children"]
         r = {}
         for kind, kind_opts in format_opts.items():
-            r[kind] = {c['value']: c['display_name'] for c in kind_opts['choices']}
+            r[kind] = {c["value"]: c["display_name"] for c in kind_opts["choices"]}
         return r
 
 
@@ -204,10 +213,10 @@ class ExportValidationResponse(base.SerializableBase):
     def get_reasons(self):
         r = {}
         if self.invalid_reasons:
-            r['__all__'] = self.invalid_reasons[:]
+            r["__all__"] = self.invalid_reasons[:]
         for item in self.items:
-            if item['invalid_reasons']:
-                r[item['item']] = item['invalid_reasons'][:]
+            if item["invalid_reasons"]:
+                r[item["item"]] = item["invalid_reasons"][:]
         return r
 
 
@@ -229,6 +238,7 @@ class Export(base.Model):
     >>> export.add_item(layer)
     >>> client.exports.create(export)
     """
+
     class Meta:
         manager = ExportManager
 
@@ -251,7 +261,7 @@ class Export(base.Model):
         return self
 
     def set_formats(self, **kinds):
-        if not hasattr(self, 'formats'):
+        if not hasattr(self, "formats"):
             self.formats = {}
 
         for kind, data_format in kinds.items():
@@ -270,7 +280,7 @@ class Export(base.Model):
         return self._manage.cancel(self.id)
 
     @is_bound
-    def download(self, path, progress_callback=None, chunk_size=1024**2):
+    def download(self, path, progress_callback=None, chunk_size=1024 ** 2):
         """
         Download the export archive.
 
@@ -300,14 +310,14 @@ class Export(base.Model):
         :returns The name of the automatic filename that would be used.
         :rtype: str
         """
-        if not self.download_url or self.state != 'complete':
+        if not self.download_url or self.state != "complete":
             raise DownloadError("Download not available")
 
         # ignore parsing the Content-Disposition header, since we know the name
         download_filename = "{}.zip".format(self.name)
         fd = None
 
-        if isinstance(getattr(path, 'write', None), collections.Callable):
+        if isinstance(getattr(path, "write", None), collections.Callable):
             # already open file-like object
             fd = path
         elif os.path.isdir(path):
@@ -325,16 +335,16 @@ class Export(base.Model):
 
         with contextlib.ExitStack() as stack:
             if not fd:
-                fd = open(path, 'wb')
+                fd = open(path, "wb")
                 # only close a file we open
                 stack.callback(fd.close)
 
-            r = self._manager.client.request('GET', self.download_url, stream=True)
+            r = self._manager.client.request("GET", self.download_url, stream=True)
             stack.callback(r.close)
 
             bytes_written = 0
             try:
-                bytes_total = int(r.headers.get('content-length', None))
+                bytes_total = int(r.headers.get("content-length", None))
             except TypeError:
                 bytes_total = None
 

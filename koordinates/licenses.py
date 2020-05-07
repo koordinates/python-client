@@ -21,7 +21,7 @@ class LicenseManager(base.Manager):
     Access via the ``licenses`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'LICENSE'
+    _URL_KEY = "LICENSE"
 
     def get_creative_commons(self, slug, jurisdiction=None):
         """Returns the Creative Commons license for the given attributes.
@@ -34,13 +34,15 @@ class LicenseManager(base.Manager):
             license (eg. ``nz``), or ``None`` for unported/international licenses.
         :rtype: License
         """
-        if not slug.startswith('cc-by'):
+        if not slug.startswith("cc-by"):
             raise exceptions.ClientValidationError("slug needs to start with 'cc-by'")
 
         if jurisdiction is None:
-            jurisdiction = ''
+            jurisdiction = ""
 
-        target_url = self.client.get_url(self._URL_KEY, 'GET', 'cc', {'slug': slug, 'jurisdiction': jurisdiction})
+        target_url = self.client.get_url(
+            self._URL_KEY, "GET", "cc", {"slug": slug, "jurisdiction": jurisdiction}
+        )
         return self._get(target_url)
 
 
@@ -48,5 +50,6 @@ class License(base.Model):
     """
     Represents a license that can be applied to layers, tables, sources, and documents.
     """
+
     class Meta:
         manager = LicenseManager
