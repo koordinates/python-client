@@ -24,29 +24,34 @@ class PublishManager(base.Manager):
     Access via the ``publishing`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'PUBLISH'
+    _URL_KEY = "PUBLISH"
 
     def create(self, publish):
         """
         Creates a new publish group.
         """
-        target_url = self.client.get_url('PUBLISH', 'POST', 'create')
-        r = self.client.request('POST', target_url, json=publish._serialize())
+        target_url = self.client.get_url("PUBLISH", "POST", "create")
+        r = self.client.request("POST", target_url, json=publish._serialize())
         return self.create_from_result(r.json())
+
 
 class Publish(base.Model):
     """
     Represents an active publishing group.
     """
+
     class Meta:
         manager = PublishManager
-        attribute_filter_candidates = ('state', 'reference',)
+        attribute_filter_candidates = (
+            "state",
+            "reference",
+        )
 
-    PUBLISH_STRATEGY_TOGETHER = 'together'
-    PUBLISH_STRATEGY_INDIVIDUAL = 'individual'
+    PUBLISH_STRATEGY_TOGETHER = "together"
+    PUBLISH_STRATEGY_INDIVIDUAL = "individual"
 
-    ERROR_STRATEGY_ABORT = 'abort'
-    ERROR_STRATEGY_IGNORE = 'ignore'
+    ERROR_STRATEGY_ABORT = "abort"
+    ERROR_STRATEGY_IGNORE = "ignore"
 
     def __init__(self, **kwargs):
         self.items = []
@@ -55,8 +60,10 @@ class Publish(base.Model):
     @is_bound
     def cancel(self):
         """ Cancel a pending publish task """
-        target_url = self._client.get_url('PUBLISH', 'DELETE', 'single', {'id': self.id})
-        r = self._client.request('DELETE', target_url)
+        target_url = self._client.get_url(
+            "PUBLISH", "DELETE", "single", {"id": self.id}
+        )
+        r = self._client.request("DELETE", target_url)
         logger.info("cancel(): %s", r.status_code)
 
     def get_items(self):
@@ -68,9 +75,11 @@ class Publish(base.Model):
         # no expansion support, just URLs
         results = []
         for url in self.items:
-            if '/layers/' in url:
-                r = self._client.request('GET', url)
-                results.append(self._client.get_manager(Layer).create_from_result(r.json()))
+            if "/layers/" in url:
+                r = self._client.request("GET", url)
+                results.append(
+                    self._client.get_manager(Layer).create_from_result(r.json())
+                )
             else:
                 raise NotImplementedError("No support for %s" % url)
         return results

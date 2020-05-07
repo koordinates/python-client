@@ -1,8 +1,7 @@
 -r requirements.txt
 
-urllib3
-mock==1.0.1
+mock~=1.0
 responses
-pytest>=3.3
+pytest>=3
 pytest-cov
 pytest-sugar

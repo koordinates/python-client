@@ -29,17 +29,21 @@ class MetadataManager(base.InnerManager):
 
         :param file fp: A reference to an open file-like object which the content will be read from.
         """
-        url = parent_url + self.client.get_url_path('METADATA', 'POST', 'set', {})
-        r = self.client.request('POST', url, data=fp, headers={'Content-Type': 'text/xml'})
+        url = parent_url + self.client.get_url_path("METADATA", "POST", "set", {})
+        r = self.client.request(
+            "POST", url, data=fp, headers={"Content-Type": "text/xml"}
+        )
         if r.status_code not in [200, 201]:
-            raise exceptions.ServerError("Expected success response, got %s: %s" % (r.status_code, url))
+            raise exceptions.ServerError(
+                "Expected success response, got %s: %s" % (r.status_code, url)
+            )
 
 
 class Metadata(base.InnerModel):
-    FORMAT_ISO = 'iso'
-    FORMAT_FGDC = 'fgdc'
-    FORMAT_DC = 'dc'
-    FORMAT_NATIVE = 'native'
+    FORMAT_ISO = "iso"
+    FORMAT_FGDC = "fgdc"
+    FORMAT_DC = "dc"
+    FORMAT_NATIVE = "native"
 
     class Meta:
         manager = MetadataManager
@@ -56,7 +60,7 @@ class Metadata(base.InnerModel):
         If you pass this function an open file-like object as the fp parameter, the function will
         not close that file for you.
         """
-        r = self._client.request('GET', getattr(self, format), stream=True)
+        r = self._client.request("GET", getattr(self, format), stream=True)
         filename = stream.stream_response_to_file(r, path=fp)
         return filename
 

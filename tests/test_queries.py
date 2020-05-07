@@ -12,7 +12,7 @@ from .test_models import FooManager, FooModel
 
 @pytest.fixture
 def manager():
-    c = Client(host='test.koordinates.com', token='test', activate_logging=True)
+    c = Client(host="test.koordinates.com", token="test", activate_logging=True)
     return FooManager(c)
 
 
@@ -31,97 +31,113 @@ def test_to_url(manager):
 def test_order_by(manager):
     base_q = manager.list()
 
-    q = base_q.order_by('-sortable')
-    assert 'sort=-sortable' in q._to_url()
+    q = base_q.order_by("-sortable")
+    assert "sort=-sortable" in q._to_url()
 
-    q = base_q.order_by('sortable')
-    assert 'sort=sortable' in q._to_url()
+    q = base_q.order_by("sortable")
+    assert "sort=sortable" in q._to_url()
 
     # should replace the previous sort
-    q = base_q.order_by('-sortable')
-    assert 'sort=-sortable' in q._to_url()
-    assert 'sort=sortable' not in q._to_url()
+    q = base_q.order_by("-sortable")
+    assert "sort=-sortable" in q._to_url()
+    assert "sort=sortable" not in q._to_url()
+
 
 def test_order_by_invalid(manager):
     base_q = manager.list()
-    pytest.raises(ClientValidationError, base_q.order_by, 'invalid')
+    pytest.raises(ClientValidationError, base_q.order_by, "invalid")
+
 
 def test_order_by_custom(manager):
     base_q = manager.list_custom_attrs()
-    pytest.raises(ClientValidationError, base_q.order_by, 'sortable')
-    base_q.order_by('custom')
+    pytest.raises(ClientValidationError, base_q.order_by, "sortable")
+    base_q.order_by("custom")
+
 
 def test_clone(manager):
-    q0 = manager.list().filter(thing='bang')
-    assert dict(q0._filters) == {'thing': ['bang']}
+    q0 = manager.list().filter(thing="bang")
+    assert dict(q0._filters) == {"thing": ["bang"]}
     assert q0._order_by == None
 
-    q1 = q0.order_by('sortable')
-    assert q1._order_by == 'sortable'
+    q1 = q0.order_by("sortable")
+    assert q1._order_by == "sortable"
     assert q0._order_by == None
 
-    q1 = q0.filter(other='bob', thing='fred')
-    assert dict(q0._filters) == {'thing': ['bang']}
-    assert dict(q1._filters) == {'thing': ['bang', 'fred'], 'other': ['bob']}
+    q1 = q0.filter(other="bob", thing="fred")
+    assert dict(q0._filters) == {"thing": ["bang"]}
+    assert dict(q1._filters) == {"thing": ["bang", "fred"], "other": ["bob"]}
+
 
 def test_filter(manager):
     base_q = manager.list()
 
-    q = base_q.filter(thing=1).filter(thing=2).filter(other='3', other__op=4).filter(b1='b2')
+    q = (
+        base_q.filter(thing=1)
+        .filter(thing=2)
+        .filter(other="3", other__op=4)
+        .filter(b1="b2")
+    )
 
     assert dict(q._filters) == {
-        'thing': [1, 2],
-        'other': ['3'],
-        'other.op': [4],
-        'b1': ['b2'],
+        "thing": [1, 2],
+        "other": ["3"],
+        "other.op": [4],
+        "b1": ["b2"],
     }
 
     # serialize:
     url = q._to_url()
     params = parse_qs(urlparse(url).query, keep_blank_values=True)
     assert params == {
-        'thing': ['1', '2'],
-        'other': ['3'],
-        'other.op': ['4'],
-        'b1': ['b2'],
+        "thing": ["1", "2"],
+        "other": ["3"],
+        "other.op": ["4"],
+        "b1": ["b2"],
     }
+
 
 def test_filter_invalid(manager):
     base_q = manager.list()
-    pytest.raises(ClientValidationError, base_q.filter, invalid='test')
+    pytest.raises(ClientValidationError, base_q.filter, invalid="test")
+
 
 def test_filter_custom(manager):
     base_q = manager.list_custom_attrs()
-    pytest.raises(ClientValidationError, base_q.filter, thing='test')
+    pytest.raises(ClientValidationError, base_q.filter, thing="test")
     base_q.filter(custom=12)
 
+
 def test_extra(manager):
-    base_q = manager.list().filter(thing='value')
+    base_q = manager.list().filter(thing="value")
 
-    q = base_q.extra(some_key='some_value')
-    assert 'some_key=some_value' in q._to_url()
+    q = base_q.extra(some_key="some_value")
+    assert "some_key=some_value" in q._to_url()
 
-    q = base_q.extra(thing='something_extra')
+    q = base_q.extra(thing="something_extra")
     url = q._to_url()
     params = parse_qs(urlparse(url).query, keep_blank_values=True)
     assert params == {
-        'thing': ['value', 'something_extra'],
+        "thing": ["value", "something_extra"],
     }
+
 
 def test_expand(manager):
     q0 = manager.list()
-    assert 'Expand' not in q0._to_headers()
+    assert "Expand" not in q0._to_headers()
 
     q1 = manager.list().expand()
-    assert 'Expand' in q1._to_headers()
+    assert "Expand" in q1._to_headers()
+
 
 @responses.activate
 def test_count(manager):
-    responses.add(responses.GET,
-                  FooManager.TEST_LIST_URL,
-                  body="{}",
-                  content_type='application/json',
-                  adding_headers={'X-Resource-Range': '0-10/28'})
+    responses.add(
+        responses.GET,
+        FooManager.TEST_LIST_URL,
+        body="{}",
+        content_type="application/json",
+        adding_headers={"X-Resource-Range": "0-10/28"},
+    )
 
     q = manager.list()
     count = len(q)
@@ -133,39 +149,38 @@ def test_count(manager):
 
     assert len(responses.calls) == 1
 
+
 @responses.activate
 def test_pagination(manager):
     responses.add(
         responses.GET,
         FooManager.TEST_LIST_URL,
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(10)]),
-        content_type='application/json',
+        body=json.dumps([{"id": id} for id in range(10)]),
+        content_type="application/json",
         adding_headers={
-            'X-Resource-Range': '0-10/28',
-            'Link': '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            "X-Resource-Range": "0-10/28",
+            "Link": '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
         },
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + '?page=2',
+        FooManager.TEST_LIST_URL + "?page=2",
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(10, 20)]),
-        content_type='application/json',
+        body=json.dumps([{"id": id} for id in range(10, 20)]),
+        content_type="application/json",
         adding_headers={
-            'X-Resource-Range': '10-20/28',
-            'Link': '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            "X-Resource-Range": "10-20/28",
+            "Link": '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
         },
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + '?page=3',
+        FooManager.TEST_LIST_URL + "?page=3",
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(20, 28)]),
-        content_type='application/json',
-        adding_headers={
-            'X-Resource-Range': '20-28/28',
-        },
+        body=json.dumps([{"id": id} for id in range(20, 28)]),
+        content_type="application/json",
+        adding_headers={"X-Resource-Range": "20-28/28",},
     )
 
     q = manager.list()
@@ -187,33 +202,31 @@ def test_slicing(manager):
         responses.GET,
         FooManager.TEST_LIST_URL,
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(10)]),
-        content_type='application/json',
+        body=json.dumps([{"id": id} for id in range(10)]),
+        content_type="application/json",
         adding_headers={
-            'X-Resource-Range': '0-10/28',
-            'Link': '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            "X-Resource-Range": "0-10/28",
+            "Link": '<%s?page=2>; rel="page-next"' % FooManager.TEST_LIST_URL,
         },
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + '?page=2',
+        FooManager.TEST_LIST_URL + "?page=2",
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(10, 20)]),
-        content_type='application/json',
+        body=json.dumps([{"id": id} for id in range(10, 20)]),
+        content_type="application/json",
         adding_headers={
-            'X-Resource-Range': '10-20/28',
-            'Link': '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
+            "X-Resource-Range": "10-20/28",
+            "Link": '<%s?page=3>; rel="page-next"' % FooManager.TEST_LIST_URL,
         },
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + '?page=3',
+        FooManager.TEST_LIST_URL + "?page=3",
         match_querystring=True,
-        body=json.dumps([{'id': id} for id in range(20, 28)]),
-        content_type='application/json',
-        adding_headers={
-            'X-Resource-Range': '20-28/28',
-        },
+        body=json.dumps([{"id": id} for id in range(20, 28)]),
+        content_type="application/json",
+        adding_headers={"X-Resource-Range": "20-28/28",},
     )
 
     q = manager.list()
@@ -252,19 +265,15 @@ def test_list_cast(manager):
         responses.HEAD,
         FooManager.TEST_LIST_URL,
         body="",
-        content_type='application/json',
-        adding_headers={
-            'X-Resource-Range': '0-10/10',
-        },
+        content_type="application/json",
+        adding_headers={"X-Resource-Range": "0-10/10",},
     )
     responses.add(
         responses.GET,
         FooManager.TEST_LIST_URL,
-        body=json.dumps([{'id': id} for id in range(10)]),
-        content_type='application/json',
-        adding_headers={
-            'X-Resource-Range': '0-10/10',
-        },
+        body=json.dumps([{"id": id} for id in range(10)]),
+        content_type="application/json",
+        adding_headers={"X-Resource-Range": "0-10/10",},
     )
 
     results = list(manager.list())

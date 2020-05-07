@@ -42,7 +42,7 @@ class SourceManager(base.Manager):
     Access via the ``sources`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'SOURCE'
+    _URL_KEY = "SOURCE"
 
     def __init__(self, client):
         super(SourceManager, self).__init__(client)
@@ -66,7 +66,9 @@ class SourceManager(base.Manager):
         """
         Filterable list of Datasources for a Source.
         """
-        target_url = self.client.get_url('DATASOURCE', 'GET', 'multi', {'source_id': source_id})
+        target_url = self.client.get_url(
+            "DATASOURCE", "GET", "multi", {"source_id": source_id}
+        )
         return base.Query(self.client.get_manager(Datasource), target_url)
 
     def get_datasource(self, source_id, datasource_id):
@@ -75,7 +77,12 @@ class SourceManager(base.Manager):
 
         :rtype: Datasource
         """
-        target_url = self.client.get_url('DATASOURCE', 'GET', 'single', {'source_id': source_id, 'datasource_id': datasource_id})
+        target_url = self.client.get_url(
+            "DATASOURCE",
+            "GET",
+            "single",
+            {"source_id": source_id, "datasource_id": datasource_id},
+        )
         return self.client.get_manager(Datasource)._get(target_url)
 
     def list_scans(self, source_id=None):
@@ -84,9 +91,11 @@ class SourceManager(base.Manager):
         Ordered newest to oldest by default
         """
         if source_id:
-            target_url = self.client.get_url('SCAN', 'GET', 'multi', {'source_id': source_id})
+            target_url = self.client.get_url(
+                "SCAN", "GET", "multi", {"source_id": source_id}
+            )
         else:
-            target_url = self.client.get_ulr('SCAN', 'GET', 'all')
+            target_url = self.client.get_ulr("SCAN", "GET", "all")
         return base.Query(self.client.get_manager(Scan), target_url)
 
     def get_scan(self, source_id, scan_id):
@@ -95,7 +104,9 @@ class SourceManager(base.Manager):
 
         :rtype: Scan
         """
-        target_url = self.client.get_url('SCAN', 'GET', 'single', {'source_id': source_id, 'scan_id': scan_id})
+        target_url = self.client.get_url(
+            "SCAN", "GET", "single", {"source_id": source_id, "scan_id": scan_id}
+        )
         return self.client.get_manager(Scan)._get(target_url)
 
     def get_scan_log_lines(self, source_id, scan_id):
@@ -104,7 +115,9 @@ class SourceManager(base.Manager):
 
         :rtype: Iterator over log lines.
         """
-        return self.client.get_manager(Scan).get_log_lines(source_id=source_id, scan_id=scan_id)
+        return self.client.get_manager(Scan).get_log_lines(
+            source_id=source_id, scan_id=scan_id
+        )
 
     def start_scan(self, source_id):
         """
@@ -112,8 +125,10 @@ class SourceManager(base.Manager):
 
         :rtype: Scan
         """
-        target_url = self.client.get_url('SCAN', 'POST', 'create', {'source_id': source_id})
-        r = self.client.request('POST', target_url, json={})
+        target_url = self.client.get_url(
+            "SCAN", "POST", "create", {"source_id": source_id}
+        )
+        r = self.client.request("POST", target_url, json={})
         return self.client.get_manager(Scan).create_from_result(r.json())
 
 
@@ -122,21 +137,22 @@ class Source(base.Model, PermissionObjectMixin):
     A source points to a place where Koordinates can get data from. Sources can contain any number
     of datasources.
     """
+
     class Meta:
         manager = SourceManager
         relations = {
-            'scans': ['Scan'],
-            'datasources': ['Datasource'],
+            "scans": ["Scan"],
+            "datasources": ["Datasource"],
         }
-        serialize_skip = ('permissions',)
-        deserialize_skip = ('permissions',)
+        serialize_skip = ("permissions",)
+        deserialize_skip = ("permissions",)
 
-    TYPE_INFO = 'info'
-    TYPE_UPLOAD = 'upload'
-    TYPE_CIFS = 'cifs'
-    TYPE_ARCGIS = 'arcgis'
-    TYPE_WFS = 'wfs'
-    TYPE_POSTGRES = 'postgres'
+    TYPE_INFO = "info"
+    TYPE_UPLOAD = "upload"
+    TYPE_CIFS = "cifs"
+    TYPE_ARCGIS = "arcgis"
+    TYPE_WFS = "wfs"
+    TYPE_POSTGRES = "postgres"
 
     def __init__(self, **kwargs):
         self.items = []
@@ -144,14 +160,26 @@ class Source(base.Model, PermissionObjectMixin):
 
     def _deserialize(self, data, manager):
         super(Source, self)._deserialize(data, manager)
-        self.group = Group()._deserialize(data["group"], manager.client.get_manager(Group)) if data.get("group") else None
-        self.user = User()._deserialize(data["user"], manager.client.get_manager(User)) if data.get("user") else None
-        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+        self.group = (
+            Group()._deserialize(data["group"], manager.client.get_manager(Group))
+            if data.get("group")
+            else None
+        )
+        self.user = (
+            User()._deserialize(data["user"], manager.client.get_manager(User))
+            if data.get("user")
+            else None
+        )
+        self.metadata = (
+            Metadata()._deserialize(data["metadata"], manager._metadata, self)
+            if data.get("metadata")
+            else None
+        )
         return self
 
     def _create(self, manager, *args, **kwargs):
-        target_url = manager.client.get_url('SOURCE', 'POST', 'create')
-        r = manager.client.request('POST', target_url, json=self._serialize())
+        target_url = manager.client.get_url("SOURCE", "POST", "create")
+        r = manager.client.request("POST", target_url, json=self._serialize())
         return manager.create_from_result(r.json())
 
     @is_bound
@@ -159,13 +187,15 @@ class Source(base.Model, PermissionObjectMixin):
         """
         Edits this Source
         """
-        r = self._client.request('PUT', self.url, json=self._serialize(with_data=with_data))
+        r = self._client.request(
+            "PUT", self.url, json=self._serialize(with_data=with_data)
+        )
         return self._deserialize(r.json(), self._manager)
 
     @is_bound
     def delete(self):
         """ Delete this source """
-        r = self._client.request('DELETE', self.url)
+        r = self._client.request("DELETE", self.url)
         logger.info("delete(): %s", r.status_code)
 
     @is_bound
@@ -204,6 +234,7 @@ class UploadSource(Source):
     >>> upload = client.sources.create(upload)
 
     """
+
     class Meta:
         manager = SourceManager
 
@@ -217,7 +248,7 @@ class UploadSource(Source):
             raise ClientValidationError("Model/type mismatch")
 
         fields = {
-            'source': (None, json.dumps(self._serialize()), 'application/json'),
+            "source": (None, json.dumps(self._serialize()), "application/json"),
         }
 
         def wrapped_callback(monitor):
@@ -225,10 +256,12 @@ class UploadSource(Source):
 
         opened_files = []
         try:
-            for i, (upload_path, (file_or_path, content_type)) in enumerate(self._files.items()):
+            for i, (upload_path, (file_or_path, content_type)) in enumerate(
+                self._files.items()
+            ):
                 if isinstance(file_or_path, six.string_types):
                     # path
-                    fp = open(file_or_path, 'rb')
+                    fp = open(file_or_path, "rb")
                     opened_files.append(fp)
                 else:
                     # file-like object
@@ -242,13 +275,15 @@ class UploadSource(Source):
                 if content_type:
                     field.append(content_type)
 
-                fields['file%d' % i] = tuple(field)
+                fields["file%d" % i] = tuple(field)
 
-            target_url = manager.client.get_url('SOURCE', 'POST', 'create')
+            target_url = manager.client.get_url("SOURCE", "POST", "create")
             e = MultipartEncoder(fields=fields)
             m = MultipartEncoderMonitor(e, wrapped_callback if callback else None)
 
-            r = manager.client.request('POST', target_url, data=m, headers={'Content-Type': m.content_type})
+            r = manager.client.request(
+                "POST", target_url, data=m, headers={"Content-Type": m.content_type}
+            )
         finally:
             for fp in opened_files:
                 fp.close()
@@ -286,24 +321,32 @@ class UploadSource(Source):
             if not upload_path:
                 upload_path = os.path.split(fp.name)[1]
 
-        content_type = content_type or mimetypes.guess_type(upload_path, strict=False)[0]
+        content_type = (
+            content_type or mimetypes.guess_type(upload_path, strict=False)[0]
+        )
         if upload_path in self._files:
             raise ClientValidationError("Duplicate upload path: %s" % upload_path)
 
         self._files[upload_path] = (fp, content_type)
-        logger.debug("UploadSource.add_file: %s -> %s (%s)", repr(fp), upload_path, content_type)
+        logger.debug(
+            "UploadSource.add_file: %s -> %s (%s)", repr(fp), upload_path, content_type
+        )
 
 
 class ScanManager(base.Manager):
-    _URL_KEY = 'SCAN'
+    _URL_KEY = "SCAN"
 
     def get_log_lines(self, source_id, scan_id):
         """
         Get the log text for a scan object
         :rtype: Iterator over log lines.
         """
-        target_url = self.client.get_url('SCAN', 'GET', 'log', {'source_id': source_id, 'scan_id': scan_id})
-        r = self.client.request('GET', target_url, headers={'Accept': 'text/plain'}, stream=True)
+        target_url = self.client.get_url(
+            "SCAN", "GET", "log", {"source_id": source_id, "scan_id": scan_id}
+        )
+        r = self.client.request(
+            "GET", target_url, headers={"Accept": "text/plain"}, stream=True
+        )
         return r.iter_lines(decode_unicode=True)
 
 
@@ -315,13 +358,17 @@ class Scan(base.Model):
     class Meta:
         manager = ScanManager
         relations = {
-            'source': Source,
+            "source": Source,
         }
         filter_attributes = (
-            'status', 'started_at', 'completed_at',
+            "status",
+            "started_at",
+            "completed_at",
         )
         ordering_attributes = (
-            'id', 'started_at', 'completed_at',
+            "id",
+            "started_at",
+            "completed_at",
         )
 
     @is_bound
@@ -329,7 +376,7 @@ class Scan(base.Model):
         """
         Cancel a running Scan.
         """
-        r = self._client.request('DELETE', self.url)
+        r = self._client.request("DELETE", self.url)
         logger.info("Scan:cancel(): %s", r.status_code)
 
     @is_bound
@@ -339,12 +386,12 @@ class Scan(base.Model):
 
         :rtype: Iterator over log lines.
         """
-        rel = self._client.reverse_url('SCAN', self.url)
+        rel = self._client.reverse_url("SCAN", self.url)
         return self._manager.get_log_lines(**rel)
 
 
 class DatasourceManager(base.Manager):
-    _URL_KEY = 'DATASOURCE'
+    _URL_KEY = "DATASOURCE"
 
     def __init__(self, client):
         super(DatasourceManager, self).__init__(client)
@@ -361,10 +408,14 @@ class Datasource(base.Model):
     class Meta:
         manager = DatasourceManager
         relations = {
-            'source': Source,
+            "source": Source,
         }
 
     def _deserialize(self, data, manager):
         super(Datasource, self)._deserialize(data, manager)
-        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+        self.metadata = (
+            Metadata()._deserialize(data["metadata"], manager._metadata, self)
+            if data.get("metadata")
+            else None
+        )
         return self

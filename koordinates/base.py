@@ -27,7 +27,7 @@ class BaseManager(object):
     The Client object needs to set itself on the Manager instance before it's used.
     """
 
-    #_URL_KEY = None
+    # _URL_KEY = None
     model = None
 
     def __init__(self, client):
@@ -43,9 +43,9 @@ class BaseManager(object):
     def _get(self, target_url, expand=[]):
         headers = {}
         if expand:
-            headers['Expand'] = ','.join(expand)
+            headers["Expand"] = ",".join(expand)
 
-        r = self.client.request('GET', target_url, headers=headers)
+        r = self.client.request("GET", target_url, headers=headers)
         return self.create_from_result(r.json())
 
     def _reverse_url(self, url):
@@ -67,7 +67,7 @@ class Manager(BaseManager):
 
         :rtype: :py:class:`koordinates.base.Query`
         """
-        target_url = self.client.get_url(self._URL_KEY, 'GET', 'multi')
+        target_url = self.client.get_url(self._URL_KEY, "GET", "multi")
         return Query(self, target_url)
 
     def get(self, id, expand=[]):
@@ -75,7 +75,7 @@ class Manager(BaseManager):
 
         :param id: numeric ID for the Model.
         """
-        target_url = self.client.get_url(self._URL_KEY, 'GET', 'single', {'id': id})
+        target_url = self.client.get_url(self._URL_KEY, "GET", "single", {"id": id})
         return self._get(target_url, expand=expand)
 
     # Query methods we delegate
@@ -120,7 +120,10 @@ class Query(object):
     len() to return the length - this will do the "first" page request
     and examine the ``X-Resource-Range`` header to produce a count.
     """
-    def __init__(self, manager, url, valid_filter_attributes=None, valid_sort_attributes=None):
+
+    def __init__(
+        self, manager, url, valid_filter_attributes=None, valid_sort_attributes=None
+    ):
         self._manager = manager
         self._target_url = url
         self._count = None
@@ -129,24 +132,32 @@ class Query(object):
         self._expand = None
         self._extra = collections.defaultdict(list)
 
-        self._valid_filter_attrs = self._manager._meta_attribute('filter_attributes', []) if valid_filter_attributes is None else valid_filter_attributes
-        self._valid_sort_attrs = self._manager._meta_attribute('ordering_attributes', []) if valid_sort_attributes is None else valid_sort_attributes
+        self._valid_filter_attrs = (
+            self._manager._meta_attribute("filter_attributes", [])
+            if valid_filter_attributes is None
+            else valid_filter_attributes
+        )
+        self._valid_sort_attrs = (
+            self._manager._meta_attribute("ordering_attributes", [])
+            if valid_sort_attributes is None
+            else valid_sort_attributes
+        )
 
     def __repr__(self):
-        return '<%s: %s>' % (self.__class__.__name__, self._manager.model.__name__)
+        return "<%s: %s>" % (self.__class__.__name__, self._manager.model.__name__)
 
     def __str__(self):
         return self._to_url()
 
-    def _request(self, url, method='GET'):
+    def _request(self, url, method="GET"):
         r = self._manager.client.request(method, url, headers=self._to_headers())
         r.raise_for_status()
         return r
 
     def _update_range(self, response):
         """ Update the query count property from the `X-Resource-Range` response header """
-        header_value = response.headers.get('x-resource-range', '')
-        m = re.match(r'\d+-\d+/(\d+)$', header_value)
+        header_value = response.headers.get("x-resource-range", "")
+        m = re.match(r"\d+-\d+/(\d+)$", header_value)
         if m:
             self._count = int(m.group(1))
         else:
@@ -158,7 +169,7 @@ class Query(object):
 
         params = collections.defaultdict(list, copy.deepcopy(self._filters))
         if self._order_by is not None:
-            params['sort'] = self._order_by
+            params["sort"] = self._order_by
         for k, vl in self._extra.items():
             params[k] += vl
 
@@ -171,7 +182,7 @@ class Query(object):
         """ Serialises this query into a request-able set of headers """
         headers = {}
         if self._expand:
-            headers['Expand'] = 'list'
+            headers["Expand"] = "list"
 
         return headers
 
@@ -182,13 +193,13 @@ class Query(object):
         Paginate via Link headers
         Link URLs will include the query parameters, so we can use it as an entire URL.
         """
-        return response.links.get("page-next", {}).get('url', None)
+        return response.links.get("page-next", {}).get("url", None)
 
     def __iter__(self):
         """
         Execute this query and return the results (generally as Model objects)
         """
-        if hasattr(self, '_first_page'):
+        if hasattr(self, "_first_page"):
             # if len() has been called on this Query, we have a cached page
             # of results & a next url
             page_results, url = self._first_page
@@ -219,7 +230,7 @@ class Query(object):
 
             # Paginate via Link headers
             # Link URLs will include the query parameters, so we can use it as an entire URL.
-            url = r.links.get("page-next", {}).get('url', None)
+            url = r.links.get("page-next", {}).get("url", None)
 
     def __len__(self):
         """
@@ -242,20 +253,23 @@ class Query(object):
             except StopIteration:
                 raise IndexError(k)
 
-        elif not isinstance(k, slice) \
-                or k.start is not None \
-                or k.step is not None \
-                or k.stop is None \
-                or k.stop <= 0:
+        elif (
+            not isinstance(k, slice)
+            or k.start is not None
+            or k.step is not None
+            or k.stop is None
+            or k.stop <= 0
+        ):
             raise ValueError("Only query[:+N] or query[+N] slicing is supported.")
 
         return list(itertools.islice(self.__iter__(), k.stop))
 
     def _clone(self):
-        q = Query(manager=self._manager,
+        q = Query(
+            manager=self._manager,
             url=self._target_url,
             valid_filter_attributes=self._valid_filter_attrs,
-            valid_sort_attributes=self._valid_sort_attrs
+            valid_sort_attributes=self._valid_sort_attrs,
         )
 
         q._filters = collections.defaultdict(list, copy.deepcopy(self._filters))
@@ -286,13 +300,13 @@ class Query(object):
 
         q = self._clone()
         for key, value in filters.items():
-            filter_key = re.split('__', key)
+            filter_key = re.split("__", key)
             filter_attr = filter_key[0]
             if filter_attr not in self._valid_filter_attrs:
                 raise ClientValidationError("Invalid filter attribute: %s" % key)
 
             # we use __ as a separator in the Python library, the APIs use '.'
-            q._filters['.'.join(filter_key)].append(value)
+            q._filters[".".join(filter_key)].append(value)
         return q
 
     def order_by(self, sort_key=None):
@@ -305,7 +319,7 @@ class Query(object):
         :rtype: Query
         """
         if sort_key is not None:
-            sort_attr = re.match(r'(-)?(.*)$', sort_key).group(2)
+            sort_attr = re.match(r"(-)?(.*)$", sort_key).group(2)
             if sort_attr not in self._valid_sort_attrs:
                 raise ClientValidationError("Invalid ordering attribute: %s" % sort_key)
 
@@ -329,6 +343,7 @@ class ModelMeta(type):
     """
     Sets up the special model characteristics based on the ``Meta:`` object on the model
     """
+
     def __new__(meta, name, bases, attrs):
         klass = super(ModelMeta, meta).__new__(meta, name, bases, attrs)
         try:
@@ -347,7 +362,10 @@ class ModelMeta(type):
             del klass.Meta
 
             # Associate this model with it's manager
-            if getattr(klass._meta.manager, "model") and klass._meta.manager.model is not klass:
+            if (
+                getattr(klass._meta.manager, "model")
+                and klass._meta.manager.model is not klass
+            ):
                 # the manager already has a model!
                 if issubclass(klass, klass._meta.manager.model):
                     # this is due to subclassing the model and not the manager
@@ -355,9 +373,12 @@ class ModelMeta(type):
                     # some other cleverness with the subclass, and only querying the superclass.
                     pass
                 else:
-                    raise TypeError("%s already has an associated model: %s" % (
-                        klass._meta.manager.__name__,
-                        klass._meta.manager.model.__name__)
+                    raise TypeError(
+                        "%s already has an associated model: %s"
+                        % (
+                            klass._meta.manager.__name__,
+                            klass._meta.manager.model.__name__,
+                        )
                     )
             else:
                 klass._meta.manager.model = klass
@@ -380,6 +401,7 @@ class ModelMeta(type):
                     rel_url = getattr(self, r_attr)
                     rel_mgr = self._manager.client.get_manager(r_class)
                     return Query(rel_mgr, rel_url)
+
                 return _getter
 
             def build_single_getter(r_class, r_attr):
@@ -391,18 +413,18 @@ class ModelMeta(type):
                         return rel_mgr._get(rel_url)
                     else:
                         return None
+
                 return _getter
 
-
-            for ref_attr, ref_class in getattr(klass._meta, 'relations', {}).items():
+            for ref_attr, ref_class in getattr(klass._meta, "relations", {}).items():
                 if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
                     # multiple relation
-                    ref_method = 'list_%s' % ref_attr
+                    ref_method = "list_%s" % ref_attr
                     ref_class = ref_class[0]
                     ref_getter = build_multi_getter(ref_class, ref_attr)
                 else:
                     # single relation
-                    ref_method = 'get_%s' % ref_attr
+                    ref_method = "get_%s" % ref_attr
                     ref_getter = build_single_getter(ref_class, ref_attr)
 
                     setattr(klass, ref_method, ref_getter)
@@ -410,7 +432,9 @@ class ModelMeta(type):
                 # don't redefine any existing methods
                 if not hasattr(klass, ref_method):
                     setattr(klass, ref_method, ref_getter)
-                    logger.debug("klass=%s added relation method %s()", klass, ref_method)
+                    logger.debug(
+                        "klass=%s added relation method %s()", klass, ref_method
+                    )
         return klass
 
 
@@ -420,9 +444,9 @@ class SerializableBase(object):
     """
 
     def __setattr__(self, name, value):
-        if isinstance(value, ModelBase) and not name.startswith('_'):
+        if isinstance(value, ModelBase) and not name.startswith("_"):
             # set the ._parent attribute on the passed-in Model instance
-            object.__setattr__(value, '_parent', self)
+            object.__setattr__(value, "_parent", self)
         object.__setattr__(self, name, value)
 
     def _deserialize(self, data):
@@ -441,7 +465,7 @@ class SerializableBase(object):
             raise ValueError("Need to deserialize from a dict")
 
         try:
-            skip = set(getattr(self._meta, 'deserialize_skip', []))
+            skip = set(getattr(self._meta, "deserialize_skip", []))
         except AttributeError:  # _meta not available
             skip = []
 
@@ -452,7 +476,7 @@ class SerializableBase(object):
         return self
 
     def _deserialize_value(self, key, value):
-        if key.endswith('_at') and isinstance(value, six.string_types):
+        if key.endswith("_at") and isinstance(value, six.string_types):
             value = make_date(value)
         return value
 
@@ -473,11 +497,11 @@ class SerializableBase(object):
         :param bool skip_empty: whether to skip attributes where the value is ``None``
         :rtype: dict
         """
-        skip = set(getattr(self._meta, 'serialize_skip', []))
+        skip = set(getattr(self._meta, "serialize_skip", []))
 
         r = {}
         for k, v in self.__dict__.items():
-            if k.startswith('_'):
+            if k.startswith("_"):
                 continue
             elif k in skip:
                 continue
@@ -512,7 +536,7 @@ class ModelBase(SerializableBase):
 
     def __str__(self):
         s = str(getattr(self, "id", None))
-        if getattr(self, 'title', None):
+        if getattr(self, "title", None):
             s += " - %s" % self.title
         return s
 
@@ -528,15 +552,18 @@ class ModelBase(SerializableBase):
             return False
 
         # is it a child or parent class?
-        if not (issubclass(self.__class__, other.__class__) or issubclass(other.__class__, self.__class__)):
+        if not (
+            issubclass(self.__class__, other.__class__)
+            or issubclass(other.__class__, self.__class__)
+        ):
             return False
 
         # am I bound?
-        if not hasattr(self, 'id'):
+        if not hasattr(self, "id"):
             return False
 
         # does it's id match mine?
-        if getattr(other, 'id', None) != self.id:
+        if getattr(other, "id", None) != self.id:
             return False
 
         return True
@@ -546,9 +573,11 @@ class ModelBase(SerializableBase):
 
     @property
     def _is_bound(self):
-        return bool(getattr(self, 'id', None) is not None \
-            and getattr(self, 'url', None) \
-            and getattr(self, '_manager', None))
+        return bool(
+            getattr(self, "id", None) is not None
+            and getattr(self, "url", None)
+            and getattr(self, "_manager", None)
+        )
 
     @property
     def _client(self):
@@ -567,15 +596,23 @@ class ModelBase(SerializableBase):
         :return: this instance
         """
         if not issubclass(self.__class__, manager.model):
-            raise TypeError("Manager %s is for %s, expecting %s" % (manager.__class__.__name__, manager.model.__name__, self.__class__.__name__))
+            raise TypeError(
+                "Manager %s is for %s, expecting %s"
+                % (
+                    manager.__class__.__name__,
+                    manager.model.__name__,
+                    self.__class__.__name__,
+                )
+            )
 
         self._manager = manager
         return super(ModelBase, self)._deserialize(data)
 
     def _deserialize_value(self, key, value):
         from .users import User
-        if key.endswith('_by') and isinstance(value, dict):
-           value = User()._deserialize(value, self._manager.client.get_manager(User))
+
+        if key.endswith("_by") and isinstance(value, dict):
+            value = User()._deserialize(value, self._manager.client.get_manager(User))
         else:
             value = super(ModelBase, self)._deserialize_value(key, value)
         return value
@@ -617,7 +654,7 @@ class Model(ModelBase):
 
         Existing attribute values will be overwritten.
         """
-        r = self._client.request('GET', self.url)
+        r = self._client.request("GET", self.url)
         return self._deserialize(r.json(), self._manager)
 
 
@@ -628,6 +665,7 @@ class InnerModel(ModelBase):
     These are models that are nested inside attributes of another model,
     and are saved and loaded as part of the parent model.
     """
+
     def __init__(self, **kwargs):
         self._parent = None
         super(InnerModel, self).__init__(**kwargs)

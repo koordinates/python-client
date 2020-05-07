@@ -1,4 +1,4 @@
-layer_list_permissions_good_simulated_response = '''[{
+layer_list_permissions_good_simulated_response = """[{
         "permission": "download",
         "id": "group.everyone",
         "group": {
@@ -7,9 +7,9 @@ layer_list_permissions_good_simulated_response = '''[{
             "name": "Everyone",
             "country": null
         }
-    }]'''
+    }]"""
 
-set_list_permissions_good_simulated_response = '''[{
+set_list_permissions_good_simulated_response = """[{
         "permission": "admin",
         "id": "user.4",
         "user": {
@@ -39,11 +39,13 @@ set_list_permissions_good_simulated_response = '''[{
             "name": "Everyone",
             "country": null
         }
-    }]'''
+    }]"""
 
-source_list_permissions_good_simulated_response = set_list_permissions_good_simulated_response
+source_list_permissions_good_simulated_response = (
+    set_list_permissions_good_simulated_response
+)
 
-layer_permission_simulated_response = '''{
+layer_permission_simulated_response = """{
         "id": "group.108",
         "group": {
             "id": 108,
@@ -52,9 +54,9 @@ layer_permission_simulated_response = '''{
             "country": "NZ"
         },
         "permission": "edit"
-    }'''
+    }"""
 
-set_permission_simulated_response = '''{
+set_permission_simulated_response = """{
         "id": "group.34",
         "group": {
             "id": 34,
@@ -63,9 +65,9 @@ set_permission_simulated_response = '''{
             "country": "AR"
         },
         "permission": "edit"
-    }'''
+    }"""
 
-source_permission_simulated_response = '''{
+source_permission_simulated_response = """{
         "id": "group.85",
         "group": {
             "id": 85,
@@ -74,5 +76,4 @@ source_permission_simulated_response = '''{
             "country": "FR"
         },
         "permission": "download"
-    }'''
-
+    }"""

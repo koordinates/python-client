@@ -30,7 +30,7 @@ class LayerManager(base.Manager):
     Access via the ``layers`` property of a :py:class:`koordinates.client.Client` instance.
     """
 
-    _URL_KEY = 'LAYER'
+    _URL_KEY = "LAYER"
 
     def __init__(self, client):
         super(LayerManager, self).__init__(client)
@@ -45,7 +45,7 @@ class LayerManager(base.Manager):
         If the most recent version of a layer or table has been published already,
         it won’t be returned here.
         """
-        target_url = self.client.get_url('LAYER', 'GET', 'multidraft')
+        target_url = self.client.get_url("LAYER", "GET", "multidraft")
         return base.Query(self, target_url)
 
     def create(self, layer):
@@ -54,8 +54,8 @@ class LayerManager(base.Manager):
         All attributes except ``name`` and ``data.datasources`` are optional.
         :return: the new draft version of the layer.
         """
-        target_url = self.client.get_url('LAYER', 'POST', 'create')
-        r = self.client.request('POST', target_url, json=layer._serialize())
+        target_url = self.client.get_url("LAYER", "POST", "create")
+        r = self.client.request("POST", target_url, json=layer._serialize())
         return layer._deserialize(r.json(), self)
 
     def list_versions(self, layer_id):
@@ -67,14 +67,23 @@ class LayerManager(base.Manager):
         Use ``data__source_revision__lt`` or ``data__source_revision__gte`` to filter
         using ``<`` or ``>=`` operators respectively.
         """
-        target_url = self.client.get_url('VERSION', 'GET', 'multi', {'layer_id': layer_id})
-        return base.Query(self, target_url, valid_filter_attributes=('data',), valid_sort_attributes=())
+        target_url = self.client.get_url(
+            "VERSION", "GET", "multi", {"layer_id": layer_id}
+        )
+        return base.Query(
+            self,
+            target_url,
+            valid_filter_attributes=("data",),
+            valid_sort_attributes=(),
+        )
 
     def get_version(self, layer_id, version_id, expand=[]):
         """
         Get a specific version of a layer.
         """
-        target_url = self.client.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id})
+        target_url = self.client.get_url(
+            "VERSION", "GET", "single", {"layer_id": layer_id, "version_id": version_id}
+        )
         return self._get(target_url, expand=expand)
 
     def get_draft(self, layer_id, expand=[]):
@@ -82,7 +91,9 @@ class LayerManager(base.Manager):
         Get the current draft version of a layer.
         :raises NotFound: if there is no draft version.
         """
-        target_url = self.client.get_url('VERSION', 'GET', 'draft', {'layer_id': layer_id})
+        target_url = self.client.get_url(
+            "VERSION", "GET", "draft", {"layer_id": layer_id}
+        )
         return self._get(target_url, expand=expand)
 
     def get_published(self, layer_id, expand=[]):
@@ -90,7 +101,9 @@ class LayerManager(base.Manager):
         Get the latest published version of this layer.
         :raises NotFound: if there is no published version.
         """
-        target_url = self.client.get_url('VERSION', 'GET', 'published', {'layer_id': layer_id})
+        target_url = self.client.get_url(
+            "VERSION", "GET", "published", {"layer_id": layer_id}
+        )
         return self._get(target_url, expand=expand)
 
     def create_draft(self, layer_id):
@@ -104,8 +117,10 @@ class LayerManager(base.Manager):
         :return: the new version
         :raises Conflict: if there is already a draft version for this layer.
         """
-        target_url = self.client.get_url('VERSION', 'POST', 'create', {'layer_id': layer_id})
-        r = self.client.request('POST', target_url, json={})
+        target_url = self.client.get_url(
+            "VERSION", "POST", "create", {"layer_id": layer_id}
+        )
+        r = self.client.request("POST", target_url, json={})
         return self.create_from_result(r.json())
 
     def start_import(self, layer_id, version_id):
@@ -113,8 +128,13 @@ class LayerManager(base.Manager):
         Starts importing the specified draft version (cancelling any running import),
         even if the data object hasn’t changed from the previous version.
         """
-        target_url = self.client.get_url('VERSION', 'POST', 'import', {'layer_id': layer_id, 'version_id': version_id})
-        r = self.client.request('POST', target_url, json={})
+        target_url = self.client.get_url(
+            "VERSION",
+            "POST",
+            "import",
+            {"layer_id": layer_id, "version_id": version_id},
+        )
+        r = self.client.request("POST", target_url, json={})
         return self.create_from_result(r.json())
 
     def start_update(self, layer_id):
@@ -122,8 +142,10 @@ class LayerManager(base.Manager):
         A shortcut to create a new version and start importing it.
         Effectively the same as :py:meth:`koordinates.layers.LayerManager.create_draft` followed by :py:meth:`koordinates.layers.LayerManager.start_import`.
         """
-        target_url = self.client.get_url('LAYER', 'POST', 'update', {'layer_id': layer_id})
-        r = self.client.request('POST', target_url, json={})
+        target_url = self.client.get_url(
+            "LAYER", "POST", "update", {"layer_id": layer_id}
+        )
+        r = self.client.request("POST", target_url, json={})
         return self.parent.create_from_result(r.json())
 
     def set_metadata(self, layer_id, version_id, fp):
@@ -133,55 +155,99 @@ class LayerManager(base.Manager):
         :param file fp: file-like object to read the XML metadata from.
         :raises NotAllowed: if the version is already published.
         """
-        base_url = self.client.get_url('VERSION', 'GET', 'single', {'layer_id': layer_id, 'version_id': version_id})
+        base_url = self.client.get_url(
+            "VERSION", "GET", "single", {"layer_id": layer_id, "version_id": version_id}
+        )
         self._metadata.set(base_url, fp)
 
 
 class Layer(base.Model, PermissionObjectMixin):
-    '''
+    """
     Represents a version of a single Layer or Table.
-    '''
+    """
 
     class Meta:
         manager = LayerManager
         filter_attributes = (
-            'kind', 'public', 'group', 'license', 'category',
-            'geotag', 'tag', 'q', 'created_at', 'updated_at',
+            "kind",
+            "public",
+            "group",
+            "license",
+            "category",
+            "geotag",
+            "tag",
+            "q",
+            "created_at",
+            "updated_at",
         )
-        ordering_attributes = ('name', 'created_at', 'updated_at', 'popularity',)
-        serialize_skip = ('permissions',)
-        deserialize_skip = ('permissions',)
+        ordering_attributes = (
+            "name",
+            "created_at",
+            "updated_at",
+            "popularity",
+        )
+        serialize_skip = ("permissions",)
+        deserialize_skip = ("permissions",)
 
     def _serialize(self, with_data=True):
         o = super(Layer, self)._serialize()
-        if not with_data and ('data' in o):
-            del o['data']
+        if not with_data and ("data" in o):
+            del o["data"]
         return o
 
     def _deserialize(self, data, manager):
         super(Layer, self)._deserialize(data, manager)
-        self.group = Group()._deserialize(data["group"], manager.client.get_manager(Group)) if data.get("group") else None
-        self.data = LayerData()._deserialize(data["data"], manager._data, self) if data.get("data") else None
-        self.version = LayerVersion()._deserialize(data["version"], manager.versions, self) if data.get("version") else None
-        self.collected_at = [make_date(d) for d in data["collected_at"]] if data.get('collected_at') else None
-        self.license = License()._deserialize(data["license"], manager.client.get_manager(License)) if data.get("license") else None
-        self.metadata = Metadata()._deserialize(data["metadata"], manager._metadata, self) if data.get("metadata") else None
+        self.group = (
+            Group()._deserialize(data["group"], manager.client.get_manager(Group))
+            if data.get("group")
+            else None
+        )
+        self.data = (
+            LayerData()._deserialize(data["data"], manager._data, self)
+            if data.get("data")
+            else None
+        )
+        self.version = (
+            LayerVersion()._deserialize(data["version"], manager.versions, self)
+            if data.get("version")
+            else None
+        )
+        self.collected_at = (
+            [make_date(d) for d in data["collected_at"]]
+            if data.get("collected_at")
+            else None
+        )
+        self.license = (
+            License()._deserialize(data["license"], manager.client.get_manager(License))
+            if data.get("license")
+            else None
+        )
+        self.metadata = (
+            Metadata()._deserialize(data["metadata"], manager._metadata, self)
+            if data.get("metadata")
+            else None
+        )
         return self
 
     @property
     def is_published_version(self):
         """ Return if this version is the published version of a layer """
-        pub_ver = getattr(self, 'published_version', None)
-        this_ver = getattr(self, 'this_version', None)
+        pub_ver = getattr(self, "published_version", None)
+        this_ver = getattr(self, "this_version", None)
         return this_ver and pub_ver and (this_ver == pub_ver)
 
     @property
     def is_draft_version(self):
         """ Return if this version is the draft version of a layer """
-        pub_ver = getattr(self, 'published_version', None)
-        latest_ver = getattr(self, 'latest_version', None)
-        this_ver = getattr(self, 'this_version', None)
-        return this_ver and latest_ver and (this_ver == latest_ver) and (latest_ver != pub_ver)
+        pub_ver = getattr(self, "published_version", None)
+        latest_ver = getattr(self, "latest_version", None)
+        this_ver = getattr(self, "this_version", None)
+        return (
+            this_ver
+            and latest_ver
+            and (this_ver == latest_ver)
+            and (latest_ver != pub_ver)
+        )
 
     @is_bound
     def list_versions(self):
@@ -193,15 +259,24 @@ class Layer(base.Model, PermissionObjectMixin):
         Use ``data__source_revision__lt`` or ``data__source_revision__gte`` to filter
         using ``<`` or ``>=`` operators respectively.
         """
-        target_url = self._client.get_url('VERSION', 'GET', 'multi', {'layer_id': self.id})
-        return base.Query(self._manager, target_url, valid_filter_attributes=('data',), valid_sort_attributes=())
+        target_url = self._client.get_url(
+            "VERSION", "GET", "multi", {"layer_id": self.id}
+        )
+        return base.Query(
+            self._manager,
+            target_url,
+            valid_filter_attributes=("data",),
+            valid_sort_attributes=(),
+        )
 
     @is_bound
     def get_version(self, version_id, expand=[]):
         """
         Get a specific version of this layer
         """
-        target_url = self._client.get_url('VERSION', 'GET', 'single', {'layer_id': self.id, 'version_id': version_id})
+        target_url = self._client.get_url(
+            "VERSION", "GET", "single", {"layer_id": self.id, "version_id": version_id}
+        )
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
@@ -210,7 +285,9 @@ class Layer(base.Model, PermissionObjectMixin):
         Get the current draft version of this layer.
         :raises NotFound: if there is no draft version.
         """
-        target_url = self._client.get_url('VERSION', 'GET', 'draft', {'layer_id': self.id})
+        target_url = self._client.get_url(
+            "VERSION", "GET", "draft", {"layer_id": self.id}
+        )
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
@@ -219,7 +296,9 @@ class Layer(base.Model, PermissionObjectMixin):
         Get the latest published version of this layer.
         :raises NotFound: if there is no published version.
         """
-        target_url = self._client.get_url('VERSION', 'GET', 'published', {'layer_id': self.id})
+        target_url = self._client.get_url(
+            "VERSION", "GET", "published", {"layer_id": self.id}
+        )
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
@@ -234,8 +313,10 @@ class Layer(base.Model, PermissionObjectMixin):
         :return: the new version
         :raises Conflict: if there is already a draft version for this layer.
         """
-        target_url = self._client.get_url('VERSION', 'POST', 'create', {'layer_id': self.id})
-        r = self._client.request('POST', target_url, json={})
+        target_url = self._client.get_url(
+            "VERSION", "POST", "create", {"layer_id": self.id}
+        )
+        r = self._client.request("POST", target_url, json={})
         return self._manager.create_from_result(r.json())
 
     @is_bound
@@ -249,8 +330,10 @@ class Layer(base.Model, PermissionObjectMixin):
         if not version_id:
             version_id = self.version.id
 
-        target_url = self._client.get_url('VERSION', 'POST', 'import', {'layer_id': self.id, 'version_id': version_id})
-        r = self._client.request('POST', target_url, json={})
+        target_url = self._client.get_url(
+            "VERSION", "POST", "import", {"layer_id": self.id, "version_id": version_id}
+        )
+        r = self._client.request("POST", target_url, json={})
         return self._deserialize(r.json(), self._manager)
 
     @is_bound
@@ -263,8 +346,10 @@ class Layer(base.Model, PermissionObjectMixin):
         :return: the new version
         :raises Conflict: if there is already a draft version for this layer.
         """
-        target_url = self._client.get_url('LAYER', 'POST', 'update', {'layer_id': self.id})
-        r = self._client.request('POST', target_url, json={})
+        target_url = self._client.get_url(
+            "LAYER", "POST", "update", {"layer_id": self.id}
+        )
+        r = self._client.request("POST", target_url, json={})
         return self._manager.create_from_result(r.json())
 
     @is_bound
@@ -279,8 +364,13 @@ class Layer(base.Model, PermissionObjectMixin):
         if not version_id:
             version_id = self.version.id
 
-        target_url = self._client.get_url('VERSION', 'POST', 'publish', {'layer_id': self.id, 'version_id': version_id})
-        r = self._client.request('POST', target_url, json={})
+        target_url = self._client.get_url(
+            "VERSION",
+            "POST",
+            "publish",
+            {"layer_id": self.id, "version_id": version_id},
+        )
+        r = self._client.request("POST", target_url, json={})
         return self._client.get_manager(Publish).create_from_result(r.json())
 
     @is_bound
@@ -293,8 +383,15 @@ class Layer(base.Model, PermissionObjectMixin):
             any existing one. If ``False``, the data object will *not* be sent, and no import will start.
         :raises NotAllowed: if the version is already published.
         """
-        target_url = self._client.get_url('VERSION', 'PUT', 'edit', {'layer_id': self.id, 'version_id': self.version.id})
-        r = self._client.request('PUT', target_url, json=self._serialize(with_data=with_data))
+        target_url = self._client.get_url(
+            "VERSION",
+            "PUT",
+            "edit",
+            {"layer_id": self.id, "version_id": self.version.id},
+        )
+        r = self._client.request(
+            "PUT", target_url, json=self._serialize(with_data=with_data)
+        )
         return self._deserialize(r.json(), self._manager)
 
     @is_bound
@@ -308,8 +405,13 @@ class Layer(base.Model, PermissionObjectMixin):
         if not version_id:
             version_id = self.version.id
 
-        target_url = self._client.get_url('VERSION', 'DELETE', 'single', {'layer_id': self.id, 'version_id': version_id})
-        r = self._client.request('DELETE', target_url)
+        target_url = self._client.get_url(
+            "VERSION",
+            "DELETE",
+            "single",
+            {"layer_id": self.id, "version_id": version_id},
+        )
+        r = self._client.request("DELETE", target_url)
         logger.info("delete_version(): %s", r.status_code)
 
     @is_bound
@@ -317,8 +419,8 @@ class Layer(base.Model, PermissionObjectMixin):
         """
         Delete this layer.
         """
-        target_url = self._client.get_url('LAYER', 'DELETE', 'single', {'id': self.id})
-        r = self._client.request('DELETE', target_url)
+        target_url = self._client.get_url("LAYER", "DELETE", "single", {"id": self.id})
+        r = self._client.request("DELETE", target_url)
         logger.info("delete(): %s", r.status_code)
 
     @is_bound
@@ -332,34 +434,38 @@ class Layer(base.Model, PermissionObjectMixin):
         if not version_id:
             version_id = self.version.id
 
-        base_url = self._client.get_url('VERSION', 'GET', 'single', {'layer_id': self.id, 'version_id': version_id})
+        base_url = self._client.get_url(
+            "VERSION", "GET", "single", {"layer_id": self.id, "version_id": version_id}
+        )
         self._manager._metadata.set(base_url, fp)
 
         # reload myself
-        r = self._client.request('GET', base_url)
+        r = self._client.request("GET", base_url)
         return self._deserialize(r.json(), self._manager)
 
 
 class LayerVersionManager(base.InnerManager):
-    _URL_KEY = 'VERSION'
+    _URL_KEY = "VERSION"
 
 
 class LayerVersion(base.InnerModel):
     """
     Represents the ``version`` property of a :py:class:`.Layer` instance.
     """
+
     class Meta:
         manager = LayerVersionManager
 
 
 class LayerDataManager(base.InnerManager):
-    _URL_KEY = 'DATA'
+    _URL_KEY = "DATA"
 
 
 class LayerData(base.InnerModel):
     """
     Represents the ``data`` property of a :py:class:`.Layer` instance.
     """
+
     class Meta:
         manager = LayerDataManager
 

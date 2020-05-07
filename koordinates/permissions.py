@@ -26,7 +26,7 @@ class PermissionManager(base.InnerManager):
     or :py:class:`koordinates.sets.Set` instances.
     """
 
-    _URL_KEY = 'PERMISSION'
+    _URL_KEY = "PERMISSION"
 
     def __init__(self, client, parent_object):
         super(PermissionManager, self).__init__(client, parent_object._manager)
@@ -38,9 +38,16 @@ class PermissionManager(base.InnerManager):
 
         :param Permission permission: A single Permission object to be set.
         """
-        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
-        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'POST', 'single')
-        r = self.client.request('POST', target_url, json=permission._serialize())
+        parent_url = self.client.get_url(
+            self.parent_object._manager._URL_KEY,
+            "GET",
+            "single",
+            {"id": self.parent_object.id},
+        )
+        target_url = parent_url + self.client.get_url_path(
+            self._URL_KEY, "POST", "single"
+        )
+        r = self.client.request("POST", target_url, json=permission._serialize())
         return permission._deserialize(r.json(), self)
 
     def set(self, permissions):
@@ -49,19 +56,35 @@ class PermissionManager(base.InnerManager):
 
         :param [] permissions: A group of Permission objects to be set.
         """
-        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
-        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'PUT', 'multi')
-        r = self.client.request('PUT', target_url, json=permissions)
+        parent_url = self.client.get_url(
+            self.parent_object._manager._URL_KEY,
+            "GET",
+            "single",
+            {"id": self.parent_object.id},
+        )
+        target_url = parent_url + self.client.get_url_path(
+            self._URL_KEY, "PUT", "multi"
+        )
+        r = self.client.request("PUT", target_url, json=permissions)
         if r.status_code != 201:
-            raise exceptions.ServerError("Expected 201 response, got %s: %s" % (r.status_code, target_url))
+            raise exceptions.ServerError(
+                "Expected 201 response, got %s: %s" % (r.status_code, target_url)
+            )
         return self.list()
 
     def list(self):
         """
         List permissions for the given object.
         """
-        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
-        target_url = parent_url + self.client.get_url_path(self._URL_KEY, 'GET', 'multi')
+        parent_url = self.client.get_url(
+            self.parent_object._manager._URL_KEY,
+            "GET",
+            "single",
+            {"id": self.parent_object.id},
+        )
+        target_url = parent_url + self.client.get_url_path(
+            self._URL_KEY, "GET", "multi"
+        )
         return base.Query(self, target_url)
 
     def get(self, permission_id, expand=[]):
@@ -70,9 +93,15 @@ class PermissionManager(base.InnerManager):
 
         :param str permission_id: the id of the Permission to be listed.
         """
-        parent_url = self.client.get_url(self.parent_object._manager._URL_KEY, 'GET', 'single', {'id': self.parent_object.id})
+        parent_url = self.client.get_url(
+            self.parent_object._manager._URL_KEY,
+            "GET",
+            "single",
+            {"id": self.parent_object.id},
+        )
         target_url = parent_url + self.client.get_url_path(
-            self._URL_KEY, 'GET', 'single', {'permission_id': permission_id})
+            self._URL_KEY, "GET", "single", {"permission_id": permission_id}
+        )
         return self._get(target_url, expand=expand)
 
 
@@ -81,10 +110,19 @@ class Permission(base.InnerModel):
     Represents a permissions for a specific :py:class:`koordinates.layers.Layer`
     or :py:class:`koordinates.sets.Set` instance.
     """
+
     def _deserialize(self, data, manager):
         super(Permission, self)._deserialize(data, manager, manager.parent_object)
-        self.group = Group()._deserialize(data['group'], manager.client.get_manager(Group)) if data.get('group') else None
-        self.user = User()._deserialize(data['user'],  manager.client.get_manager(User)) if data.get('user') else None
+        self.group = (
+            Group()._deserialize(data["group"], manager.client.get_manager(Group))
+            if data.get("group")
+            else None
+        )
+        self.user = (
+            User()._deserialize(data["user"], manager.client.get_manager(User))
+            if data.get("user")
+            else None
+        )
         return self
 
     class Meta:
