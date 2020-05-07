@@ -1,5 +1,6 @@
 -r requirements.txt
 
+urllib3
 mock==1.0.1
 responses
 pytest>=3.3

@@ -83,29 +83,3 @@ def test_set_create(client):
     req = json.loads(responses.calls[0].request.body)
     assert len(req['items']) == 6
     assert req['group'] == 141
-
-
-@responses.activate
-def test_set_update(client):
-    responses.add(responses.GET,
-                  client.get_url('SET', 'GET', 'single', {'id': 933}),
-                  body=sets_single_good_simulated_response, status=200)
-
-    responses.add(responses.PUT,
-                  client.get_url('SET', 'PUT', 'update', {'id': 933}),
-                  body=sets_single_good_simulated_response, status=200)
-
-    s = client.sets.get(933)
-    assert s.id == 933
-
-    s.items = [
-        "https://test.koordinates.com/services/api/v1/layers/4226/",
-    ]
-    s.save()
-    assert len(responses.calls) == 2
-
-    req = json.loads(responses.calls[1].request.body)
-    assert len(req['items']) == 1
-
-    # reset to the server-provided values
-    assert len(s.items) == 6
