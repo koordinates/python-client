@@ -19,27 +19,36 @@ def client():
 def test_get_set_by_id(client):
     the_response = sets_single_good_simulated_response
 
-    responses.add(responses.GET,
-                  client.get_url('SET', 'GET', 'single', {'id':1474}),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url('SET', 'GET', 'single', {'id': 1474}),
+        body=the_response,
+        status=200,
+        content_type='application/json',
+    )
 
     obj = client.sets.get(1474)
     assert isinstance(obj, Set)
 
     assert obj.title == "Ultra Fast Broadband Initiative Coverage"
     assert obj.group.name == "New Zealand Broadband Map"
-    assert obj.url_html == "https://test.koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/"
+    assert (
+        obj.url_html
+        == "https://test.koordinates.com/set/933-ultra-fast-broadband-initiative-coverage/"
+    )
 
 
 @responses.activate
 def test_get_set_set_returns_all_rows(client):
     the_response = sets_multiple_good_simulated_response
 
-    responses.add(responses.GET,
-                  client.get_url('SET', 'GET', 'multi'),
-                  body=the_response, status=200,
-                  content_type='application/json')
+    responses.add(
+        responses.GET,
+        client.get_url('SET', 'GET', 'multi'),
+        body=the_response,
+        status=200,
+        content_type='application/json',
+    )
 
     cnt_of_sets_returned = 0
 
@@ -51,14 +60,22 @@ def test_get_set_set_returns_all_rows(client):
 
 @responses.activate
 def test_set_create(client):
-    responses.add(responses.POST,
-                  client.get_url('SET', 'POST', 'create'),
-                  body=sets_single_good_simulated_response, status=201,
-                  adding_headers={"Location": "https://test.koordinates.com/services/api/v1/sets/933/"})
+    responses.add(
+        responses.POST,
+        client.get_url('SET', 'POST', 'create'),
+        body=sets_single_good_simulated_response,
+        status=201,
+        adding_headers={
+            "Location": "https://test.koordinates.com/services/api/v1/sets/933/"
+        },
+    )
 
-    responses.add(responses.GET,
-                  client.get_url('SET', 'GET', 'single', {'id': 933}),
-                  body=sets_single_good_simulated_response, status=200)
+    responses.add(
+        responses.GET,
+        client.get_url('SET', 'GET', 'single', {'id': 933}),
+        body=sets_single_good_simulated_response,
+        status=200,
+    )
 
     s = Set()
     s.title = 'test title'
@@ -80,20 +97,26 @@ def test_set_create(client):
 
     assert len(responses.calls) == 2
 
-    req = json.loads(responses.calls[0].request.body)
+    req = json.loads(responses.calls[0].request.body.decode("utf-8"))
     assert len(req['items']) == 6
     assert req['group'] == 141
 
 
 @responses.activate
 def test_set_update(client):
-    responses.add(responses.GET,
-                  client.get_url('SET', 'GET', 'single', {'id': 933}),
-                  body=sets_single_good_simulated_response, status=200)
+    responses.add(
+        responses.GET,
+        client.get_url('SET', 'GET', 'single', {'id': 933}),
+        body=sets_single_good_simulated_response,
+        status=200,
+    )
 
-    responses.add(responses.PUT,
-                  client.get_url('SET', 'PUT', 'update', {'id': 933}),
-                  body=sets_single_good_simulated_response, status=200)
+    responses.add(
+        responses.PUT,
+        client.get_url('SET', 'PUT', 'update', {'id': 933}),
+        body=sets_single_good_simulated_response,
+        status=200,
+    )
 
     s = client.sets.get(933)
     assert s.id == 933
@@ -104,7 +127,7 @@ def test_set_update(client):
     s.save()
     assert len(responses.calls) == 2
 
-    req = json.loads(responses.calls[1].request.body)
+    req = json.loads(responses.calls[1].request.body.decode("utf-8"))
     assert len(req['items']) == 1
 
     # reset to the server-provided values
