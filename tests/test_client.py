@@ -85,13 +85,13 @@ def test_reverse_url(client):
     assert params == {"id": "12345"}
 
     params = client.reverse_url(
-        "VERSION",
+        "LAYER_VERSION",
         "https://test.koordinates.com/services/api/v1/layers/12345/versions/3456/",
     )
     assert params == {"layer_id": "12345", "version_id": "3456"}
 
     params = client.reverse_url(
-        "VERSION",
+        "LAYER_VERSION",
         "https://test.koordinates.com/services/api/v1/layers/12345/versions/3456/publish/",
         verb="POST",
         urltype="publish",
@@ -107,15 +107,16 @@ def test_reverse_url(client):
     assert params == {"slug": "cc-by", "jurisdiction": "nz"}
 
     with pytest.raises(KeyError):
-        client.reverse_url("VERSION", "")
+        client.reverse_url("LAYER_VERSION", "")
     with pytest.raises(KeyError):
         client.reverse_url(
-            "VERSION", "https://test.koordinates.com/services/api/v1/layers/12345/"
+            "LAYER_VERSION",
+            "https://test.koordinates.com/services/api/v1/layers/12345/",
         )
     with pytest.raises(KeyError):
-        client.reverse_url("VERSION", None)
+        client.reverse_url("LAYER_VERSION", None)
     with pytest.raises(KeyError):
-        client.reverse_url("VERSION", "/layers/12345/versions/3456/")
+        client.reverse_url("LAYER_VERSION", "/layers/12345/versions/3456/")
 
 
 @responses.activate

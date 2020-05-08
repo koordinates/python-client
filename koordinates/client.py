@@ -255,7 +255,6 @@ class Client(object):
     URL_TEMPLATES__v1 = {
         "LAYER": {
             "GET": {
-                "singleversion": "/layers/{layer_id}/versions/{version_id}/",
                 "single": "/layers/{id}/",
                 "multi": "/layers/",
                 "multidraft": "/layers/drafts/",
@@ -266,15 +265,7 @@ class Client(object):
             },
             "DELETE": {"delete": "/layers/{id}/",},
         },
-        "SET": {
-            "GET": {
-                "single": "/sets/{id}/",
-                "metadata": "/sets/{id}/metadata",
-                "multi": "/sets/",
-            },
-            "POST": {"create": "/sets/",},
-        },
-        "VERSION": {
+        "LAYER_VERSION": {
             "GET": {
                 "single": "/layers/{layer_id}/versions/{version_id}/",
                 "multi": "/layers/{layer_id}/versions/",
@@ -288,6 +279,30 @@ class Client(object):
             },
             "PUT": {"edit": "/layers/{layer_id}/versions/{version_id}/",},
             "DELETE": {"single": "/layers/{layer_id}/versions/{version_id}/",},
+        },
+        "SET": {
+            "GET": {
+                "single": "/sets/{id}/",
+                "metadata": "/sets/{id}/metadata",
+                "multi": "/sets/",
+                "multidraft": "/sets/drafts/",
+            },
+            "POST": {"create": "/sets/",},
+            "DELETE": {"delete": "/sets/{id}/",},
+        },
+        "SET_VERSION": {
+            "GET": {
+                "single": "/sets/{id}/versions/{version_id}/",
+                "multi": "/sets/{id}/versions/",
+                "draft": "/sets/{id}/versions/draft/",
+                "published": "/sets/{id}/versions/published/",
+            },
+            "POST": {
+                "create": "/sets/{id}/versions/",
+                "publish": "/sets/{id}/versions/{version_id}/publish/",
+            },
+            "PUT": {"edit": "/sets/{id}/versions/{version_id}/",},
+            "DELETE": {"single": "/sets/{id}/versions/{version_id}/",},
         },
         "CATALOG": {"GET": {"multi": "/data/", "latest": "/data/latest/",},},
         "PUBLISH": {

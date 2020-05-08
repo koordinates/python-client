@@ -281,7 +281,7 @@ def test_layer_import(test_client):
     responses.add(
         responses.POST,
         test_client.get_url(
-            "VERSION",
+            "LAYER_VERSION",
             "POST",
             "import",
             {"version_id": version_id, "layer_id": layer_id},
@@ -401,7 +401,7 @@ def test_get_all_layer_version_by_layer_id(client):
 
     responses.add(
         responses.GET,
-        client.get_url("VERSION", "GET", "multi", {"layer_id": 1474}),
+        client.get_url("LAYER_VERSION", "GET", "multi", {"layer_id": 1474}),
         body=the_response,
         status=200,
         content_type="application/json",

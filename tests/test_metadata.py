@@ -116,7 +116,7 @@ def test_get_xml(client):
 @responses.activate
 def test_layer_set_xml(client):
     lv_url = client.get_url(
-        "VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
+        "LAYER_VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
     )
     responses.add(
         responses.GET,
@@ -156,7 +156,7 @@ def test_layer_set_xml(client):
 @responses.activate
 def test_layer_set_xml_manager(client):
     lv_url = client.get_url(
-        "VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
+        "LAYER_VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
     )
     responses.add(
         responses.GET,

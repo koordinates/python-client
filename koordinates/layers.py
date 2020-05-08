@@ -68,7 +68,7 @@ class LayerManager(base.Manager):
         using ``<`` or ``>=`` operators respectively.
         """
         target_url = self.client.get_url(
-            "VERSION", "GET", "multi", {"layer_id": layer_id}
+            "LAYER_VERSION", "GET", "multi", {"layer_id": layer_id}
         )
         return base.Query(
             self,
@@ -82,7 +82,10 @@ class LayerManager(base.Manager):
         Get a specific version of a layer.
         """
         target_url = self.client.get_url(
-            "VERSION", "GET", "single", {"layer_id": layer_id, "version_id": version_id}
+            "LAYER_VERSION",
+            "GET",
+            "single",
+            {"layer_id": layer_id, "version_id": version_id},
         )
         return self._get(target_url, expand=expand)
 
@@ -92,7 +95,7 @@ class LayerManager(base.Manager):
         :raises NotFound: if there is no draft version.
         """
         target_url = self.client.get_url(
-            "VERSION", "GET", "draft", {"layer_id": layer_id}
+            "LAYER_VERSION", "GET", "draft", {"layer_id": layer_id}
         )
         return self._get(target_url, expand=expand)
 
@@ -102,7 +105,7 @@ class LayerManager(base.Manager):
         :raises NotFound: if there is no published version.
         """
         target_url = self.client.get_url(
-            "VERSION", "GET", "published", {"layer_id": layer_id}
+            "LAYER_VERSION", "GET", "published", {"layer_id": layer_id}
         )
         return self._get(target_url, expand=expand)
 
@@ -118,7 +121,7 @@ class LayerManager(base.Manager):
         :raises Conflict: if there is already a draft version for this layer.
         """
         target_url = self.client.get_url(
-            "VERSION", "POST", "create", {"layer_id": layer_id}
+            "LAYER_VERSION", "POST", "create", {"layer_id": layer_id}
         )
         r = self.client.request("POST", target_url, json={})
         return self.create_from_result(r.json())
@@ -129,7 +132,7 @@ class LayerManager(base.Manager):
         even if the data object hasn’t changed from the previous version.
         """
         target_url = self.client.get_url(
-            "VERSION",
+            "LAYER_VERSION",
             "POST",
             "import",
             {"layer_id": layer_id, "version_id": version_id},
@@ -156,7 +159,10 @@ class LayerManager(base.Manager):
         :raises NotAllowed: if the version is already published.
         """
         base_url = self.client.get_url(
-            "VERSION", "GET", "single", {"layer_id": layer_id, "version_id": version_id}
+            "LAYER_VERSION",
+            "GET",
+            "single",
+            {"layer_id": layer_id, "version_id": version_id},
         )
         self._metadata.set(base_url, fp)
 
@@ -260,7 +266,7 @@ class Layer(base.Model, PermissionObjectMixin):
         using ``<`` or ``>=`` operators respectively.
         """
         target_url = self._client.get_url(
-            "VERSION", "GET", "multi", {"layer_id": self.id}
+            "LAYER_VERSION", "GET", "multi", {"layer_id": self.id}
         )
         return base.Query(
             self._manager,
@@ -275,7 +281,10 @@ class Layer(base.Model, PermissionObjectMixin):
         Get a specific version of this layer
         """
         target_url = self._client.get_url(
-            "VERSION", "GET", "single", {"layer_id": self.id, "version_id": version_id}
+            "LAYER_VERSION",
+            "GET",
+            "single",
+            {"layer_id": self.id, "version_id": version_id},
         )
         return self._manager._get(target_url, expand=expand)
 
@@ -286,7 +295,7 @@ class Layer(base.Model, PermissionObjectMixin):
         :raises NotFound: if there is no draft version.
         """
         target_url = self._client.get_url(
-            "VERSION", "GET", "draft", {"layer_id": self.id}
+            "LAYER_VERSION", "GET", "draft", {"layer_id": self.id}
         )
         return self._manager._get(target_url, expand=expand)
 
@@ -297,7 +306,7 @@ class Layer(base.Model, PermissionObjectMixin):
         :raises NotFound: if there is no published version.
         """
         target_url = self._client.get_url(
-            "VERSION", "GET", "published", {"layer_id": self.id}
+            "LAYER_VERSION", "GET", "published", {"layer_id": self.id}
         )
         return self._manager._get(target_url, expand=expand)
 
@@ -314,7 +323,7 @@ class Layer(base.Model, PermissionObjectMixin):
         :raises Conflict: if there is already a draft version for this layer.
         """
         target_url = self._client.get_url(
-            "VERSION", "POST", "create", {"layer_id": self.id}
+            "LAYER_VERSION", "POST", "create", {"layer_id": self.id}
         )
         r = self._client.request("POST", target_url, json={})
         return self._manager.create_from_result(r.json())
@@ -331,7 +340,10 @@ class Layer(base.Model, PermissionObjectMixin):
             version_id = self.version.id
 
         target_url = self._client.get_url(
-            "VERSION", "POST", "import", {"layer_id": self.id, "version_id": version_id}
+            "LAYER_VERSION",
+            "POST",
+            "import",
+            {"layer_id": self.id, "version_id": version_id},
         )
         r = self._client.request("POST", target_url, json={})
         return self._deserialize(r.json(), self._manager)
@@ -365,7 +377,7 @@ class Layer(base.Model, PermissionObjectMixin):
             version_id = self.version.id
 
         target_url = self._client.get_url(
-            "VERSION",
+            "LAYER_VERSION",
             "POST",
             "publish",
             {"layer_id": self.id, "version_id": version_id},
@@ -384,7 +396,7 @@ class Layer(base.Model, PermissionObjectMixin):
         :raises NotAllowed: if the version is already published.
         """
         target_url = self._client.get_url(
-            "VERSION",
+            "LAYER_VERSION",
             "PUT",
             "edit",
             {"layer_id": self.id, "version_id": self.version.id},
@@ -406,7 +418,7 @@ class Layer(base.Model, PermissionObjectMixin):
             version_id = self.version.id
 
         target_url = self._client.get_url(
-            "VERSION",
+            "LAYER_VERSION",
             "DELETE",
             "single",
             {"layer_id": self.id, "version_id": version_id},
@@ -435,7 +447,10 @@ class Layer(base.Model, PermissionObjectMixin):
             version_id = self.version.id
 
         base_url = self._client.get_url(
-            "VERSION", "GET", "single", {"layer_id": self.id, "version_id": version_id}
+            "LAYER_VERSION",
+            "GET",
+            "single",
+            {"layer_id": self.id, "version_id": version_id},
         )
         self._manager._metadata.set(base_url, fp)
 
@@ -445,7 +460,7 @@ class Layer(base.Model, PermissionObjectMixin):
 
 
 class LayerVersionManager(base.InnerManager):
-    _URL_KEY = "VERSION"
+    _URL_KEY = "LAYER_VERSION"
 
 
 class LayerVersion(base.InnerModel):
