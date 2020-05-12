@@ -6,7 +6,10 @@ import responses
 from koordinates import Set, Client, Group
 
 
-from .response_data.responses_3 import sets_single_good_simulated_response
+from .response_data.responses_3 import (
+    sets_single_good_simulated_response,
+    sets_single_draft_simulated_response,
+)
 from .response_data.responses_4 import sets_multiple_good_simulated_response
 
 
@@ -100,3 +103,47 @@ def test_set_create(client):
     req = json.loads(responses.calls[0].request.body.decode("utf-8"))
     assert len(req["items"]) == 6
     assert req["group"] == 141
+
+
+@responses.activate
+def test_set_list_drafts(client):
+    import pdb
+
+    responses.add(
+        responses.POST,
+        client.get_url("SET", "POST", "create"),
+        body=sets_single_draft_simulated_response,
+        status=201,
+        # adding_headers={
+        #     "Location": "https://test.koordinates.com/services/api/v1/sets/934/"
+        # },
+    )
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET", "GET", "multidraft"),
+        body=sets_single_draft_simulated_response,
+        status=200,
+    )
+
+    pdb.set_trace()
+
+    s = Set()
+    s.title = "test title"
+    s.description = "description"
+    s.group = 141
+    s.items = [
+        "https://test.koordinates.com/services/api/v1/layers/4226/",
+    ]
+
+    rs = client.sets.create(s)
+
+    pdb.set_trace()
+
+    assert rs is s
+    assert rs.publish_to_catalog_services == False
+    assert isinstance(s.group, Group)
+    assert len(responses.calls) == 2
+
+    req = json.loads(responses.calls[0].request.body.decode("utf-8"))
+    assert req["publish_to_catalog_services"] == False
