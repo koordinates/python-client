@@ -8,7 +8,8 @@ from koordinates import Set, Client, Group
 
 from .response_data.responses_3 import (
     sets_single_good_simulated_response,
-    sets_single_draft_simulated_response,
+    sets_new_draft_good_simulated_response,
+    sets_single_draft_good_simulated_response,
 )
 from .response_data.responses_4 import sets_multiple_good_simulated_response
 
@@ -107,43 +108,50 @@ def test_set_create(client):
 
 @responses.activate
 def test_set_list_drafts(client):
-    import pdb
+    # create a set, then check that it returns as a draft
 
     responses.add(
         responses.POST,
         client.get_url("SET", "POST", "create"),
-        body=sets_single_draft_simulated_response,
+        body=sets_new_draft_good_simulated_response,
         status=201,
-        # adding_headers={
-        #     "Location": "https://test.koordinates.com/services/api/v1/sets/934/"
-        # },
+        adding_headers={
+            "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
+        },
+    )
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET", "GET", "single", {"id": 1}),
+        body=sets_new_draft_good_simulated_response,
+        status=200,
     )
 
     responses.add(
         responses.GET,
         client.get_url("SET", "GET", "multidraft"),
-        body=sets_single_draft_simulated_response,
+        body=sets_single_draft_good_simulated_response,
         status=200,
     )
-
-    pdb.set_trace()
 
     s = Set()
     s.title = "test title"
     s.description = "description"
     s.group = 141
     s.items = [
-        "https://test.koordinates.com/services/api/v1/layers/4226/",
+        "https://test.koordinates.com/services/api/v1/layers/2/",
+        "https://test.koordinates.com/services/api/v1/layers/1/",
     ]
 
     rs = client.sets.create(s)
 
-    pdb.set_trace()
+    sets_amount = 0
+    for _set in client.sets.list_drafts():
+        sets_amount += 1
+
+    assert sets_amount == 1
 
     assert rs is s
     assert rs.publish_to_catalog_services == False
     assert isinstance(s.group, Group)
-    assert len(responses.calls) == 2
-
-    req = json.loads(responses.calls[0].request.body.decode("utf-8"))
-    assert req["publish_to_catalog_services"] == False
+    assert len(responses.calls) == 3
