@@ -10,6 +10,7 @@ from .response_data.responses_3 import (
     sets_single_good_simulated_response,
     sets_new_draft_good_simulated_response,
     sets_single_draft_good_simulated_response,
+    sets_multi_version_good_simulated_response,
 )
 from .response_data.responses_4 import sets_multiple_good_simulated_response
 
@@ -63,6 +64,51 @@ def test_get_set_set_returns_all_rows(client):
 
 
 @responses.activate
+def test_set_list_drafts(client):
+    # create a set, then check that it returns as a draft
+
+    responses.add(
+        responses.POST,
+        client.get_url("SET", "POST", "create"),
+        body=sets_new_draft_good_simulated_response,
+        status=201,
+        adding_headers={
+            "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
+        },
+    )
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET", "GET", "single", {"id": 1}),
+        body=sets_new_draft_good_simulated_response,
+        status=200,
+    )
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET", "GET", "multidraft"),
+        body=sets_single_draft_good_simulated_response,
+        status=200,
+    )
+
+    s = Set()
+    s.title = "New Set"
+
+    rs = client.sets.create(s)
+
+    sets_amount = 0
+    for _set in client.sets.list_drafts():
+        sets_amount += 1
+
+    assert sets_amount == 1
+
+    assert rs is s
+    assert rs.publish_to_catalog_services == False
+    assert isinstance(s.group, Group)
+    assert len(responses.calls) == 3
+
+
+@responses.activate
 def test_set_create(client):
     responses.add(
         responses.POST,
@@ -107,51 +153,48 @@ def test_set_create(client):
 
 
 @responses.activate
-def test_set_list_drafts(client):
-    # create a set, then check that it returns as a draft
+def test_set_list_versions(client):
 
     responses.add(
-        responses.POST,
-        client.get_url("SET", "POST", "create"),
+        responses.GET,
+        client.get_url("SET_VERSION", "GET", "multi", {"id": 1}),
+        body=sets_multi_version_good_simulated_response,
+        status=200,
+    )
+
+    versions_amount = 0
+    for _version in client.sets.list_versions(1):
+        versions_amount += 1
+
+    assert versions_amount == 2
+
+
+@responses.activate
+def test_set_get_version(client):
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET_VERSION", "GET", "single", {"id": 1, "version_id": 1}),
         body=sets_new_draft_good_simulated_response,
-        status=201,
+        status=200,
+    )
+
+    rs = client.sets.get_version(1, 1)
+    assert rs.version.id == 1
+
+
+@responses.activate
+def test_set_get_draft(client):
+
+    responses.add(
+        responses.GET,
+        client.get_url("SET_VERSION", "GET", "draft", {"id": 1}),
+        body=sets_new_draft_good_simulated_response,
+        status=200,
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
         },
     )
 
-    responses.add(
-        responses.GET,
-        client.get_url("SET", "GET", "single", {"id": 1}),
-        body=sets_new_draft_good_simulated_response,
-        status=200,
-    )
-
-    responses.add(
-        responses.GET,
-        client.get_url("SET", "GET", "multidraft"),
-        body=sets_single_draft_good_simulated_response,
-        status=200,
-    )
-
-    s = Set()
-    s.title = "test title"
-    s.description = "description"
-    s.group = 141
-    s.items = [
-        "https://test.koordinates.com/services/api/v1/layers/2/",
-        "https://test.koordinates.com/services/api/v1/layers/1/",
-    ]
-
-    rs = client.sets.create(s)
-
-    sets_amount = 0
-    for _set in client.sets.list_drafts():
-        sets_amount += 1
-
-    assert sets_amount == 1
-
-    assert rs is s
-    assert rs.publish_to_catalog_services == False
-    assert isinstance(s.group, Group)
-    assert len(responses.calls) == 3
+    rs = client.sets.get_draft(1)
+    assert rs.version.id == 1

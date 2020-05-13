@@ -70,9 +70,21 @@ sets_new_draft_good_simulated_response = """{
 
 sets_single_draft_good_simulated_response = """[{
     "id": 1,
-    "title": "Andres Set",
+    "title": "New Set",
     "url": "https://test.koordinates.com/services/api/v1.x/sets/1/",
     "type": "set",
     "created_at": "2020-05-11T03:51:38.847490Z",
     "thumbnail_url": "https://tiles-test.koordinates.com/services/tiles/v4/thumbnail/set=2.2,style=auto/1200x630.png"
   }]"""
+
+
+sets_multi_version_good_simulated_response = """[{
+  "id": 1,
+  "url": "https://test.koordinates.com/services/api/v1.x/sets/1/versions/1/",
+  "created_at": "2012-12-19T23:13:26.324088Z"
+},
+{
+  "id": 5,
+  "url": "https://test.koordinates.com/services/api/v1.x/sets/1/versions/5/",
+  "created_at": "2020-05-13T03:05:23.145705Z"
+}]"""

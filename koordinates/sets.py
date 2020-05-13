@@ -74,10 +74,7 @@ class SetManager(base.Manager):
         Get a specific version of a set.
         """
         target_url = self.client.get_url(
-            "SET_VERSION",
-            "GET",
-            "single",
-            {"set_id": set_id, "version_id": version_id},
+            "SET_VERSION", "GET", "single", {"id": set_id, "version_id": version_id},
         )
         return self._get(target_url, expand=expand)
 
