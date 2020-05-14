@@ -14,3 +14,22 @@ Related to the `Sets API <https://help.koordinates.com/api/publisher-admin-api/s
     :show-inheritance:
     :inherited-members:
 
+.. autoclass:: koordinates.sets.SetVersion
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+.. autoclass:: koordinates.sets.SetVersionManager
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+.. autoclass:: koordinates.sets.SetDataManager
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+.. autoclass:: koordinates.sets.SetData
+    :members:
+    :show-inheritance:
+    :inherited-members:
