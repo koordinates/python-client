@@ -88,3 +88,57 @@ sets_multi_version_good_simulated_response = """[{
   "url": "https://test.koordinates.com/services/api/v1.x/sets/1/versions/5/",
   "created_at": "2020-05-13T03:05:23.145705Z"
 }]"""
+
+sets_single_version_good_simulated_response = """{
+  "id": 5,
+  "title": "New Set Test",
+  "url": "https://test.koordinates.com/services/api/v1.x/sets/5/",
+  "type": "set",
+  "created_at": "2020-05-14T01:06:48.048303Z",
+  "thumbnail_url": "https://tiles-test.koordinates.com/services/tiles/v4/thumbnail/set=5.10,style=auto/1200x630.png",
+  "description": "Testing Sets",
+  "description_html": "<p>Testing Sets</p>",
+  "latest_version": "https://test.koordinates.com/services/api/v1.x/sets/5/versions/10/",
+  "published_version": "https://test.koordinates.com/services/api/v1.x/sets/5/versions/10/",
+  "this_version": "https://test.koordinates.com/services/api/v1.x/sets/5/versions/10/",
+  "publisher": "https://test.koordinates.com/services/api/v1.x/publishers/test.koordinates.com:108/",
+  "categories": [],
+  "tags": [],
+  "group": {
+      "id": 108,
+      "url": "https://test.koordinates.com/services/api/v1.x/groups/108/",
+      "name": "Group Mapstream",
+      "country": "NZ"
+  },
+  "url_html": "https://test.koordinates.com/set/5-new-set-test/",
+  "metadata": null,
+  "publish_to_catalog_services": false,
+  "active_publish": null,
+  "items": [
+      "https://test.koordinates.com/services/api/v1.x/layers/1/"
+  ],
+  "version": {
+      "id": 10,
+      "url": "https://test.koordinates.com/services/api/v1.x/sets/5/versions/10/",
+      "created_at": "2020-05-14T03:20:59.739650Z"
+  }
+}"""
+
+sets_publish_version_good_simulated_response = """{
+  "id": 10,
+  "url": "https://test.koordinates.com/services/api/v1/publish/10/",
+  "state": "publishing",
+  "created_at": "2015-06-08T10:39:44.823Z",
+  "created_by": {
+    "id": 108,
+    "url": "https://test.koordinates.com/services/api/v1.x/groups/108/",
+    "name": "Group Mapstream",
+    "country": "NZ"
+  },
+  "error_strategy": "abort",
+  "publish_strategy": "together",
+  "publish_at": null,
+  "items": [
+      "https://test.koordinates.com/services/api/v1.x/layers/1/"
+  ]
+}"""

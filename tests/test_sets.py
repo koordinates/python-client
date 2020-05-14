@@ -3,14 +3,15 @@ import json
 import pytest
 import responses
 
-from koordinates import Set, Client, Group
-
+from koordinates import Set, Client, Group, Publish
 
 from .response_data.responses_3 import (
     sets_single_good_simulated_response,
     sets_new_draft_good_simulated_response,
     sets_single_draft_good_simulated_response,
     sets_multi_version_good_simulated_response,
+    sets_single_version_good_simulated_response,
+    sets_publish_version_good_simulated_response,
 )
 from .response_data.responses_4 import sets_multiple_good_simulated_response
 
@@ -232,3 +233,41 @@ def test_set_get_create_draft(client):
 
     assert rs.version.id == 1
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_publish_single_set_version(client):
+    responses.add(
+        responses.GET,
+        client.get_url("SET_VERSION", "GET", "single", {"id": 5, "version_id": 10}),
+        body=sets_single_version_good_simulated_response,
+        status=200,
+        content_type="application/json",
+    )
+
+    lv = client.sets.get_version(5, 10)
+
+    assert lv.id == 5
+    assert lv.version.id == 10
+
+    responses.add(
+        responses.POST,
+        client.get_url("SET_VERSION", "POST", "publish", {"id": 5, "version_id": 10}),
+        body="",
+        status=201,
+        adding_headers={
+            "Location": "https://test.koordinates.com/services/api/v1/publish/10/"
+        },
+        content_type="application/json",
+    )
+    responses.add(
+        responses.GET,
+        "https://test.koordinates.com/services/api/v1/publish/10/",
+        body=sets_publish_version_good_simulated_response,
+        status=200,
+        content_type="application/json",
+    )
+
+    p = lv.publish()
+    assert isinstance(p, Publish)
+    assert p.id == 10
