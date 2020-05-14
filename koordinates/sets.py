@@ -111,17 +111,7 @@ class SetManager(base.Manager):
             "SET_VERSION", "POST", "create", {"id": set_id}
         )
         r = self.client.request("POST", target_url, json={})
-        return self.create_from_result(r.SET())
-
-    def start_update(self, set_id):
-        """
-        A shortcut to create a new version and start importing it.
-        Effectively the same as :py:meth:`koordinates.layers.Client.create_draft`
-        followed by :py:meth:`koordinates.layers.Client.start_import`.
-        """
-        target_url = self.client.get_url("SET", "POST", "update", {"id": set_id})
-        r = self.client.request("POST", target_url, json={})
-        return self.parent.create_from_result(r.json())
+        return self.create_from_result(r.json())
 
     def set_metadata(self, set_id, fp):
         """
@@ -163,13 +153,19 @@ class Set(base.Model, PermissionObjectMixin):
         return self
 
     @is_bound
-    def set_metadata(self, fp):
+    def set_metadata(self, fp, version_id=None):
         """
-        Set the XML metadata on a set.
+        Set the XML metadata on this draft version.
 
         :param file fp: file-like object to read the XML metadata from.
+        :raises NotAllowed: if this version is already published.
         """
-        base_url = self._client.get_url("SET", "GET", "single", {"id": self.id})
+        if not version_id:
+            version_id = self.version.id
+
+        base_url = self._client.get_url(
+            "SET_VERSION", "GET", "single", {"id": self.id, "version_id": version_id},
+        )
         self._manager._metadata.set(base_url, fp)
 
         # reload myself
@@ -324,26 +320,6 @@ class Set(base.Model, PermissionObjectMixin):
         )
         r = self._client.request("DELETE", target_url)
         logger.info("delete_version(): %s", r.status_code)
-
-    @is_bound
-    def set_metadata(self, fp, version_id=None):
-        """
-        Set the XML metadata on this draft version.
-
-        :param file fp: file-like object to read the XML metadata from.
-        :raises NotAllowed: if this version is already published.
-        """
-        if not version_id:
-            version_id = self.version.id
-
-        base_url = self._client.get_url(
-            "SET_VERSION", "GET", "single", {"id": self.id, "version_id": version_id},
-        )
-        self._manager._metadata.set(base_url, fp)
-
-        # reload myself
-        r = self._client.request("GET", base_url)
-        return self._deserialize(r.json(), self._manager)
 
 
 class SetVersionManager(base.InnerManager):

@@ -186,11 +186,12 @@ def test_set_get_version(client):
 @responses.activate
 def test_set_get_draft(client):
 
+    # should redirect to the draft versions
     responses.add(
         responses.GET,
         client.get_url("SET_VERSION", "GET", "draft", {"id": 1}),
         body=sets_new_draft_good_simulated_response,
-        status=200,
+        status=201,
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
         },
@@ -198,3 +199,36 @@ def test_set_get_draft(client):
 
     rs = client.sets.get_draft(1)
     assert rs.version.id == 1
+
+
+@responses.activate
+def test_set_get_published(client):
+
+    # should redirect to the published version
+    responses.add(
+        responses.GET,
+        client.get_url("SET_VERSION", "GET", "published", {"id": 1}),
+        body=sets_new_draft_good_simulated_response,
+        status=201,
+        adding_headers={
+            "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
+        },
+    )
+
+    rs = client.sets.get_published(1)
+    assert rs.version.id == 1
+
+
+@responses.activate
+def test_set_get_create_draft(client):
+    responses.add(
+        responses.POST,
+        client.get_url("SET_VERSION", "POST", "create", {"id": 1}),
+        body=sets_new_draft_good_simulated_response,
+        status=200,
+    )
+
+    rs = client.sets.create_draft(1)
+
+    assert rs.version.id == 1
+    assert len(responses.calls) == 1
