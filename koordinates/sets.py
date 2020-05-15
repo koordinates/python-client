@@ -38,7 +38,7 @@ class SetManager(base.Manager):
 
     def list_drafts(self):
         """
-        A filterable list views of sets, returning the draft version of each set.
+        A filterable list view of sets, returning the draft version of each set.
         If the most recent version has been published already, it won’t be returned here.
         """
         target_url = self.client.get_url("SET", "GET", "multidraft")
