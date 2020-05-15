@@ -105,7 +105,7 @@ class SetManager(base.Manager):
 
         :rtype: Client
         :return: the new version
-        :raises Conflict: if there is already a draft version for this set.
+        :raises 409 Conflict: if there is already a draft version for this set.
         """
         target_url = self.client.get_url(
             "SET_VERSION", "POST", "create", {"id": set_id}
@@ -245,27 +245,9 @@ class Set(base.Model, PermissionObjectMixin):
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
-    def create_draft_version(self):
-        """
-        Creates a new draft version from this model content.
-
-        If anything in the data object has changed then an import will begin immediately.
-        Otherwise to force a re-import from the previous sources call :py:meth:`koordinates.client.Client.start_import`.
-
-        :rtype: Client
-        :return: the new version
-        :raises Conflict: if there is already a draft version for this set.
-        """
-        target_url = self._client.get_url(
-            "SET_VERSION", "POST", "create", {"id": self.id}
-        )
-        r = self._client.request("POST", target_url, json={})
-        return self._manager.create_from_result(r.json())
-
-    @is_bound
     def publish(self, version_id=None):
         """
-        Creates a publish task just for this version, which publishes as soon as any import is complete.
+        Creates a publish task for this version.
 
         :return: the publish task
         :rtype: Publish
@@ -281,13 +263,10 @@ class Set(base.Model, PermissionObjectMixin):
         return self._client.get_manager(Publish).create_from_result(r.json())
 
     @is_bound
-    def save(self, with_data=False):
+    def save(self):
         """
         Edits this draft version.
-        # If anything in the data object has changed, cancel any existing import and start a new one.
 
-        :param bool with_data: if ``True``, send the data object, which will start a new import and cancel
-            any existing one. If ``False``, the data object will *not* be sent, and no import will start.
         :raises NotAllowed: if the version is already published.
         """
         target_url = self._client.get_url(
@@ -296,9 +275,7 @@ class Set(base.Model, PermissionObjectMixin):
             "edit",
             {"id": self.id, "version_id": self.version.id},
         )
-        r = self._client.request(
-            "PUT", target_url, json=self._serialize(with_data=with_data)
-        )
+        r = self._client.request("PUT", target_url, json=self._serialize())
         return self._deserialize(r.json(), self._manager)
 
     @is_bound
@@ -318,8 +295,7 @@ class Set(base.Model, PermissionObjectMixin):
             "single",
             {"id": self.id, "version_id": version_id},
         )
-        r = self._client.request("DELETE", target_url)
-        logger.info("delete_version(): %s", r.status_code)
+        self._client.request("DELETE", target_url)
 
 
 class SetVersionManager(base.InnerManager):
