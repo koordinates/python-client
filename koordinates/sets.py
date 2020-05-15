@@ -283,7 +283,7 @@ class Set(base.Model, PermissionObjectMixin):
     @is_bound
     def save(self, with_data=False):
         """
-        Edits this draft layerversion.
+        Edits this draft version.
         # If anything in the data object has changed, cancel any existing import and start a new one.
 
         :param bool with_data: if ``True``, send the data object, which will start a new import and cancel
