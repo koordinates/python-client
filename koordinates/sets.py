@@ -213,7 +213,7 @@ class Set(base.Model, PermissionObjectMixin):
         )
 
     @is_bound
-    def get_version(self, version_id, expand=[]):
+    def get_version(self, version_id, expand=()):
         """
         Get a specific version of this set
         """
