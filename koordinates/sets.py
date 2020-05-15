@@ -223,7 +223,7 @@ class Set(base.Model, PermissionObjectMixin):
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
-    def get_draft_version(self, expand=[]):
+    def get_draft_version(self, expand=()):
         """
         Get the current draft version of this set.
         :raises NotFound: if there is no draft version.
