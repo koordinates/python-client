@@ -234,7 +234,7 @@ class Set(base.Model, PermissionObjectMixin):
         return self._manager._get(target_url, expand=expand)
 
     @is_bound
-    def get_published_version(self, expand=[]):
+    def get_published_version(self, expand=()):
         """
         Get the latest published version of this set.
         :raises NotFound: if there is no published version.
