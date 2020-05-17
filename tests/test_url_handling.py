@@ -54,7 +54,7 @@ def test_layers_multi_url(client):
 def test_layer_versions_url(client):
     assert (
         client.get_url(
-            "VERSION", "GET", "single", {"layer_id": 1494, "version_id": 4067}
+            "LAYER_VERSION", "GET", "single", {"layer_id": 1494, "version_id": 4067}
         )
         == "https://koordinates.com/services/api/v1/layers/1494/versions/4067/"
     )
@@ -62,6 +62,6 @@ def test_layer_versions_url(client):
 
 def test_layer_versions_multi_url(client):
     assert (
-        client.get_url("VERSION", "GET", "multi", {"layer_id": 1494})
+        client.get_url("LAYER_VERSION", "GET", "multi", {"layer_id": 1494})
         == "https://koordinates.com/services/api/v1/layers/1494/versions/"
     )

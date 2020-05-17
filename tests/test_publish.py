@@ -149,7 +149,7 @@ def test_publish_single_layer_version(client):
     responses.add(
         responses.GET,
         client.get_url(
-            "VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
+            "LAYER_VERSION", "GET", "single", {"layer_id": 1474, "version_id": 4067}
         ),
         body=the_response,
         status=200,
@@ -167,7 +167,7 @@ def test_publish_single_layer_version(client):
     responses.add(
         responses.POST,
         client.get_url(
-            "VERSION", "POST", "publish", {"layer_id": 1474, "version_id": 4067}
+            "LAYER_VERSION", "POST", "publish", {"layer_id": 1474, "version_id": 4067}
         ),
         body="",
         status=201,
