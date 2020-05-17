@@ -100,9 +100,6 @@ class SetManager(base.Manager):
         """
         Creates a new draft version.
 
-        If anything in the data object has changed then an import will begin immediately.
-        Otherwise to force a re-import from the previous sources call :py:meth:`koordinates.client.Client.start_import`.
-
         :rtype: Client
         :return: the new version
         :raises 409 Conflict: if there is already a draft version for this set.
