@@ -3,7 +3,7 @@
 """
 Tests for the `koordinates.metadata` module.
 """
-from __future__ import unicode_literals, absolute_import
+
 
 import os
 import shutil

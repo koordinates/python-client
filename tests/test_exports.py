@@ -7,7 +7,7 @@ test_exports
 
 Tests for the `koordinates.exports` module.
 """
-from __future__ import unicode_literals, absolute_import
+
 
 import io
 import os

@@ -99,7 +99,7 @@ class Client(object):
             mgr = manager_class(self)
             self._register_manager(mgr.model, mgr)
 
-        for alias, manager_class in public.items():
+        for alias, manager_class in list(public.items()):
             mgr = manager_class(self)
             self._register_manager(mgr.model, mgr)
             setattr(self, alias, mgr)
@@ -115,7 +115,7 @@ class Client(object):
         """
         if isinstance(model, six.string_types):
             # undocumented string lookup
-            for k, m in self._manager_map.items():
+            for k, m in list(self._manager_map.items()):
                 if k.__name__ == model:
                     return m
             else:

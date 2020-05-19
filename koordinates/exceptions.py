@@ -7,7 +7,7 @@ class KoordinatesException(Exception):
 
     def __init__(self, message, **kwargs):
         super(KoordinatesException, self).__init__(message)
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
 

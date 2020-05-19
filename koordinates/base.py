@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import abc
 import collections
@@ -170,7 +170,7 @@ class Query(object):
         params = collections.defaultdict(list, copy.deepcopy(self._filters))
         if self._order_by is not None:
             params["sort"] = self._order_by
-        for k, vl in self._extra.items():
+        for k, vl in list(self._extra.items()):
             params[k] += vl
 
         if params:
@@ -286,7 +286,7 @@ class Query(object):
         :rtype: Query
         """
         q = self._clone()
-        for key, value in params.items():
+        for key, value in list(params.items()):
             q._extra[key].append(value)
         return q
 
@@ -299,7 +299,7 @@ class Query(object):
         """
 
         q = self._clone()
-        for key, value in filters.items():
+        for key, value in list(filters.items()):
             filter_key = re.split("__", key)
             filter_attr = filter_key[0]
             if filter_attr not in self._valid_filter_attrs:
@@ -416,7 +416,7 @@ class ModelMeta(type):
 
                 return _getter
 
-            for ref_attr, ref_class in getattr(klass._meta, "relations", {}).items():
+            for ref_attr, ref_class in list(getattr(klass._meta, "relations", {}).items()):
                 if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
                     # multiple relation
                     ref_method = "list_%s" % ref_attr
@@ -469,7 +469,7 @@ class SerializableBase(object):
         except AttributeError:  # _meta not available
             skip = []
 
-        for key, value in data.items():
+        for key, value in list(data.items()):
             if key not in skip:
                 value = self._deserialize_value(key, value)
                 setattr(self, key, value)
@@ -500,7 +500,7 @@ class SerializableBase(object):
         skip = set(getattr(self._meta, "serialize_skip", []))
 
         r = {}
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if k.startswith("_"):
                 continue
             elif k in skip:
@@ -520,7 +520,7 @@ class SerializableBase(object):
         if isinstance(value, (list, tuple, set)):
             return [self._serialize_value(v) for v in value]
         elif isinstance(value, dict):
-            return dict([(k, self._serialize_value(v)) for k, v in value.items()])
+            return dict([(k, self._serialize_value(v)) for k, v in list(value.items())])
         elif isinstance(value, ModelBase):
             return value._serialize()
         elif isinstance(value, datetime.date):  # includes datetime.datetime
@@ -543,7 +543,7 @@ class ModelBase(SerializableBase):
     def __init__(self, **kwargs):
         self._manager = None
         self.id = None
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     def __eq__(self, other):

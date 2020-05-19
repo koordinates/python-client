@@ -196,7 +196,7 @@ class ExportManager(base.Manager):
         """
         format_opts = self._options()["actions"]["POST"]["formats"]["children"]
         r = {}
-        for kind, kind_opts in format_opts.items():
+        for kind, kind_opts in list(format_opts.items()):
             r[kind] = {c["value"]: c["display_name"] for c in kind_opts["choices"]}
         return r
 
@@ -264,7 +264,7 @@ class Export(base.Model):
         if not hasattr(self, "formats"):
             self.formats = {}
 
-        for kind, data_format in kinds.items():
+        for kind, data_format in list(kinds.items()):
             if data_format:
                 self.formats[kind] = data_format
             elif kind in self.formats:
