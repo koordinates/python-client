@@ -14,9 +14,9 @@ Installation
 
 To install the latest stable release of the library, simply::
 
-    $ pip install koordinates
+    $ pip install -U koordinates
 
-The library is compatible with Python 2.7 & Python 3.3+.
+The library is compatible with Python 3.4+.
 
 
 Documentation
@@ -41,6 +41,6 @@ We use [Black](https://github.com/psf/black) to ensure consistent code formattin
 * Sublime Text: install [sublack](https://packagecontrol.io/packages/sublack) via Package Control
 * VSCode [instructions](https://code.visualstudio.com/docs/python/editing#_formatting)
 
-We use the default settings, and target python 2.7 and 3.3+.
+We use the default settings.
 
 One easy solution is to install [pre-commit](https://pre-commit.com), run `pre-commit install --install-hooks` and it'll automatically validate your changes code as a git pre-commit hook.

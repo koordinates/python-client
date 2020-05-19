@@ -44,6 +44,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Scientific/Engineering :: GIS",
     ],
+    python_requires=">=3.4",
     install_requires=[
         "python-dateutil>=2,<3",
         "pytz",
