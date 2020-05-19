@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 koordinates.exports
 ===================
@@ -8,14 +6,10 @@ The `Exports API <https://support.koordinates.com/hc/en-us/articles/208580966>`_
 provides an interface to create exports and download data from a Koordinates site.
 """
 import collections
+import contextlib
 import logging
 import os
-import six
 
-if six.PY2:
-    import contextlib2 as contextlib
-else:
-    import contextlib
 
 from . import base
 from . import exceptions

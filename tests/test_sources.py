@@ -1,4 +1,5 @@
 import json
+import io
 import os
 import re
 import tempfile
@@ -7,7 +8,6 @@ import types
 import pytest
 from requests_toolbelt import MultipartEncoderMonitor, MultipartDecoder
 import responses
-import six
 
 from koordinates import Source, Client, Group, User, BadRequest, UploadSource
 from koordinates.sources import Datasource, Scan
@@ -189,7 +189,7 @@ def test_create_upload_single(client):
 
     source = UploadSource()
     source.title = "Test single-file upload"
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test.csv"
     source.add_file(f)
 
@@ -245,19 +245,19 @@ def test_create_upload_multiple(client):
     source = UploadSource()
     source.title = "Test multiple-file upload"
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test11.csv"
     source.add_file(f)
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test22.csv"
     source.add_file(f, upload_path="bob2.csv")
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test33.csv"
     source.add_file(f, content_type="text/csv+fiz")
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "text44.csv"
     source.add_file(f, upload_path="bob4.csv", content_type="text/csv+fiz")
 
@@ -426,7 +426,7 @@ def test_scan_log_lines1(client):
     r = client.sources.get_scan_log_lines(44, 41)
     assert isinstance(r, types.GeneratorType)
     for i, line in enumerate(r):
-        assert isinstance(line, six.text_type)
+        assert isinstance(line, str)
         assert not line.endswith("\n")
     assert i == 10
 
@@ -546,7 +546,7 @@ def test_datasource_metadata(client):
     assert isinstance(ds, Datasource)
     assert ds.metadata
 
-    s = six.BytesIO()
+    s = io.BytesIO()
     ds.metadata.get_xml(s)
     metadata = s.getvalue().decode("utf-8")
     assert metadata[:16] == "<gmd:MD_Metadata"

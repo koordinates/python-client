@@ -2,7 +2,7 @@ import json
 
 import pytest
 import responses
-from six.moves.urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Client
 from koordinates.exceptions import ClientValidationError

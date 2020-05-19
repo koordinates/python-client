@@ -49,9 +49,7 @@ setup(
         "pytz",
         "requests>=2.5,<3",
         "requests-toolbelt>=0.4,<1",
-        "six>=1.10.0,<2",
     ],
-    extras_require={':python_version=="2.7"': ["contextlib2",],},
     tests_require=["pytest>=3.3", "responses>=0.3", "coverage>=3.7,<4",],
     zip_safe=False,
 )

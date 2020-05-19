@@ -5,7 +5,7 @@ General tests.
 """
 
 
-from six.moves import urllib
+import urllib
 
 import pytest
 import responses

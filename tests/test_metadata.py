@@ -1,17 +1,10 @@
-# -*- coding: utf-8 -*-
-
-"""
-Tests for the `koordinates.metadata` module.
-"""
-
-
+import io
 import os
 import shutil
 import tempfile
 
 import pytest
 import responses
-import six
 
 from koordinates import Client, Metadata
 
@@ -94,11 +87,11 @@ def test_get_xml(client):
 
     layer = client.layers.get(1474)
 
-    s = six.BytesIO()
+    s = io.BytesIO()
     layer.metadata.get_xml(s, layer.metadata.FORMAT_DC)
     assert s.getvalue().decode("utf-8") == "<dc>"
 
-    s = six.BytesIO()
+    s = io.BytesIO()
     layer.metadata.get_xml(s, layer.metadata.FORMAT_NATIVE)
     assert s.getvalue().decode("utf-8") == "<native>"
 
@@ -138,7 +131,7 @@ def test_layer_set_xml(client):
 
     old_meta = layer.metadata
 
-    s = six.StringIO("<test>")
+    s = io.StringIO("<test>")
     layer.set_metadata(s)
 
     assert s.getvalue() == "<test>"
@@ -146,7 +139,7 @@ def test_layer_set_xml(client):
     # load layer, set metadata, reload layer
     assert len(responses.calls) == 3
 
-    assert isinstance(responses.calls[1].request.body, six.StringIO)
+    assert isinstance(responses.calls[1].request.body, io.StringIO)
     assert responses.calls[1].request.body.getvalue() == "<test>"
 
     assert isinstance(layer.metadata, Metadata)
@@ -174,12 +167,12 @@ def test_layer_set_xml_manager(client):
         adding_headers={"Location": lv_url + "metadata/"},
     )
 
-    s = six.StringIO("<test>")
+    s = io.StringIO("<test>")
     r = client.layers.set_metadata(1474, 4067, s)
 
     assert len(responses.calls) == 1
 
-    assert isinstance(responses.calls[0].request.body, six.StringIO)
+    assert isinstance(responses.calls[0].request.body, io.StringIO)
     assert responses.calls[0].request.body.getvalue() == "<test>"
     assert responses.calls[0].request.headers == {
         "Accept": "application/json",

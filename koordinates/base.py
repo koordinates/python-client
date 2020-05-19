@@ -1,5 +1,3 @@
-
-
 import abc
 import collections
 import datetime
@@ -8,8 +6,7 @@ import itertools
 import logging
 import re
 
-import six
-from six.moves import urllib
+import urllib
 
 from .exceptions import ClientValidationError
 from .utils import make_date, is_bound
@@ -18,8 +15,7 @@ from .utils import make_date, is_bound
 logger = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseManager(object):
+class BaseManager(metaclass=abc.ABCMeta):
     """
     Base class for Model Manager classes.
 
@@ -52,15 +48,13 @@ class BaseManager(object):
         return self.client.reverse_url(self._URL_KEY, url)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class InnerManager(BaseManager):
+class InnerManager(BaseManager, metaclass=abc.ABCMeta):
     def __init__(self, client, parent_manager):
         super(InnerManager, self).__init__(client)
         self.parent = parent_manager
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Manager(BaseManager):
+class Manager(BaseManager, metaclass=abc.ABCMeta):
     def list(self):
         """
         Fetches a set of model objects
@@ -416,7 +410,9 @@ class ModelMeta(type):
 
                 return _getter
 
-            for ref_attr, ref_class in list(getattr(klass._meta, "relations", {}).items()):
+            for ref_attr, ref_class in list(
+                getattr(klass._meta, "relations", {}).items()
+            ):
                 if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
                     # multiple relation
                     ref_method = "list_%s" % ref_attr
@@ -476,7 +472,7 @@ class SerializableBase(object):
         return self
 
     def _deserialize_value(self, key, value):
-        if key.endswith("_at") and isinstance(value, six.string_types):
+        if key.endswith("_at") and isinstance(value, str):
             value = make_date(value)
         return value
 
@@ -529,8 +525,7 @@ class SerializableBase(object):
             return value
 
 
-@six.add_metaclass(ModelMeta)
-class ModelBase(SerializableBase):
+class ModelBase(SerializableBase, metaclass=ModelMeta):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self)
 
