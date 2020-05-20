@@ -1,11 +1,11 @@
 -r requirements-test.txt
 
-Babel~=1.3
-Jinja2~=2.9
+Babel~=2.7
+Jinja2~=2.11
 MarkupSafe
 Pygments
-Sphinx~=1.3
+Sphinx~=3.0
 alabaster~=0.7
-docutils~=0.12
-snowballstemmer~=1.2
-sphinx-rtd-theme~=0.1
+docutils~=0.16
+snowballstemmer~=2.0
+sphinx-rtd-theme~=0.4
