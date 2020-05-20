@@ -16,7 +16,6 @@ If you are looking for information on a specific function, class or method, this
    metadata
    publishing
    set
-   token
    user
    sources
    exports
