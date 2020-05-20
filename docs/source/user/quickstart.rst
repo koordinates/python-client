@@ -85,7 +85,7 @@ Publish a specific version of a Layer::
 Authentication
 ==============
 
-See the `Token API documentation <https://help.koordinates.com/api/publisher-admin-api/token-api/>`_ for details on creating API tokens for use with this library.
+To create an API token, visit the 'APIs and Web Services' page under your user menu on the site you want a token for.
 
 Once you have an API token, you can either pass it into the :py:class:`koordinates.client.Client` object when you create it, or set it in the ``KOORDINATES_TOKEN`` environment variable. ::
 
@@ -104,35 +104,6 @@ If a required scope isn't associated with the token, you will receive an :py:exc
 In addition to the scopes, the user or group owner of the token needs appropriate permissions for the actions they're attempting to take - for example, viewing a particular Set.
 
 If required permissions aren't present, you will receive a :py:exc:`koordinates.exceptions.Forbidden` exception.
-
-Creating tokens from the command line
--------------------------------------
-
-The library includes a command line tool ``koordinates-create-token`` that can create API tokens. ::
-
-    usage: koordinates-create-token [-h] [--scopes SCOPE [SCOPE ...]]
-                                    [--referrers HOST [HOST ...]] [--expires DATE]
-                                    SITE EMAIL NAME
-
-    Command line tool to create a Koordinates API Token.
-
-    positional arguments:
-      SITE                  Domain (eg. labs.koordinates.com) for the Koordinates
-                            site.
-      EMAIL                 User account email address
-      NAME                  Description for the key
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --scopes SCOPE [SCOPE ...]
-                            Scopes for the new API token
-      --referrers HOST [HOST ...]
-                            Restrict the request referrers for the token. You can
-                            use * as a wildcard, eg. *.example.com
-      --expires DATE        Expiry time in ISO 8601 (YYYY-MM-DD) format
-
-
-The tool will prompt for the Koordinates account password corresponding to the email address, and request a new API token. The token will only be printed once, so you should copy/save it to a safe place.
 
 
 Pagination
