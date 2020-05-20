@@ -307,6 +307,7 @@ class Export(base.Model):
                 function which receives upload progress notifications. The function should take two
                 arguments: the number of bytes recieved, and the total number of bytes to recieve.
         :param int chunk_size: Chunk size in bytes for streaming large downloads and progress reporting. 1MB by default
+
         :returns The name of the automatic filename that would be used.
         :rtype: str
         """

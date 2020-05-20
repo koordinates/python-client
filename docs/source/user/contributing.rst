@@ -125,6 +125,7 @@ Build and release
    installation again:
 
    .. code-block:: bash
+
     $ python setup.py sdist upload -r test
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
