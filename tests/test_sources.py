@@ -5,6 +5,7 @@ import re
 import tempfile
 import types
 
+import mimetypes
 import pytest
 from requests_toolbelt import MultipartEncoderMonitor, MultipartDecoder
 import responses
@@ -177,6 +178,14 @@ def test_create_bad_url(client):
         assert False, "Expected to raise BadRequest"
 
 
+def _maybe_content_type(headers):
+    # hack: the mimetypes module doesn't seem to work well in some distros
+    # (-slim and -alpine variants of python docker images)
+    if mimetypes.guess_type('a.csv') == (None, None):
+        headers.pop(b'Content-Type')
+    return headers
+
+
 @responses.activate
 def test_create_upload_single(client):
     responses.add(
@@ -206,25 +215,24 @@ def test_create_upload_single(client):
     assert len(decoder.parts) == 2
 
     parts = [(dict(p.headers), p.text) for p in decoder.parts]
-    assert_count_equal(
-        parts,
-        [
-            (
-                {
-                    b"Content-Disposition": b'form-data; name="source"',
-                    b"Content-Type": b"application/json",
-                },
-                json.dumps({"type": "upload", "title": "Test single-file upload"}),
-            ),
-            (
-                {
-                    b"Content-Disposition": b'form-data; name="file0"; filename="test.csv"',
-                    b"Content-Type": b"text/csv",
-                },
-                CSV_DATA,
-            ),
-        ],
-    )
+    assert len(parts) == 2
+    assert (
+        {
+            b"Content-Disposition": b'form-data; name="source"',
+            b"Content-Type": b"application/json",
+        },
+        json.dumps({"type": "upload", "title": "Test single-file upload"}),
+    ) in parts
+
+    assert (
+        _maybe_content_type(
+            {
+                b"Content-Disposition": b'form-data; name="file0"; filename="test.csv"',
+                b"Content-Type": b"text/csv",
+            }
+        ),
+        CSV_DATA,
+    ) in parts
 
 
 @responses.activate
@@ -289,17 +297,21 @@ def test_create_upload_multiple(client):
                 json.dumps({"type": "upload", "title": "Test multiple-file upload"}),
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": b'form-data; name="file0"; filename="test11.csv"',
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": b'form-data; name="file0"; filename="test11.csv"',
+                    }
+                ),
                 CSV_DATA,
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": b'form-data; name="file1"; filename="bob2.csv"',
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": b'form-data; name="file1"; filename="bob2.csv"',
+                    }
+                ),
                 CSV_DATA,
             ),
             (
@@ -317,12 +329,14 @@ def test_create_upload_multiple(client):
                 CSV_DATA,
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": (
-                        'form-data; name="file4"; filename="%s"' % temp_filename
-                    ).encode("utf-8"),
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": (
+                            'form-data; name="file4"; filename="%s"' % temp_filename
+                        ).encode("utf-8"),
+                    }
+                ),
                 CSV_DATA,
             ),
         ],
