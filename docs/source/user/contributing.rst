@@ -42,8 +42,8 @@ Preparations
     $ tox
     [...]
     ________ summary ________
-    py27: commands succeeded
     py34: commands succeeded
+    ...
     congratulations :)
 
    .. note::
@@ -61,7 +61,7 @@ Preparations
 
     You will need to install dev dependancies in :file:`requirements-dev.txt` to build documentation.
 
-#. Check the `CircleCI build <https://circleci.com/gh/koordinates/python-client>`_ is passing.
+#. Check the `Buildkite build <https://buildkite.com/koordinates/python-client>`_ is passing.
 
 #. Update the version number in :file:`koordinates/__init__.py` and commit:
 
