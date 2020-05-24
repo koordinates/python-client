@@ -15,7 +15,7 @@ with open("koordinates/__init__.py", "r") as fd:
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE
     ).group(1)
-with open("README.rst", "r", "utf-8") as f:
+with open("README.md", "r", "utf-8") as f:
     readme = f.read()
 
 setup(
@@ -24,6 +24,7 @@ setup(
     version=version,
     description="A Python client library for a number of Koordinates web APIs",
     long_description=readme,
+    long_description_content_type="text/markdown",
     author="Koordinates Limited",
     author_email="support@koordinates.com",
     url="https://github.com/koordinates/python-client",
