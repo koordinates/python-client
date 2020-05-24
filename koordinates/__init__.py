@@ -6,7 +6,7 @@ Koordinates Python API Client Library
 :license: BSD, see LICENSE for more details.
 """
 
-__version__ = "0.5.3"
+__version__ = "0.6.dev0"
 
 from .exceptions import (
     KoordinatesException,
