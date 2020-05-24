@@ -52,9 +52,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"Koordinates Python API Client"
-copyright = u"Koordinates Limited."
-author = u"Koordinates"
+project = "Koordinates Python API Client"
+copyright = "Koordinates Limited."
+author = "Koordinates"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -228,8 +228,8 @@ latex_documents = [
     (
         master_doc,
         "KoordinatesPythonAPIClient.tex",
-        u"Koordinates Python API Client Documentation",
-        u"Koordinates",
+        "Koordinates Python API Client Documentation",
+        "Koordinates",
         "manual",
     ),
 ]
@@ -263,7 +263,7 @@ man_pages = [
     (
         master_doc,
         "koordinatespythonapiclient",
-        u"Koordinates Python API Client Documentation",
+        "Koordinates Python API Client Documentation",
         [author],
         1,
     )
@@ -282,7 +282,7 @@ texinfo_documents = [
     (
         master_doc,
         "KoordinatesPythonAPIClient",
-        u"Koordinates Python API Client Documentation",
+        "Koordinates Python API Client Documentation",
         author,
         "KoordinatesPythonAPIClient",
         "One line description of project.",

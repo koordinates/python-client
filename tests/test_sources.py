@@ -1,13 +1,14 @@
 import json
+import io
 import os
 import re
 import tempfile
 import types
 
+import mimetypes
 import pytest
 from requests_toolbelt import MultipartEncoderMonitor, MultipartDecoder
 import responses
-import six
 
 from koordinates import Source, Client, Group, User, BadRequest, UploadSource
 from koordinates.sources import Datasource, Scan
@@ -177,6 +178,14 @@ def test_create_bad_url(client):
         assert False, "Expected to raise BadRequest"
 
 
+def _maybe_content_type(headers):
+    # hack: the mimetypes module doesn't seem to work well in some distros
+    # (-slim and -alpine variants of python docker images)
+    if mimetypes.guess_type('a.csv') == (None, None):
+        headers.pop(b'Content-Type')
+    return headers
+
+
 @responses.activate
 def test_create_upload_single(client):
     responses.add(
@@ -189,7 +198,7 @@ def test_create_upload_single(client):
 
     source = UploadSource()
     source.title = "Test single-file upload"
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test.csv"
     source.add_file(f)
 
@@ -206,25 +215,24 @@ def test_create_upload_single(client):
     assert len(decoder.parts) == 2
 
     parts = [(dict(p.headers), p.text) for p in decoder.parts]
-    assert_count_equal(
-        parts,
-        [
-            (
-                {
-                    b"Content-Disposition": b'form-data; name="source"',
-                    b"Content-Type": b"application/json",
-                },
-                json.dumps({"type": "upload", "title": "Test single-file upload"}),
-            ),
-            (
-                {
-                    b"Content-Disposition": b'form-data; name="file0"; filename="test.csv"',
-                    b"Content-Type": b"text/csv",
-                },
-                CSV_DATA,
-            ),
-        ],
-    )
+    assert len(parts) == 2
+    assert (
+        {
+            b"Content-Disposition": b'form-data; name="source"',
+            b"Content-Type": b"application/json",
+        },
+        json.dumps({"type": "upload", "title": "Test single-file upload"}),
+    ) in parts
+
+    assert (
+        _maybe_content_type(
+            {
+                b"Content-Disposition": b'form-data; name="file0"; filename="test.csv"',
+                b"Content-Type": b"text/csv",
+            }
+        ),
+        CSV_DATA,
+    ) in parts
 
 
 @responses.activate
@@ -245,19 +253,19 @@ def test_create_upload_multiple(client):
     source = UploadSource()
     source.title = "Test multiple-file upload"
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test11.csv"
     source.add_file(f)
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test22.csv"
     source.add_file(f, upload_path="bob2.csv")
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "test33.csv"
     source.add_file(f, content_type="text/csv+fiz")
 
-    f = six.StringIO(CSV_DATA)
+    f = io.StringIO(CSV_DATA)
     f.name = "text44.csv"
     source.add_file(f, upload_path="bob4.csv", content_type="text/csv+fiz")
 
@@ -289,17 +297,21 @@ def test_create_upload_multiple(client):
                 json.dumps({"type": "upload", "title": "Test multiple-file upload"}),
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": b'form-data; name="file0"; filename="test11.csv"',
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": b'form-data; name="file0"; filename="test11.csv"',
+                    }
+                ),
                 CSV_DATA,
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": b'form-data; name="file1"; filename="bob2.csv"',
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": b'form-data; name="file1"; filename="bob2.csv"',
+                    }
+                ),
                 CSV_DATA,
             ),
             (
@@ -317,12 +329,14 @@ def test_create_upload_multiple(client):
                 CSV_DATA,
             ),
             (
-                {
-                    b"Content-Type": b"text/csv",
-                    b"Content-Disposition": (
-                        'form-data; name="file4"; filename="%s"' % temp_filename
-                    ).encode("utf-8"),
-                },
+                _maybe_content_type(
+                    {
+                        b"Content-Type": b"text/csv",
+                        b"Content-Disposition": (
+                            'form-data; name="file4"; filename="%s"' % temp_filename
+                        ).encode("utf-8"),
+                    }
+                ),
                 CSV_DATA,
             ),
         ],
@@ -426,7 +440,7 @@ def test_scan_log_lines1(client):
     r = client.sources.get_scan_log_lines(44, 41)
     assert isinstance(r, types.GeneratorType)
     for i, line in enumerate(r):
-        assert isinstance(line, six.text_type)
+        assert isinstance(line, str)
         assert not line.endswith("\n")
     assert i == 10
 
@@ -546,7 +560,7 @@ def test_datasource_metadata(client):
     assert isinstance(ds, Datasource)
     assert ds.metadata
 
-    s = six.BytesIO()
+    s = io.BytesIO()
     ds.metadata.get_xml(s)
     metadata = s.getvalue().decode("utf-8")
     assert metadata[:16] == "<gmd:MD_Metadata"

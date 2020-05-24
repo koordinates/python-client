@@ -7,7 +7,7 @@ test_publish
 
 Tests for the `koordinates.publishing` module.
 """
-from __future__ import unicode_literals, absolute_import
+
 
 import pytest
 import responses

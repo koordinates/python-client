@@ -3,9 +3,9 @@
 """
 General tests.
 """
-from __future__ import unicode_literals, absolute_import
 
-from six.moves import urllib
+
+import urllib
 
 import pytest
 import responses

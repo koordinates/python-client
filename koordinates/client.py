@@ -15,7 +15,6 @@ import sys
 import pkg_resources
 import requests
 import requests_toolbelt
-import six
 
 from . import layers, licenses, publishing, sets, users, catalog, sources, exports
 from . import exceptions
@@ -99,7 +98,7 @@ class Client(object):
             mgr = manager_class(self)
             self._register_manager(mgr.model, mgr)
 
-        for alias, manager_class in public.items():
+        for alias, manager_class in list(public.items()):
             mgr = manager_class(self)
             self._register_manager(mgr.model, mgr)
             setattr(self, alias, mgr)
@@ -113,9 +112,9 @@ class Client(object):
         :param model: Model class to look up the manager instance for.
         :return: Manager instance for the model associated with this client.
         """
-        if isinstance(model, six.string_types):
+        if isinstance(model, str):
             # undocumented string lookup
-            for k, m in self._manager_map.items():
+            for k, m in list(self._manager_map.items()):
                 if k.__name__ == model:
                     return m
             else:

@@ -22,7 +22,6 @@ import mimetypes
 import os
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-import six
 
 from . import base
 from .exceptions import ClientValidationError
@@ -259,7 +258,7 @@ class UploadSource(Source):
             for i, (upload_path, (file_or_path, content_type)) in enumerate(
                 self._files.items()
             ):
-                if isinstance(file_or_path, six.string_types):
+                if isinstance(file_or_path, str):
                     # path
                     fp = open(file_or_path, "rb")
                     opened_files.append(fp)
@@ -310,7 +309,7 @@ class UploadSource(Source):
         :param str content_type: Content-Type of the file. By default it will attempt to auto-detect from the \
                                  file/upload_path.
         """
-        if isinstance(fp, six.string_types):
+        if isinstance(fp, str):
             # path
             if not os.path.isfile(fp):
                 raise ClientValidationError("Invalid file: %s", fp)

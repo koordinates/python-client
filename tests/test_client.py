@@ -3,7 +3,7 @@
 """
 Tests for the `koordinates.catalog` module.
 """
-from __future__ import unicode_literals, absolute_import, print_function
+
 
 import contextlib
 import json

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import abc
 import collections
 import datetime
@@ -8,8 +6,7 @@ import itertools
 import logging
 import re
 
-import six
-from six.moves import urllib
+import urllib
 
 from .exceptions import ClientValidationError
 from .utils import make_date, is_bound
@@ -18,8 +15,7 @@ from .utils import make_date, is_bound
 logger = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseManager(object):
+class BaseManager(metaclass=abc.ABCMeta):
     """
     Base class for Model Manager classes.
 
@@ -52,15 +48,13 @@ class BaseManager(object):
         return self.client.reverse_url(self._URL_KEY, url)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class InnerManager(BaseManager):
+class InnerManager(BaseManager, metaclass=abc.ABCMeta):
     def __init__(self, client, parent_manager):
         super(InnerManager, self).__init__(client)
         self.parent = parent_manager
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Manager(BaseManager):
+class Manager(BaseManager, metaclass=abc.ABCMeta):
     def list(self):
         """
         Fetches a set of model objects
@@ -170,7 +164,7 @@ class Query(object):
         params = collections.defaultdict(list, copy.deepcopy(self._filters))
         if self._order_by is not None:
             params["sort"] = self._order_by
-        for k, vl in self._extra.items():
+        for k, vl in list(self._extra.items()):
             params[k] += vl
 
         if params:
@@ -286,7 +280,7 @@ class Query(object):
         :rtype: Query
         """
         q = self._clone()
-        for key, value in params.items():
+        for key, value in list(params.items()):
             q._extra[key].append(value)
         return q
 
@@ -299,7 +293,7 @@ class Query(object):
         """
 
         q = self._clone()
-        for key, value in filters.items():
+        for key, value in list(filters.items()):
             filter_key = re.split("__", key)
             filter_attr = filter_key[0]
             if filter_attr not in self._valid_filter_attrs:
@@ -416,7 +410,9 @@ class ModelMeta(type):
 
                 return _getter
 
-            for ref_attr, ref_class in getattr(klass._meta, "relations", {}).items():
+            for ref_attr, ref_class in list(
+                getattr(klass._meta, "relations", {}).items()
+            ):
                 if isinstance(ref_class, (list, tuple)) and len(ref_class) == 1:
                     # multiple relation
                     ref_method = "list_%s" % ref_attr
@@ -469,14 +465,14 @@ class SerializableBase(object):
         except AttributeError:  # _meta not available
             skip = []
 
-        for key, value in data.items():
+        for key, value in list(data.items()):
             if key not in skip:
                 value = self._deserialize_value(key, value)
                 setattr(self, key, value)
         return self
 
     def _deserialize_value(self, key, value):
-        if key.endswith("_at") and isinstance(value, six.string_types):
+        if key.endswith("_at") and isinstance(value, str):
             value = make_date(value)
         return value
 
@@ -500,7 +496,7 @@ class SerializableBase(object):
         skip = set(getattr(self._meta, "serialize_skip", []))
 
         r = {}
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if k.startswith("_"):
                 continue
             elif k in skip:
@@ -520,7 +516,7 @@ class SerializableBase(object):
         if isinstance(value, (list, tuple, set)):
             return [self._serialize_value(v) for v in value]
         elif isinstance(value, dict):
-            return dict([(k, self._serialize_value(v)) for k, v in value.items()])
+            return dict([(k, self._serialize_value(v)) for k, v in list(value.items())])
         elif isinstance(value, ModelBase):
             return value._serialize()
         elif isinstance(value, datetime.date):  # includes datetime.datetime
@@ -529,8 +525,7 @@ class SerializableBase(object):
             return value
 
 
-@six.add_metaclass(ModelMeta)
-class ModelBase(SerializableBase):
+class ModelBase(SerializableBase, metaclass=ModelMeta):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self)
 
@@ -543,7 +538,7 @@ class ModelBase(SerializableBase):
     def __init__(self, **kwargs):
         self._manager = None
         self.id = None
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     def __eq__(self, other):
