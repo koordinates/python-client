@@ -231,10 +231,16 @@ class Query(object):
         Get the count for the query results. If we've previously started iterating we use
         that count, otherwise do a request and look at the ``X-Resource-Range`` header.
         """
+        # note: this method is called twice when wrapping queries in list(), from py3.8+
+        # https://bugs.python.org/issue39829
+        # so we need to make sure it is cached and doesn't do a request every time.
         if self._count is None:
             r = self._request(self._to_url())
             self._update_range(r)
             self._first_page = (r.json(), self._next_url(r))
+            if self._count is None and self._first_page[1] is None:
+                # this is the only page
+                self._count = len(self._first_page[0])
         return self._count
 
     def __getitem__(self, k):
