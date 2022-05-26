@@ -60,7 +60,9 @@ class Metadata(base.InnerModel):
         If you pass this function an open file-like object as the fp parameter, the function will
         not close that file for you.
         """
-        r = self._client.request("GET", getattr(self, format), stream=True)
+        r = self._client.request(
+            "GET", getattr(self, format), headers={"Accept": "text/xml"}, stream=True
+        )
         filename = stream.stream_response_to_file(r, path=fp)
         return filename
 
