@@ -50,7 +50,7 @@ setup(
         "python-dateutil>=2,<3",
         "pytz",
         "requests>=2.5,<3",
-        "requests-toolbelt>=0.4,<1",
+        "requests-toolbelt",
     ],
     tests_require=[
         "pytest>=3.3",
