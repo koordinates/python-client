@@ -11,8 +11,8 @@ import logging
 import os
 import re
 import sys
+import importlib.metadata
 
-import pkg_resources
 import requests
 import requests_toolbelt
 
@@ -57,7 +57,7 @@ class Client(object):
             )
 
         self._user_agent = requests_toolbelt.user_agent(
-            "KoordinatesPython", pkg_resources.require("koordinates")[0].version
+            "KoordinatesPython", importlib.metadata.version('koordinates')
         )
 
         self._init_managers(
