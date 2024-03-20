@@ -11,7 +11,12 @@ import logging
 import os
 import re
 import sys
-import importlib.metadata
+
+try:
+    from importlib.metadata import version as _version
+except ImportError:
+    # python < 3.8
+    from importlib_metadata import version as _version
 
 import requests
 import requests_toolbelt
@@ -57,7 +62,7 @@ class Client(object):
             )
 
         self._user_agent = requests_toolbelt.user_agent(
-            "KoordinatesPython", importlib.metadata.version('koordinates')
+            "KoordinatesPython", _version('koordinates')
         )
 
         self._init_managers(

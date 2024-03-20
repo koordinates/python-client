@@ -23,6 +23,7 @@ dependencies = [
   "pytz",
   "requests>=2.5,<3",
   "requests-toolbelt",
+  "importlib-metadata;python_version<'3.8'",
 ]
 description = "A Python client library for a number of Koordinates web APIs"
 dynamic = ["readme"]
