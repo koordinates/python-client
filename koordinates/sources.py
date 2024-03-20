@@ -226,8 +226,8 @@ class UploadSource(Source):
 
     :Example:
 
-    >>> upload = koordinates.UploadSource()
-    >>> upload.user = 5
+    >>> upload = koordinates.sources.UploadSource()
+    >>> upload.group = 5
     >>> upload.title = "upload_source example"
     >>> upload.add_file('/path/to/data.zip')
     >>> upload = client.sources.create(upload)
@@ -312,7 +312,7 @@ class UploadSource(Source):
         if isinstance(fp, str):
             # path
             if not os.path.isfile(fp):
-                raise ClientValidationError("Invalid file: %s", fp)
+                raise ClientValidationError("Invalid file: %s" % fp)
             if not upload_path:
                 upload_path = os.path.split(fp)[1]
         else:
