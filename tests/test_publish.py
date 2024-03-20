@@ -26,6 +26,7 @@ def client():
     return Client(token="test", host="koordinates.com")
 
 
+@pytest.fixture
 def testclient():
     return Client(token="test", host="test.koordinates.com")
 
