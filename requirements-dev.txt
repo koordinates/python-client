@@ -4,9 +4,9 @@ Babel~=2.7
 Jinja2<3.1
 MarkupSafe
 Pygments
-Sphinx~=3.0
+Sphinx~=5.0
 alabaster~=0.7
 docutils~=0.16
 snowballstemmer~=2.0
-sphinx-rtd-theme~=0.4
+sphinx-rtd-theme
 twine
