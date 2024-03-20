@@ -312,7 +312,13 @@ class Export(base.Model):
         download_filename = "{}.zip".format(self.name)
         fd = None
 
-        if isinstance(getattr(path, "write", None), collections.Callable):
+        try:
+            callable_type = collections.Callable
+        except AttributeError:
+            # Python >= 3.10
+            callable_type = collections.abc.Callable
+
+        if isinstance(getattr(path, "write", None), callable_type):
             # already open file-like object
             fd = path
         elif os.path.isdir(path):
