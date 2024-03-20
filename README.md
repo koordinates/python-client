@@ -14,7 +14,7 @@ To install the latest stable release of the library, simply:
 pip install -U koordinates
 ```
 
-The library is compatible with Python 3.4+.
+The library is compatible with Python 3.7+.
 
 
 ## Documentation

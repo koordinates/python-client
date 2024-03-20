@@ -36,8 +36,7 @@ We're working hard to add support for additional APIs to the library, so expect 
 Compatibility
 ~~~~~~~~~~~~~
 
-- Python 2.7
-- Python 3.3+
+- Python 3.7+
 
 
 User Guide
