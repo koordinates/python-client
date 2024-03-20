@@ -1,7 +1,7 @@
 steps:
   - label: ":building_construction: build everything"
     command:
-      - python setup.py sdist bdist_wheel
+      - python -m build
       - pip install dist/*.whl
       - pip install -r requirements-dev.txt
       - make zipdocs
@@ -9,59 +9,30 @@ steps:
       docker#v1.4.0:
         image: "${ECR}/ci-tools:latest"
         workdir: /app
-    artifact_paths: 
+    artifact_paths:
       - dist/*
       - docs/build/docs.zip
 
   - wait
 
-  - label: ":pytest: run tests (:python: 3.8)"
+  - label: ":pytest: run tests (:python: {{matrix.python}})"
     command:
       - ./.buildkite/test.sh
     plugins:
       artifacts#v1.2.0:
         download: "dist/*.whl"
-      docker#v1.4.0:
-        image: "python:3.8-alpine"
+      docker#v5.10.0:
+        image: "python:{{matrix.python}}-alpine"
         workdir: /app
         shell: false
     artifact_paths: "./pytest*.xml"
-
-  - label: ":pytest: run tests (:python: 3.9)"
-    command:
-      - ./.buildkite/test.sh
-    plugins:
-      artifacts#v1.2.0:
-        download: "dist/*.whl"
-      docker#v1.4.0:
-        image: "python:3.9-alpine"
-        workdir: /app
-        shell: false
-    artifact_paths: "./pytest*.xml"
-
-  - label: ":pytest: run tests (:python: 3.10)"
-    command:
-      - ./.buildkite/test.sh
-    plugins:
-      artifacts#v1.2.0:
-        download: "dist/*.whl"
-      docker#v1.4.0:
-        image: "python:3.10-alpine"
-        workdir: /app
-        shell: false
-    artifact_paths: "./pytest*.xml"
-
-  - label: ":pytest: run tests (:python: 3.7)"
-    command:
-      - ./.buildkite/test.sh
-    plugins:
-      artifacts#v1.2.0:
-        download: "dist/*.whl"
-      docker#v1.4.0:
-        image: "python:3.7-alpine"
-        workdir: /app
-        shell: false
-    artifact_paths: "./pytest*.xml"
+    matrix:
+      setup:
+        python:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
 
   # Record test failures
   - wait: ~
