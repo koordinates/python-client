@@ -182,7 +182,7 @@ class Client(object):
             r.raise_for_status()
             return r
         except requests.HTTPError as e:
-            logger.warn("Response: %s: %s", e, r.text)
+            logger.warning("Response: %s: %s", e, r.text)
             raise exceptions.ServerError.from_requests_error(e)
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
