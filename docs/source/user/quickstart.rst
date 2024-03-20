@@ -51,20 +51,20 @@ class instances via the library::
 Create a new Layer from existing datasources::
 
     >>> layer = koordinates.Layer()
-    >>> layer.name = "A Test Layer" 
+    >>> layer.title = "A Test Layer"
     >>> layer.group = 999
-    >>> layer.data = koordinates.LayerData(datasources=[123456]) 
+    >>> layer.data = koordinates.layers.LayerData(datasources=[123456])
     >>> layer = client.layers.create(layer)
     >>> print(layer.url)
 
 Publish multiple objects of various types::
 
-    >>> # Publish a number of items, in this case one
-    >>> # Table and one Layer 
+    >>> # Publish a number of items, in this case the layer created above, and
+    >>> # a table, created in a similar way
     >>> publish = koordinates.publishing.Publish()
-    >>> publish.add_layer_version(1111)
-    >>> publish.add_table_version(2222)
-    >>> publish.strategy = publish.STRATEGY_TOGETHER
+    >>> publish.add_layer_item(layer)
+    >>> publish.add_table_item(table)
+    >>> publish.strategy = publish.PUBLISH_STRATEGY_TOGETHER
     >>> publish = client.publishing.create(publish)
     >>> print(publish.url)
 
