@@ -6,7 +6,7 @@ Koordinates welcomes bug reports and contributions by the community to this modu
 Testing
 -------
 
-The client includes a suite of unit and functional tests. These should be used to verify that your changes don't break existing functionality, and that compatibility is maintained across supported Python versions. `Tests run automatically on CircleCI <https://circleci.com/gh/koordinates/python-client>`_ for branch commits and pull requests.
+The client includes a suite of unit and functional tests. These should be used to verify that your changes don't break existing functionality, and that compatibility is maintained across supported Python versions. `Tests run automatically on Buildkite <https://buildkite.com/koordinates/python-client/>`_ for branch commits and pull requests.
 
 To run the tests you need to::
 
@@ -32,7 +32,7 @@ Preparations
 #. Close or update all tickets for the `next milestone on Github.
    <https://github.com/koordinates/python-client/milestones?direction=asc&sort=due_date&state=open>`_.
 
-#. Update the *minimum* required versions of dependencies in :file:`setup.py`.
+#. Update the *minimum* required versions of dependencies in :file:`pyproject.toml`.
    Update the *exact* version of all entries in :file:`requirements.txt`.
 
 #. Run :command:`tox` from the project root. All tests for all supported Python versions must pass:
@@ -42,7 +42,7 @@ Preparations
     $ tox
     [...]
     ________ summary ________
-    py34: commands succeeded
+    py37: commands succeeded
     ...
     congratulations :)
 
@@ -59,7 +59,7 @@ Preparations
 
    .. note::
 
-    You will need to install dev dependancies in :file:`requirements-dev.txt` to build documentation.
+    You will need to install dev dependencies in :file:`requirements-dev.txt` to build documentation.
 
 #. Check the `Buildkite build <https://buildkite.com/koordinates/python-client>`_ is passing.
 
@@ -85,9 +85,9 @@ Build and release
 
    .. code-block:: bash
 
-    $ python setup.py sdist
+    $ python3 -m build
     $ ls dist/
-    koordinates-0.0.0.tar.gz
+    koordinates-0.7.0-py3-none-any.whl  koordinates-0.7.0.tar.gz
 
    Try installing them:
 
@@ -98,8 +98,6 @@ Build and release
     $ /tmp/koordinates-sdist/bin/pip install dist/koordinates-0.0.0.tar.gz
     $ /tmp/koordinates-sdist/bin/python
     >>> import koordinates
-    >>> koordinates.__version__
-    '0.0.0'
 
 #. Create or check your accounts for the `test server <https://testpypi.python.org/pypi>`
    and `PyPI <https://pypi.python.org/pypi>`_. Update your :file:`~/.pypirc` with your
@@ -126,7 +124,7 @@ Build and release
 
    .. code-block:: bash
 
-    $ python setup.py sdist upload -r test
+    $ twine upload -r test dist/*
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist
@@ -139,7 +137,7 @@ Build and release
 
    .. code-block:: bash
 
-    $ python setup.py sdist upload -r pypi
+    $ twine upload -r pypi dist/*
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist

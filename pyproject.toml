@@ -1,2 +1,51 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0"]
+
+[project]
+authors = [
+  {name = "Koordinates Limited", email = "support@koordinates.com"},
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+  "python-dateutil>=2,<3",
+  "pytz",
+  "requests>=2.5,<3",
+  "requests-toolbelt",
+]
+description = "A Python client library for a number of Koordinates web APIs"
+dynamic = ["readme"]
+keywords = ["koordinates", "api"]
+name = "koordinates"
+requires-python = ">=3.7"
+version = "0.7.0"
+
+[project.urls]
+Source = "https://github.com/koordinates/python-client"
+
+[project.optional-dependencies]
+dev = [
+  "coverage>=3.7,<4",
+  "pytest>=3.3",
+  "responses>=0.3",
+]
+
+[tool.setuptools]
+packages = ["koordinates"]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown"}
+
 [tool.black]
-target-version = ['py34']
+target-version = ['py37']

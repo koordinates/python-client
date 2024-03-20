@@ -12,14 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
-import shlex
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../koordinates"))
-import koordinates
-from koordinates import __version__
+import importlib.metadata
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -61,7 +54,8 @@ author = "Koordinates"
 # built documents.
 #
 # The short X.Y version.
-version = __version__
+version = importlib.metadata.version("koordinates")
+
 # The full version, including alpha/beta/rc tags.
 release = version
 
