@@ -27,6 +27,30 @@ steps:
         shell: false
     artifact_paths: "./pytest*.xml"
 
+  - label: ":pytest: run tests (:python: 3.9)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*.whl"
+      docker#v1.4.0:
+        image: "python:3.9-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
+  - label: ":pytest: run tests (:python: 3.10)"
+    command:
+      - ./.buildkite/test.sh
+    plugins:
+      artifacts#v1.2.0:
+        download: "dist/*.whl"
+      docker#v1.4.0:
+        image: "python:3.10-alpine"
+        workdir: /app
+        shell: false
+    artifact_paths: "./pytest*.xml"
+
   - label: ":pytest: run tests (:python: 3.7)"
     command:
       - ./.buildkite/test.sh
