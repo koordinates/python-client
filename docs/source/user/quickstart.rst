@@ -59,10 +59,11 @@ Create a new Layer from existing datasources::
 
 Publish multiple objects of various types::
 
-    >>> # Publish a number of items, in this case one
-    >>> # Table and one Layer 
+    >>> # Publish a number of items, in this case the layer created above, and
+    >>> # a table, created in a similar way
     >>> publish = koordinates.publishing.Publish()
     >>> publish.add_layer_item(layer)
+    >>> publish.add_table_item(table)
     >>> publish.strategy = publish.PUBLISH_STRATEGY_TOGETHER
     >>> publish = client.publishing.create(publish)
     >>> print(publish.url)
