@@ -12,7 +12,11 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import importlib.metadata
+try:
+    from importlib.metadata import version as _version
+except ImportError:
+    # python < 3.8
+    from importlib_metadata import version as _version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -54,7 +58,7 @@ author = "Koordinates"
 # built documents.
 #
 # The short X.Y version.
-version = importlib.metadata.version("koordinates")
+version = _version("koordinates")
 
 # The full version, including alpha/beta/rc tags.
 release = version

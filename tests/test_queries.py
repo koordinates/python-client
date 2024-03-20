@@ -2,6 +2,7 @@ import json
 
 import pytest
 import responses
+from responses import matchers
 from urllib.parse import parse_qs, urlparse
 
 from koordinates import base, Client
@@ -155,7 +156,6 @@ def test_pagination(manager):
     responses.add(
         responses.GET,
         FooManager.TEST_LIST_URL,
-        match_querystring=True,
         body=json.dumps([{"id": id} for id in range(10)]),
         content_type="application/json",
         adding_headers={
@@ -165,8 +165,8 @@ def test_pagination(manager):
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + "?page=2",
-        match_querystring=True,
+        FooManager.TEST_LIST_URL,
+        match=[matchers.query_param_matcher({'page': '2'})],
         body=json.dumps([{"id": id} for id in range(10, 20)]),
         content_type="application/json",
         adding_headers={
@@ -176,8 +176,8 @@ def test_pagination(manager):
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + "?page=3",
-        match_querystring=True,
+        FooManager.TEST_LIST_URL,
+        match=[matchers.query_param_matcher({'page': '3'})],
         body=json.dumps([{"id": id} for id in range(20, 28)]),
         content_type="application/json",
         adding_headers={"X-Resource-Range": "20-28/28",},
@@ -201,7 +201,7 @@ def test_slicing(manager):
     responses.add(
         responses.GET,
         FooManager.TEST_LIST_URL,
-        match_querystring=True,
+        match=[matchers.query_param_matcher({})],
         body=json.dumps([{"id": id} for id in range(10)]),
         content_type="application/json",
         adding_headers={
@@ -211,8 +211,8 @@ def test_slicing(manager):
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + "?page=2",
-        match_querystring=True,
+        FooManager.TEST_LIST_URL,
+        match=[matchers.query_param_matcher({'page': '2'})],
         body=json.dumps([{"id": id} for id in range(10, 20)]),
         content_type="application/json",
         adding_headers={
@@ -222,8 +222,8 @@ def test_slicing(manager):
     )
     responses.add(
         responses.GET,
-        FooManager.TEST_LIST_URL + "?page=3",
-        match_querystring=True,
+        FooManager.TEST_LIST_URL,
+        match=[matchers.query_param_matcher({'page': '3'})],
         body=json.dumps([{"id": id} for id in range(20, 28)]),
         content_type="application/json",
         adding_headers={"X-Resource-Range": "20-28/28",},

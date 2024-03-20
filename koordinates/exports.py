@@ -5,10 +5,10 @@ koordinates.exports
 The `Exports API <https://support.koordinates.com/hc/en-us/articles/208580966>`_
 provides an interface to create exports and download data from a Koordinates site.
 """
-import collections
 import contextlib
 import logging
 import os
+from collections.abc import Callable
 
 
 from . import base
@@ -312,13 +312,7 @@ class Export(base.Model):
         download_filename = "{}.zip".format(self.name)
         fd = None
 
-        try:
-            callable_type = collections.Callable
-        except AttributeError:
-            # Python >= 3.10
-            callable_type = collections.abc.Callable
-
-        if isinstance(getattr(path, "write", None), callable_type):
+        if isinstance(getattr(path, "write", None), Callable):
             # already open file-like object
             fd = path
         elif os.path.isdir(path):

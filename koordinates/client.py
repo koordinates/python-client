@@ -12,7 +12,12 @@ import os
 import re
 import sys
 
-import pkg_resources
+try:
+    from importlib.metadata import version as _version
+except ImportError:
+    # python < 3.8
+    from importlib_metadata import version as _version
+
 import requests
 import requests_toolbelt
 
@@ -57,7 +62,7 @@ class Client(object):
             )
 
         self._user_agent = requests_toolbelt.user_agent(
-            "KoordinatesPython", pkg_resources.require("koordinates")[0].version
+            "KoordinatesPython", _version('koordinates')
         )
 
         self._init_managers(
@@ -182,7 +187,7 @@ class Client(object):
             r.raise_for_status()
             return r
         except requests.HTTPError as e:
-            logger.warn("Response: %s: %s", e, r.text)
+            logger.warning("Response: %s: %s", e, r.text)
             raise exceptions.ServerError.from_requests_error(e)
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
