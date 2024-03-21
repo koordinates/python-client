@@ -95,7 +95,8 @@ Build and release
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist
-    $ /tmp/koordinates-sdist/bin/pip install dist/koordinates-0.0.0.tar.gz
+    $ source /tmp/koordinates-sdist/bin/activate
+    $ /tmp/koordinates-sdist/bin/pip install dist/koordinates-0.7.0.tar.gz
     $ /tmp/koordinates-sdist/bin/python
     >>> import koordinates
 
@@ -111,13 +112,13 @@ Build and release
         test
 
     [test]
-    repository: https://test.pypi.org/legacy/
-    username: <test username>
-    password: <test password>
+    repository = https://test.pypi.org/legacy/
+    username = __apitoken__
+    password = <apikey>
 
     [pypi]
-    username: <production username>
-    password: <production password>
+    username = __apitoken__
+    password = <apikey>
 
 #. Upload the distributions for the new version to the test server and test the
    installation again:
@@ -128,6 +129,7 @@ Build and release
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist
+    $ source /tmp/koordinates-sdist/bin/activate
     $ /tmp/koordinates-sdist/bin/pip install -i https://testpypi.python.org/pypi --extra-index-url https://pypi.python.org/pypi koordinates
 
 #. Check if the package is displayed correctly:
@@ -141,6 +143,7 @@ Build and release
 
     $ rm -rf /tmp/koordinates-sdist  # ensure clean state
     $ virtualenv /tmp/koordinates-sdist
+    $ source /tmp/koordinates-sdist/bin/activate
     $ pip install -U koordinates
 
 #. Check the package is displayed correctly:
