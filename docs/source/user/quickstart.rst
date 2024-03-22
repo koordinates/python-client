@@ -81,6 +81,11 @@ Publish a specific version of a Layer::
     >>> layer_version = client.layers.get(8888).get_version(9999)
     >>> layer_version.publish()
 
+Set the permissions of a Layer::
+
+    >>> permissions = [{"permission": "view", "group": "everyone"}, {"permission": "admin", "user": 123}]
+    >>> layer.permissions.set(permissions)
+
 
 Authentication
 ==============

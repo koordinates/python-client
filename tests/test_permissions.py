@@ -140,7 +140,7 @@ def test_set_layer_permissions(responses, client, layer):
         responses.PUT,
         target_url,
         body=layer_list_permissions_good_simulated_response,
-        status=201,
+        status=200,
     )
     base_url = client.get_url("LAYER", "GET", "single", {"id": layer.id})
     target_url = base_url + client.get_url_path("PERMISSION", "GET", "multi")
@@ -254,7 +254,7 @@ def test_set_set_permissions(responses, client, set_):
         responses.PUT,
         target_url,
         body=set_list_permissions_good_simulated_response,
-        status=201,
+        status=200,
     )
     base_url = client.get_url("SET", "GET", "single", {"id": set_.id})
     target_url = base_url + client.get_url_path("PERMISSION", "GET", "multi")
@@ -388,7 +388,7 @@ def test_source_set_permissions(responses, client, source):
         responses.PUT,
         target_url,
         body=source_list_permissions_good_simulated_response,
-        status=201,
+        status=200,
     )
     base_url = client.get_url("SOURCE", "GET", "single", {"id": source.id})
     target_url = base_url + client.get_url_path("PERMISSION", "GET", "multi")
