@@ -66,9 +66,9 @@ class PermissionManager(base.InnerManager):
             self._URL_KEY, "PUT", "multi"
         )
         r = self.client.request("PUT", target_url, json=permissions)
-        if r.status_code != 201:
+        if r.status_code != 200:
             raise exceptions.ServerError(
-                "Expected 201 response, got %s: %s" % (r.status_code, target_url)
+                "Expected 200 response, got %s: %s" % (r.status_code, target_url)
             )
         return self.list()
 
