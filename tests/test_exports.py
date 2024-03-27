@@ -289,7 +289,7 @@ def test_export_creation(client):
         responses.POST,
         client.get_url("EXPORT", "POST", "create"),
         body="",
-        status=302,
+        status=201,
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/exports/20/"
         },
@@ -366,10 +366,10 @@ def test_export_set_formats(client):
         "vector": "application/x-zipped-shp",
         "raster": "image/jpeg",
     }
-    e.set_formats(grid="image/tiff", vector=None)
+    e.set_formats(grid="image/tiff;subtype=geotiff", vector=None)
     assert e.formats == {
         "raster": "image/jpeg",
-        "grid": "image/tiff",
+        "grid": "image/tiff;subtype=geotiff",
     }
 
 
