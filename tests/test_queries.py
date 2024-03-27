@@ -140,6 +140,8 @@ def test_count(manager):
         adding_headers={"X-Resource-Range": "0-10/28"},
     )
 
+    # ^ Suss no resp code
+
     q = manager.list()
     count = len(q)
     assert count == 28

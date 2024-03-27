@@ -289,7 +289,7 @@ def test_export_creation(client):
         responses.POST,
         client.get_url("EXPORT", "POST", "create"),
         body="",
-        status=302,
+        status=302, # Suss
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/exports/20/"
         },
@@ -470,7 +470,7 @@ def test_export_cancel(client):
         responses.DELETE,
         client.get_url("EXPORT", "DELETE", "single", {"id": 20}),
         body=cancel_ok,
-        status=202,
+        status=202, # Suss
         content_type="application/json",
     )
 
@@ -486,7 +486,7 @@ def test_export_cancel_failed(client):
         responses.DELETE,
         client.get_url("EXPORT", "DELETE", "single", {"id": 20}),
         body=cancel_error,
-        status=409,
+        status=409, # Suss
         content_type="application/json",
     )
 

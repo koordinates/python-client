@@ -73,7 +73,7 @@ def test_get_layerset_bad_auth_check_status(bad_client):
         responses.GET,
         bad_client.get_url("LAYER", "GET", "multi"),
         body=the_response,
-        status=401,
+        status=401,     # Suss
         content_type="application/json",
     )
 
@@ -125,7 +125,7 @@ def test_get_layerset_bad_auth_check_exception(bad_client):
         responses.GET,
         bad_client.get_url("LAYER", "GET", "multi"),
         body=the_response,
-        status=401,
+        status=401, # Suss
         content_type="application/json",
     )
 
@@ -249,7 +249,7 @@ def test_get_layer_with_timeout(client):
         responses.GET,
         client.get_url("LAYER", "GET", "single", {"id": 1474}),
         body=the_response,
-        status=504,
+        status=504,     # Suss
         content_type="application/json",
     )
 
@@ -265,7 +265,7 @@ def test_get_layer_with_rate_limiting(client):
         responses.GET,
         client.get_url("LAYER", "GET", "single", {"id": 1474}),
         body=the_response,
-        status=429,
+        status=429,     # Suss
         content_type="application/json",
     )
 
@@ -287,7 +287,7 @@ def test_layer_import(test_client):
             {"version_id": version_id, "layer_id": layer_id},
         ),
         body=the_response,
-        status=202,
+        status=202,# Suss
         content_type="application/json",
     )
 
@@ -364,7 +364,7 @@ def test_get_layer_by_id_bad_auth(bad_client):
         responses.GET,
         bad_client.get_url("LAYER", "GET", "single", {"id": 1474}),
         body=the_response,
-        status=401,
+        status=401,     # Suss
         content_type="application/json",
     )
 

@@ -123,7 +123,7 @@ def test_layer_set_xml(client):
         responses.POST,
         lv_url + "metadata/",
         body=layers_version_metadata_post_response,
-        status=200,
+        status=200, # Suss
         adding_headers={"Location": lv_url + "metadata/"},
     )
 
@@ -163,7 +163,7 @@ def test_layer_set_xml_manager(client):
         responses.POST,
         lv_url + "metadata/",
         body=layers_version_metadata_post_response,
-        status=200,
+        status=200, # Suss
         adding_headers={"Location": lv_url + "metadata/"},
     )
 
