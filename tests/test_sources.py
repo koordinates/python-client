@@ -116,7 +116,7 @@ def test_create(client):
         responses.POST,
         client.get_url("SOURCE", "POST", "create"),
         body=source_create_arcgis,
-        status=200,
+        status=200, # Suss
         content_type="application/json",
     )
 
@@ -192,7 +192,7 @@ def test_create_upload_single(client):
         responses.POST,
         client.get_url("SOURCE", "POST", "create"),
         body=source_create_upload_single,
-        status=200,
+        status=200, # Suss
         content_type="application/json",
     )
 
@@ -241,7 +241,7 @@ def test_create_upload_multiple(client):
         # need this to make sure the request body is consumed
         assert isinstance(request.body, MultipartEncoderMonitor)
         request.body = request.body.to_string()
-        return (200, {}, source_create_upload_multiple)
+        return (200, {}, source_create_upload_multiple) # Suss
 
     responses.add_callback(
         responses.POST,
@@ -417,7 +417,7 @@ def test_scan_cancel(client):
         responses.DELETE,
         client.get_url("SCAN", "DELETE", "cancel", {"source_id": 44, "scan_id": 41}),
         body="",
-        status=204,
+        status=204, # Suss
         content_type="application/json",
     )
 

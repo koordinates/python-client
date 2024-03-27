@@ -135,6 +135,7 @@ class TestModels(object):
             body='{"id": 12345}',
             content_type="application/json",
         )
+        # ^ Whats the resp code? Suss. Also see other tests in this file
         o = client.mgr.get(12345)
         assert isinstance(o, FooModel)
         assert o._manager is client.mgr

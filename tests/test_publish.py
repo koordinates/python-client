@@ -93,7 +93,7 @@ def test_multipublish_resource_specification(testclient):
         responses.POST,
         testclient.get_url("PUBLISH", "POST", "create"),
         body=the_response,
-        status=500,
+        status=500,     # Suss
         content_type="application/json",
     )
 
@@ -121,7 +121,7 @@ def test_multipublish_bad_args(testclient):
         responses.POST,
         testclient.get_url("PUBLISH", "POST", "create"),
         body=the_response,
-        status=500,
+        status=500,     # Suss
         content_type="application/json",
     )
 
@@ -171,7 +171,7 @@ def test_publish_single_layer_version(client):
             "LAYER_VERSION", "POST", "publish", {"layer_id": 1474, "version_id": 4067}
         ),
         body="",
-        status=201,
+        status=201,     # Suss
         adding_headers={"Location": publish_url},
         content_type="application/json",
     )
