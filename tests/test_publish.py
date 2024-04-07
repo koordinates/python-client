@@ -93,7 +93,7 @@ def test_multipublish_resource_specification(testclient):
         responses.POST,
         testclient.get_url("PUBLISH", "POST", "create"),
         body=the_response,
-        status=500,
+        status=400, # because items below can't be resolved
         content_type="application/json",
     )
 
@@ -121,18 +121,16 @@ def test_multipublish_bad_args(testclient):
         responses.POST,
         testclient.get_url("PUBLISH", "POST", "create"),
         body=the_response,
-        status=500,
+        status=400,
         content_type="application/json",
     )
 
     pr = Publish()
     with pytest.raises(exceptions.ServerError):
-        # the Responses mocking will result in a 999 being returned
         testclient.publishing.create(pr)
 
     pr = Publish(publish_strategy=Publish.PUBLISH_STRATEGY_TOGETHER)
     with pytest.raises(exceptions.ServerError):
-        # the Responses mocking will result in a 999 being returned
         testclient.publishing.create(pr)
 
     pr = Publish(

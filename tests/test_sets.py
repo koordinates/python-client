@@ -192,7 +192,7 @@ def test_set_get_draft(client):
         responses.GET,
         client.get_url("SET_VERSION", "GET", "draft", {"id": 1}),
         body=sets_new_draft_good_simulated_response,
-        status=201,
+        status=201,     # TODO Should be 307
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
         },
@@ -210,7 +210,7 @@ def test_set_get_published(client):
         responses.GET,
         client.get_url("SET_VERSION", "GET", "published", {"id": 1}),
         body=sets_new_draft_good_simulated_response,
-        status=201,
+        status=201,     # TODO Should be 307
         adding_headers={
             "Location": "https://test.koordinates.com/services/api/v1/sets/1/"
         },
@@ -226,7 +226,7 @@ def test_set_get_create_draft(client):
         responses.POST,
         client.get_url("SET_VERSION", "POST", "create", {"id": 1}),
         body=sets_new_draft_good_simulated_response,
-        status=200,
+        status=201
     )
 
     rs = client.sets.create_draft(1)
