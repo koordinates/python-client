@@ -30,7 +30,7 @@ dynamic = ["readme"]
 keywords = ["koordinates", "api"]
 name = "koordinates"
 requires-python = ">=3.7"
-version = "0.7.0"
+version = "0.7.1"
 
 [project.urls]
 Source = "https://github.com/koordinates/python-client"
