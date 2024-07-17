@@ -87,6 +87,7 @@ class Client(object):
         )
 
         self._session = requests.Session()
+        self._session.max_redirects = 0
         self._session.headers.update(
             {"Accept": "application/json", "User-Agent": self._user_agent,}
         )
@@ -189,6 +190,12 @@ class Client(object):
         except requests.HTTPError as e:
             logger.warning("Response: %s: %s", e, r.text)
             raise exceptions.ServerError.from_requests_error(e)
+        except requests.exceptions.TooManyRedirects as e:
+            r = e.response
+            location = r.headers.get("Location")
+            raise exceptions.RedirectException(
+                f"Server responded with redirect ({r.status_code} {location})"
+            ) from None
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
 
@@ -241,7 +248,7 @@ class Client(object):
         :param datatype: a string identifying the data the url will access.
         :param verb: the HTTP verb needed for use with the url.
         :param urltype: an adjective used to the nature of the request.
-        :param \*\*params: substitution variables for the URL.
+        :param params: substitution variables for the URL.
         :return: string
         :rtype: A fully formed url.
         """
@@ -287,7 +294,7 @@ class Client(object):
         "SET": {
             "GET": {
                 "single": "/sets/{id}/",
-                "metadata": "/sets/{id}/metadata",
+                "metadata": "/sets/{id}/metadata/",
                 "multi": "/sets/",
                 "multidraft": "/sets/drafts/",
             },
