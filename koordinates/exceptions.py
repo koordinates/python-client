@@ -27,7 +27,7 @@ class InvalidAPIVersion(ClientError):
 
 
 class RedirectException(KoordinatesException):
-    """ Received a redirect: this isn't an API endpoint """
+    """ Received a redirect that we didn't expect """
 
     pass
 

@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import sys
+from urllib.parse import urlparse
 
 try:
     from importlib.metadata import version as _version
@@ -87,7 +88,6 @@ class Client(object):
         )
 
         self._session = requests.Session()
-        self._session.max_redirects = 0
         self._session.headers.update(
             {"Accept": "application/json", "User-Agent": self._user_agent,}
         )
@@ -166,7 +166,7 @@ class Client(object):
 
         return r
 
-    def _raw_request(self, method, url, headers, *args, **kwargs):
+    def _raw_request(self, method, url, headers, *args, allow_xdomain_redirects=False, **kwargs):
         # for the Koordinates library logging, strip auth tokens from log messages
         # and log POST/PUT bodies if we're sending JSON.
         # Get low-level logging via the requests.packages.urllib3 logger.
@@ -186,18 +186,19 @@ class Client(object):
             logger.info("Response: %d %s in %s", r.status_code, r.reason, r.elapsed)
             logger.debug("Response: headers=%s", r.headers)
             r.raise_for_status()
+            if not allow_xdomain_redirects and not self._is_same_domain(url, r.url):
+                raise exceptions.RedirectException(
+                    f"Server responded with cross-domain redirect ({url} -> {r.url})"
+                )
             return r
         except requests.HTTPError as e:
             logger.warning("Response: %s: %s", e, r.text)
             raise exceptions.ServerError.from_requests_error(e)
-        except requests.exceptions.TooManyRedirects as e:
-            r = e.response
-            location = r.headers.get("Location")
-            raise exceptions.RedirectException(
-                f"Server responded with redirect ({r.status_code} {location})"
-            ) from None
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
+
+    def _is_same_domain(self, url1, url2):
+        return urlparse(url1).hostname == urlparse(url2).hostname
 
     def get_url_path(self, datatype, verb, urltype, params={}, api_version=None):
         api_version = api_version or "v1"

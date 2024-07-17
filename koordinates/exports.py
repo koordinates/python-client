@@ -334,7 +334,7 @@ class Export(base.Model):
                 # only close a file we open
                 stack.callback(fd.close)
 
-            r = self._manager.client.request("GET", self.download_url, stream=True)
+            r = self._manager.client.request("GET", self.download_url, stream=True, allow_xdomain_redirects=True)
             stack.callback(r.close)
 
             bytes_written = 0
