@@ -26,6 +26,12 @@ class InvalidAPIVersion(ClientError):
     pass
 
 
+class RedirectException(KoordinatesException):
+    """ Received a redirect: this isn't an API endpoint """
+
+    pass
+
+
 # Server Errors
 class ServerError(KoordinatesException):
     """ Base class for errors returned from the API Servers """
