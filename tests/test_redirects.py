@@ -24,5 +24,5 @@ def test_redirect_handling():
             layer = www_client.layers.get(ID)
 
         assert e.value.args == (
-            "Server responded with redirect (302 https://test.koordinates.com/services/api/v1/layers/1474/) - check you have the client host correctly configured",
+            "Server responded with redirect (302 https://test.koordinates.com/services/api/v1/layers/1474/)",
         )

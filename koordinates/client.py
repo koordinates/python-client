@@ -194,7 +194,7 @@ class Client(object):
             r = e.response
             location = r.headers.get("Location")
             raise exceptions.RedirectException(
-                f"Server responded with redirect ({r.status_code} {location}) - check you have the client host correctly configured"
+                f"Server responded with redirect ({r.status_code} {location})"
             ) from None
         except requests.RequestException as e:
             raise exceptions.ServerError.from_requests_error(e)
