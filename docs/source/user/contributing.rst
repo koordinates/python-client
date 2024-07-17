@@ -85,6 +85,7 @@ Build and release
 
    .. code-block:: bash
 
+    $ rm -rf dist/      # ensure clean slate
     $ python3 -m build
     $ ls dist/
     koordinates-0.7.0-py3-none-any.whl  koordinates-0.7.0.tar.gz
