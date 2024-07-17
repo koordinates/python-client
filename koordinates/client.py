@@ -294,7 +294,7 @@ class Client(object):
         "SET": {
             "GET": {
                 "single": "/sets/{id}/",
-                "metadata": "/sets/{id}/metadata",
+                "metadata": "/sets/{id}/metadata/",
                 "multi": "/sets/",
                 "multidraft": "/sets/drafts/",
             },
