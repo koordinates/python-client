@@ -63,7 +63,14 @@ def test_token_from_param():
         assert client.token == "12345abcde"
 
 
-def test_get_url_path(client):
+@pytest.mark.parametrize(
+    "api_version",
+    [
+        pytest.param(None, id="api_version_default"),
+        pytest.param("v2", id="api_version=v2"),
+    ],
+)
+def test_get_url_path(client, api_version):
     assert "/layers/" == client.get_url_path("LAYER", "GET", "multi")
     assert "/publish/12345/" == client.get_url_path(
         "PUBLISH", "DELETE", "single", {"id": 12345}
@@ -231,7 +238,6 @@ def test_request_logging(caplog, client):
         "^Request: GET https://test.koordinates.com/api/v1/test/ headers=(?P<headers>.*) body=(?P<body>.*)$",
         lmsg,
     )
-    print(lf.group("headers"), lf.group("body"))
 
     lbody = json.loads(lf.group("body"))
     assert lbody == {"some": ["data", 1]}
@@ -239,3 +245,34 @@ def test_request_logging(caplog, client):
     lheaders = json.loads(lf.group("headers"))
     assert "FooHeader" in lheaders
     assert "Authorization" not in lheaders
+
+
+def test_get_url_specified_url_version(client):
+    url_version = "v1.x"
+    layer_id = "12345"
+    client.url_version = url_version
+    url = client.get_url("PUBLISH", "DELETE", "single", {"id": layer_id})
+    expected_url = "https://test.koordinates.com/services/api/{url_version}/publish/{layer_id}/".format(
+        url_version=url_version, layer_id=layer_id
+    )
+    assert url == expected_url
+
+
+def test_reverse_url_specified_url_version(client):
+    url_version = "v1.x"
+    layer_id = "12345"
+    client.url_version = url_version
+    url = client.get_url("PUBLISH", "DELETE", "single", {"id": layer_id})
+    params = client.reverse_url(datatype="PUBLISH", url=url, verb="DELETE")
+    expected_params = {"id": layer_id}
+    assert params == expected_params
+
+
+def test_invalid_api_version_error(client):
+    invalid_api_version = "v2"
+    client.api_version = invalid_api_version
+    expected_error_msg = "'{version}' is not a valid `api_version`.".format(
+        version=invalid_api_version
+    )
+    with pytest.raises(ValueError, match=expected_error_msg):
+        client.get_url("PUBLISH", "DELETE", "single", {"id": 12345})

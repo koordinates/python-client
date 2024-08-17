@@ -36,11 +36,23 @@ class Client(object):
     is instantiated.
     """
 
-    def __init__(self, host, token=None, activate_logging=False):
+    def __init__(
+        self,
+        host,
+        token=None,
+        activate_logging=False,
+        api_version="v1",
+        url_version=None,
+    ):
         """
         :param str host: the domain name of the Koordinates site to connect to (eg. ``labs.koordinates.com``)
         :param str token: Koordinates API token to use for authentication
         :param bool activate_logging: if True then logging to stderr is activated
+        :param str api_version: API version of Koordinates site to connect to. Defaults to 'v1'.
+        :param str url_version:
+            API Version shown in the URLs of the Koordinates site to connect to. This may be differ from the
+            `api_version`; for example, the `api_version` may be 'v1`, but the `url_version` may be 'v1.x'.
+            If `None`, `url_version` is set to equal `api_version`. Defaults to `None`.
         """
         if activate_logging:
             logging.basicConfig(
@@ -52,6 +64,8 @@ class Client(object):
         logger.debug("Initializing Client object for %s", host)
 
         self.host = host
+        self.api_version = api_version
+        self.url_version = url_version or self.api_version
 
         if token:
             self.token = token
@@ -63,7 +77,7 @@ class Client(object):
             )
 
         self._user_agent = requests_toolbelt.user_agent(
-            "KoordinatesPython", _version('koordinates')
+            "KoordinatesPython", _version("koordinates")
         )
 
         self._init_managers(
@@ -89,7 +103,10 @@ class Client(object):
 
         self._session = requests.Session()
         self._session.headers.update(
-            {"Accept": "application/json", "User-Agent": self._user_agent,}
+            {
+                "Accept": "application/json",
+                "User-Agent": self._user_agent,
+            }
         )
         if self.token:
             self._session.headers["Authorization"] = "key {token}".format(
@@ -166,7 +183,9 @@ class Client(object):
 
         return r
 
-    def _raw_request(self, method, url, headers, *args, allow_xdomain_redirects=False, **kwargs):
+    def _raw_request(
+        self, method, url, headers, *args, allow_xdomain_redirects=False, **kwargs
+    ):
         # for the Koordinates library logging, strip auth tokens from log messages
         # and log POST/PUT bodies if we're sending JSON.
         # Get low-level logging via the requests.packages.urllib3 logger.
@@ -201,14 +220,20 @@ class Client(object):
         return urlparse(url1).hostname == urlparse(url2).hostname
 
     def get_url_path(self, datatype, verb, urltype, params={}, api_version=None):
-        api_version = api_version or "v1"
-        templates = getattr(self, "URL_TEMPLATES__%s" % api_version)
+        api_version = api_version or self.api_version
+        templates = self._get_url_templates(api_version)
 
         url = templates[datatype][verb][urltype]
         return url.format(**params)
 
     def reverse_url(
-        self, datatype, url, verb="GET", urltype="single", api_version=None
+        self,
+        datatype,
+        url,
+        verb="GET",
+        urltype="single",
+        api_version=None,
+        url_version=None,
     ):
         """
         Extracts parameters from a populated URL
@@ -219,11 +244,12 @@ class Client(object):
         :param urltype: an adjective used to the nature of the request.
         :return: dict
         """
-        api_version = api_version or "v1"
-        templates = getattr(self, "URL_TEMPLATES__%s" % api_version)
+        api_version = api_version or self.api_version
+        templates = self._get_url_templates(api_version)
+        url_version = url_version or self.url_version
 
         # this is fairly simplistic, if necessary we could use the parse lib
-        template_url = r"https://(?P<api_host>.+)/services/api/(?P<api_version>.+)"
+        template_url = r"https://(?P<api_host>.+)/services/api/(?P<url_version>.+)"
         template_url += re.sub(
             r"{([^}]+)}", r"(?P<\1>.+)", templates[datatype][verb][urltype]
         )
@@ -237,12 +263,19 @@ class Client(object):
 
         r = m.groupdict()
         del r["api_host"]
-        if r.pop("api_version") != api_version:
-            raise ValueError("API version mismatch")
+        if r.pop("url_version") != url_version:
+            raise ValueError("URL version mismatch")
         return r
 
     def get_url(
-        self, datatype, verb, urltype, params={}, api_host=None, api_version=None
+        self,
+        datatype,
+        verb,
+        urltype,
+        params={},
+        api_host=None,
+        api_version=None,
+        url_version=None,
     ):
         """Returns a fully formed url
 
@@ -253,130 +286,207 @@ class Client(object):
         :return: string
         :rtype: A fully formed url.
         """
-        api_version = api_version or "v1"
+        api_version = api_version or self.api_version
         api_host = api_host or self.host
+        url_version = url_version or self.url_version
 
         subst = params.copy()
         subst["api_host"] = api_host
         subst["api_version"] = api_version
+        subst["url_version"] = url_version
 
-        url = "https://{api_host}/services/api/{api_version}"
+        url = "https://{api_host}/services/api/{url_version}"
         url += self.get_url_path(datatype, verb, urltype, params, api_version)
         return url.format(**subst)
 
-    URL_TEMPLATES__v1 = {
-        "LAYER": {
-            "GET": {
-                "single": "/layers/{id}/",
-                "multi": "/layers/",
-                "multidraft": "/layers/drafts/",
+    def _get_url_templates(self, api_version):
+        try:
+            url_templates = self._URL_TEMPLATES[api_version]
+        except KeyError:
+            valid_api_vers = ", ".join(
+                ["'{vers}'".format(vers=vers) for vers in self._URL_TEMPLATES.keys()]
+            )
+            raise ValueError(
+                (
+                    "'{api_version}' is not a valid `api_version`. "
+                    "Currently supported API versions are: {valid_api_vers}."
+                ).format(valid_api_vers=valid_api_vers, api_version=api_version)
+            )
+        return url_templates
+
+    _URL_TEMPLATES = {
+        "v1": {
+            "LAYER": {
+                "GET": {
+                    "single": "/layers/{id}/",
+                    "multi": "/layers/",
+                    "multidraft": "/layers/drafts/",
+                },
+                "POST": {
+                    "create": "/layers/",
+                    "update": "/layers/{layer_id}/versions/import/",
+                },
+                "DELETE": {
+                    "delete": "/layers/{id}/",
+                },
             },
-            "POST": {
-                "create": "/layers/",
-                "update": "/layers/{layer_id}/versions/import/",
+            "LAYER_VERSION": {
+                "GET": {
+                    "single": "/layers/{layer_id}/versions/{version_id}/",
+                    "multi": "/layers/{layer_id}/versions/",
+                    "draft": "/layers/{layer_id}/versions/draft/",
+                    "published": "/layers/{layer_id}/versions/published/",
+                },
+                "POST": {
+                    "create": "/layers/{layer_id}/versions/",
+                    "import": "/layers/{layer_id}/versions/{version_id}/import/",
+                    "publish": "/layers/{layer_id}/versions/{version_id}/publish/",
+                },
+                "PUT": {
+                    "edit": "/layers/{layer_id}/versions/{version_id}/",
+                },
+                "DELETE": {
+                    "single": "/layers/{layer_id}/versions/{version_id}/",
+                },
             },
-            "DELETE": {"delete": "/layers/{id}/",},
-        },
-        "LAYER_VERSION": {
-            "GET": {
-                "single": "/layers/{layer_id}/versions/{version_id}/",
-                "multi": "/layers/{layer_id}/versions/",
-                "draft": "/layers/{layer_id}/versions/draft/",
-                "published": "/layers/{layer_id}/versions/published/",
+            "SET": {
+                "GET": {
+                    "single": "/sets/{id}/",
+                    "metadata": "/sets/{id}/metadata/",
+                    "multi": "/sets/",
+                    "multidraft": "/sets/drafts/",
+                },
+                "POST": {
+                    "create": "/sets/",
+                },
+                "DELETE": {
+                    "delete": "/sets/{id}/",
+                },
             },
-            "POST": {
-                "create": "/layers/{layer_id}/versions/",
-                "import": "/layers/{layer_id}/versions/{version_id}/import/",
-                "publish": "/layers/{layer_id}/versions/{version_id}/publish/",
+            "SET_VERSION": {
+                "GET": {
+                    "single": "/sets/{id}/versions/{version_id}/",
+                    "multi": "/sets/{id}/versions/",
+                    "draft": "/sets/{id}/versions/draft/",
+                    "published": "/sets/{id}/versions/published/",
+                },
+                "POST": {
+                    "create": "/sets/{id}/versions/",
+                    "publish": "/sets/{id}/versions/{version_id}/publish/",
+                },
+                "PUT": {
+                    "edit": "/sets/{id}/versions/{version_id}/",
+                },
+                "DELETE": {
+                    "single": "/sets/{id}/versions/{version_id}/",
+                },
             },
-            "PUT": {"edit": "/layers/{layer_id}/versions/{version_id}/",},
-            "DELETE": {"single": "/layers/{layer_id}/versions/{version_id}/",},
-        },
-        "SET": {
-            "GET": {
-                "single": "/sets/{id}/",
-                "metadata": "/sets/{id}/metadata/",
-                "multi": "/sets/",
-                "multidraft": "/sets/drafts/",
+            "CATALOG": {
+                "GET": {
+                    "multi": "/data/",
+                    "latest": "/data/latest/",
+                },
             },
-            "POST": {"create": "/sets/",},
-            "DELETE": {"delete": "/sets/{id}/",},
-        },
-        "SET_VERSION": {
-            "GET": {
-                "single": "/sets/{id}/versions/{version_id}/",
-                "multi": "/sets/{id}/versions/",
-                "draft": "/sets/{id}/versions/draft/",
-                "published": "/sets/{id}/versions/published/",
+            "PUBLISH": {
+                "GET": {
+                    "single": "/publish/{id}/",
+                    "multi": "/publish/",
+                },
+                "POST": {
+                    "create": "/publish/",
+                },
+                "DELETE": {
+                    "single": "/publish/{id}/",
+                },
             },
-            "POST": {
-                "create": "/sets/{id}/versions/",
-                "publish": "/sets/{id}/versions/{version_id}/publish/",
+            "LICENSE": {
+                "GET": {
+                    "single": "/licenses/{id}/",
+                    "multi": "/licenses/",
+                    "cc": "/licenses/{slug}/{jurisdiction}/",
+                },
             },
-            "PUT": {"edit": "/sets/{id}/versions/{version_id}/",},
-            "DELETE": {"single": "/sets/{id}/versions/{version_id}/",},
-        },
-        "CATALOG": {"GET": {"multi": "/data/", "latest": "/data/latest/",},},
-        "PUBLISH": {
-            "GET": {"single": "/publish/{id}/", "multi": "/publish/",},
-            "POST": {"create": "/publish/",},
-            "DELETE": {"single": "/publish/{id}/",},
-        },
-        "LICENSE": {
-            "GET": {
-                "single": "/licenses/{id}/",
-                "multi": "/licenses/",
-                "cc": "/licenses/{slug}/{jurisdiction}/",
+            "METADATA": {
+                # InnerManager, so relative to a parent object
+                "GET": {
+                    "get": "metadata/",
+                },
+                "POST": {
+                    "set": "metadata/",
+                },
             },
-        },
-        "METADATA": {
+            "SOURCE": {
+                "GET": {
+                    "single": "/sources/{id}/",
+                    "multi": "/sources/",
+                },
+                "POST": {
+                    "create": "/sources/",
+                },
+                "DELETE": {
+                    "single": "/sources/{id}/",
+                },
+            },
+            "SCAN": {
+                "GET": {
+                    "single": "/sources/{source_id}/scans/{scan_id}/",
+                    "multi": "/sources/{source_id}/scans/",
+                    "log": "/sources/{source_id}/scans/{scan_id}/log/",
+                    "all": "/sources/scans/",
+                },
+                "DELETE": {
+                    "cancel": "/sources/{source_id}/scans/{scan_id}/",
+                },
+                "POST": {
+                    "create": "/sources/{source_id}/scans/",
+                },
+            },
+            "DATASOURCE": {
+                "GET": {
+                    "multi": "/sources/{source_id}/datasources/",
+                    "single": "/sources/{source_id}/datasources/{datasource_id}/",
+                }
+            },
             # InnerManager, so relative to a parent object
-            "GET": {"get": "metadata/",},
-            "POST": {"set": "metadata/",},
-        },
-        "SOURCE": {
-            "GET": {"single": "/sources/{id}/", "multi": "/sources/",},
-            "POST": {"create": "/sources/",},
-            "DELETE": {"single": "/sources/{id}/",},
-        },
-        "SCAN": {
-            "GET": {
-                "single": "/sources/{source_id}/scans/{scan_id}/",
-                "multi": "/sources/{source_id}/scans/",
-                "log": "/sources/{source_id}/scans/{scan_id}/log/",
-                "all": "/sources/scans/",
+            "PERMISSION": {
+                "GET": {
+                    "multi": "permissions/",
+                    "single": "permissions/{permission_id}/",
+                },
+                "POST": {
+                    "single": "permissions/",
+                },
+                "PUT": {
+                    "multi": "permissions/",
+                },
             },
-            "DELETE": {"cancel": "/sources/{source_id}/scans/{scan_id}/",},
-            "POST": {"create": "/sources/{source_id}/scans/",},
-        },
-        "DATASOURCE": {
-            "GET": {
-                "multi": "/sources/{source_id}/datasources/",
-                "single": "/sources/{source_id}/datasources/{datasource_id}/",
-            }
-        },
-        # InnerManager, so relative to a parent object
-        "PERMISSION": {
-            "GET": {"multi": "permissions/", "single": "permissions/{permission_id}/",},
-            "POST": {"single": "permissions/",},
-            "PUT": {"multi": "permissions/",},
-        },
-        "EXPORT": {
-            "GET": {"multi": "/exports/", "single": "/exports/{id}/",},
-            "POST": {"create": "/exports/", "validate": "/exports/validate/",},
-            "OPTIONS": {"options": "/exports/",},
-            "DELETE": {"single": "/exports/{id}/",},
-        },
-        "CROPLAYER": {
-            "GET": {
-                "multi": "/exports/croplayers/",
-                "single": "/exports/croplayers/{id}/",
+            "EXPORT": {
+                "GET": {
+                    "multi": "/exports/",
+                    "single": "/exports/{id}/",
+                },
+                "POST": {
+                    "create": "/exports/",
+                    "validate": "/exports/validate/",
+                },
+                "OPTIONS": {
+                    "options": "/exports/",
+                },
+                "DELETE": {
+                    "single": "/exports/{id}/",
+                },
             },
-        },
-        "CROPFEATURE": {
-            "GET": {
-                "multi": "/exports/croplayers/{croplayer_id}/cropfeatures/",
-                "single": "/exports/croplayers/{croplayer_id}/cropfeatures/{cropfeature_id}/",
+            "CROPLAYER": {
+                "GET": {
+                    "multi": "/exports/croplayers/",
+                    "single": "/exports/croplayers/{id}/",
+                },
             },
-        },
+            "CROPFEATURE": {
+                "GET": {
+                    "multi": "/exports/croplayers/{croplayer_id}/cropfeatures/",
+                    "single": "/exports/croplayers/{croplayer_id}/cropfeatures/{cropfeature_id}/",
+                },
+            },
+        }
     }

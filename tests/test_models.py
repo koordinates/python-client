@@ -100,9 +100,14 @@ def client():
     client._register_manager(FooModel, client.mgr)
     client._register_manager(BarModel, BarManager(client))
 
-    client.URL_TEMPLATES__v1.update(
+    client._URL_TEMPLATES["v1"].update(
         {
-            "TEST_FOO": {"GET": {"multi": "foo/", "single": "foo/{id}/",}},
+            "TEST_FOO": {
+                "GET": {
+                    "multi": "foo/",
+                    "single": "foo/{id}/",
+                }
+            },
             "TEST_BAR": {
                 "GET": {
                     "multi": "foo/{foo_id}/bar/",
@@ -160,7 +165,11 @@ class TestModels(object):
 
     def test_deserialize_list(self, client):
         o = FooModel()._deserialize(
-            {"mylist": [1, 2], "created_at": ["2013-01-01", "2014-01-01"],}, client.mgr
+            {
+                "mylist": [1, 2],
+                "created_at": ["2013-01-01", "2014-01-01"],
+            },
+            client.mgr,
         )
         assert isinstance(o.mylist, list)
         assert o.mylist == [1, 2]
@@ -231,7 +240,10 @@ class TestModels(object):
             "id": 12345,
             "url": FooManager.TEST_GET_URL % 12345,
             "name": "foo",
-            "pop": {"id": 3456, "type": "double-happy",},
+            "pop": {
+                "id": 3456,
+                "type": "double-happy",
+            },
         }
         o_foo = FooModel()._deserialize(FOO_DATA, client.mgr)
 
@@ -265,7 +277,10 @@ class TestModels(object):
             "id": 12345,
             "url": FooManager.TEST_GET_URL % 12345,
             "name": "foo",
-            "pop": {"id": 3456, "type": "double-happy",},
+            "pop": {
+                "id": 3456,
+                "type": "double-happy",
+            },
         }
         o_foo = FooModel()._deserialize(FOO_DATA, client.mgr)
         o_pop = o_foo.pop
@@ -359,7 +374,10 @@ class TestModels(object):
             "id": 12345,
             "url": FooManager.TEST_GET_URL % 12345,
             "name": "foo",
-            "pop": {"id": 3456, "type": "double-happy",},
+            "pop": {
+                "id": 3456,
+                "type": "double-happy",
+            },
         }
         o_foo = FooModel()._deserialize(FOO_DATA, client.mgr)
         o_pop = o_foo.pop
